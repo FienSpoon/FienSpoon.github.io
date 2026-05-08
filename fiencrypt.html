@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cipher Tool</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background-color: #fff;
+            color: #000;
+        }
+        .container {
+            max-width: 600px;
+        }
+        .field {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            margin-top: 5px;
+            padding: 5px;
+            border: 1px solid #000;
+        }
+        button {
+            padding: 5px 15px;
+            cursor: pointer;
+            border: 1px solid #000;
+            background: #eee;
+            margin-right: 5px;
+        }
+        button:hover {
+            background: #ddd;
+        }
+        #output {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px dashed #000;
+            background-color: #f9f9f9;
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+        .status {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Encrypt/Decrypt Tool</h2>
+        
+        <div class="field">
+            <label>Key:</label>
+            <input type="text" id="key">
+        </div>
+
+        <div style="display: flex; gap: 20px;">
+            <div class="field" style="flex: 1;">
+                <label>Garbage #:</label>
+                <input type="number" id="garbage" value="3">
+            </div>
+            <div class="field" style="flex: 1;">
+                <label>Caesar #:</label>
+                <input type="number" id="shift" value="5">
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Input Text:</label>
+            <textarea id="input" rows="6"></textarea>
+        </div>
+
+        <div class="field">
+            <button onclick="process(true)">ENCRYPT</button>
+            <button onclick="process(false)">DECRYPT</button>
+        </div>
+
+        <label>Result:</label>
+        <div id="output"></div>
+        
+        <button onclick="copyToClipboard()" style="margin-top: 10px; font-size: 12px;">Copy Result</button>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+
+        function getCharValue(char) {
+            const index = ALPHABET.indexOf(char.toUpperCase());
+            return index;
+        }
+
+        function caesarShift(text, shift) {
+            let result = "";
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i];
+                let isUpper = char === char.toUpperCase();
+                let lowerChar = char.toLowerCase();
+                if (lowerChar >= 'a' && lowerChar <= 'z') {
+                    let code = char.charCodeAt(0);
+                    let base = isUpper ? 65 : 97;
+                    let newCode = (code - base + shift) % 26;
+                    if (newCode < 0) newCode += 26;
+                    result += String.fromCharCode(newCode + base);
+                } else {
+                    result += char;
+                }
+            }
+            return result;
+        }
+
+        function encrypt() {
+            let text = document.getElementById('input').value;
+            const keyStr = document.getElementById('key').value.toUpperCase();
+            const garbagePattern = parseInt(document.getElementById('garbage').value) || 1;
+            const shiftValue = parseInt(document.getElementById('shift').value) || 0;
+
+            if (!keyStr) {
+                document.getElementById('status').innerText = "Error: Key required.";
+                return;
+            }
+
+            text = text.replace(/\./g, "..");
+
+            let shiftedText = "";
+            let keyIndex = 0;
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i];
+                let val = getCharValue(char);
+                if (val !== -1) {
+                    let kVal = getCharValue(keyStr[keyIndex % keyStr.length]);
+                    if (kVal === -1) kVal = 0;
+                    shiftedText += ALPHABET[(val + kVal) % 27];
+                    keyIndex++;
+                } else {
+                    shiftedText += char;
+                }
+            }
+
+            let garbageText = "";
+            for (let i = 0; i < shiftedText.length; i++) {
+                garbageText += shiftedText[i];
+                if ((i + 1) % garbagePattern === 0) {
+                    garbageText += ALPHABET[Math.floor(Math.random() * 26)];
+                }
+            }
+
+            return caesarShift(garbageText, shiftValue);
+        }
+
+        function decrypt() {
+            let text = document.getElementById('input').value;
+            const keyStr = document.getElementById('key').value.toUpperCase();
+            const garbagePattern = parseInt(document.getElementById('garbage').value) || 1;
+            const shiftValue = parseInt(document.getElementById('shift').value) || 0;
+
+            if (!keyStr) {
+                document.getElementById('status').innerText = "Error: Key required.";
+                return;
+            }
+
+            let unCaesar = caesarShift(text, -shiftValue);
+            let cleanText = "";
+            let counter = 0;
+            for (let i = 0; i < unCaesar.length; i++) {
+                cleanText += unCaesar[i];
+                counter++;
+                if (counter === garbagePattern) {
+                    i++;
+                    counter = 0;
+                }
+            }
+
+            let originalText = "";
+            let keyIndex = 0;
+            for (let i = 0; i < cleanText.length; i++) {
+                let char = cleanText[i];
+                let val = getCharValue(char);
+                if (val !== -1) {
+                    let kVal = getCharValue(keyStr[keyIndex % keyStr.length]);
+                    if (kVal === -1) kVal = 0;
+                    let newVal = (val - kVal) % 27;
+                    if (newVal < 0) newVal += 27;
+                    originalText += ALPHABET[newVal];
+                    keyIndex++;
+                } else {
+                    originalText += char;
+                }
+            }
+
+            return originalText.replace(/\.\./g, ".");
+        }
+
+        function process(isEncrypt) {
+            document.getElementById('status').innerText = "";
+            const result = isEncrypt ? encrypt() : decrypt();
+            if (result !== undefined) document.getElementById('output').innerText = result;
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('output').innerText;
+            if (!text) return;
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            document.getElementById('status').innerText = "Copied.";
+        }
+    </script>
+</body>
+</html>
