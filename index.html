@@ -1,1 +1,727 @@
-Hi.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monologue Master</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .cloze-input {
+            width: 80px;
+            text-align: center;
+            border-bottom: 2px solid #9ca3af;
+            background: transparent;
+            transition: all 0.3s;
+        }
+
+        .cloze-input:focus {
+            outline: none;
+            border-bottom-color: #3b82f6;
+            width: 100px;
+        }
+
+        .cloze-input.correct {
+            border-bottom-color: #10b981;
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .cloze-input.incorrect {
+            border-bottom-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .word-diff-correct { color: #10b981; }
+        .word-diff-incorrect { color: #ef4444; text-decoration: line-through; }
+        .word-diff-missing { color: #f59e0b; border-bottom: 2px dashed #f59e0b; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        
+        /* Toast */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background-color: #374151;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .toast.show { transform: translateX(0); }
+    </style>
+</head>
+<body class="h-screen flex flex-col md:flex-row overflow-hidden">
+
+    <!-- Sidebar / Bottom Nav -->
+    <nav class="bg-indigo-900 text-white w-full md:w-64 flex-shrink-0 flex md:flex-col shadow-xl z-20 order-2 md:order-1">
+        <div class="p-4 md:p-6 hidden md:block">
+            <h1 class="text-2xl font-bold tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-brain"></i> MemoMaster
+            </h1>
+            <p class="text-indigo-300 text-sm mt-1">Spanish Monologue</p>
+        </div>
+        
+        <div class="flex flex-row md:flex-col flex-1 overflow-x-auto md:overflow-y-auto no-scrollbar">
+            <button onclick="switchTab('listen')" class="nav-btn flex-1 md:flex-none text-left px-4 py-4 md:px-6 md:py-4 flex flex-col md:flex-row items-center gap-2 md:gap-3 hover:bg-indigo-800 transition-colors border-b-4 md:border-b-0 md:border-l-4 border-indigo-400 bg-indigo-800" data-tab="listen">
+                <i class="fa-solid fa-headphones text-xl md:text-lg"></i>
+                <span class="text-xs md:text-base font-medium">1. Read & Listen</span>
+            </button>
+            <button onclick="switchTab('letters')" class="nav-btn flex-1 md:flex-none text-left px-4 py-4 md:px-6 md:py-4 flex flex-col md:flex-row items-center gap-2 md:gap-3 hover:bg-indigo-800 transition-colors border-b-4 md:border-b-0 md:border-l-4 border-transparent text-indigo-200" data-tab="letters">
+                <i class="fa-solid fa-font text-xl md:text-lg"></i>
+                <span class="text-xs md:text-base font-medium">2. First Letters</span>
+            </button>
+            <button onclick="switchTab('blanks')" class="nav-btn flex-1 md:flex-none text-left px-4 py-4 md:px-6 md:py-4 flex flex-col md:flex-row items-center gap-2 md:gap-3 hover:bg-indigo-800 transition-colors border-b-4 md:border-b-0 md:border-l-4 border-transparent text-indigo-200" data-tab="blanks">
+                <i class="fa-solid fa-pen-to-square text-xl md:text-lg"></i>
+                <span class="text-xs md:text-base font-medium">3. Fill Blanks</span>
+            </button>
+            <button onclick="switchTab('mastery')" class="nav-btn flex-1 md:flex-none text-left px-4 py-4 md:px-6 md:py-4 flex flex-col md:flex-row items-center gap-2 md:gap-3 hover:bg-indigo-800 transition-colors border-b-4 md:border-b-0 md:border-l-4 border-transparent text-indigo-200" data-tab="mastery">
+                <i class="fa-solid fa-keyboard text-xl md:text-lg"></i>
+                <span class="text-xs md:text-base font-medium">4. Mastery Test</span>
+            </button>
+            <button onclick="switchTab('builder')" class="nav-btn flex-1 md:flex-none text-left px-4 py-4 md:px-6 md:py-4 flex flex-col md:flex-row items-center gap-2 md:gap-3 hover:bg-indigo-800 transition-colors border-b-4 md:border-b-0 md:border-l-4 border-transparent text-indigo-200" data-tab="builder">
+                <i class="fa-solid fa-puzzle-piece text-xl md:text-lg"></i>
+                <span class="text-xs md:text-base font-medium">5. Word Builder</span>
+            </button>
+            <button onclick="switchTab('fade')" class="nav-btn flex-1 md:flex-none text-left px-4 py-4 md:px-6 md:py-4 flex flex-col md:flex-row items-center gap-2 md:gap-3 hover:bg-indigo-800 transition-colors border-b-4 md:border-b-0 md:border-l-4 border-transparent text-indigo-200" data-tab="fade">
+                <i class="fa-solid fa-eye-slash text-xl md:text-lg"></i>
+                <span class="text-xs md:text-base font-medium">6. Fade Out</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50 order-1 md:order-2">
+        <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 min-h-[80vh] p-6 md:p-10 relative">
+            
+            <!-- Mode Toggle (Visible in Drills) -->
+            <div id="mode-toggle-container" class="mb-8 hidden bg-indigo-50 p-2 rounded-lg flex gap-2 justify-center border border-indigo-100">
+                <button onclick="switchMode('monologue')" id="mode-btn-monologue" class="px-6 py-2 rounded-md bg-indigo-600 text-white font-medium shadow-sm transition">Monologue</button>
+                <button onclick="switchMode('qa')" id="mode-btn-qa" class="px-6 py-2 rounded-md bg-transparent text-indigo-700 hover:bg-indigo-100 font-medium transition">Q & A</button>
+            </div>
+
+            <!-- Module 1: Read & Listen -->
+            <div id="tab-listen" class="tab-content active">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Read & Listen</h2>
+                        <p class="text-gray-500 text-sm">Familiarize yourself with the text and pronunciation.</p>
+                    </div>
+                </div>
+                
+                <audio controls class="w-full mb-8 rounded-lg outline-none shadow-sm bg-gray-50">
+                    <source src="audio.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+
+                <h3 class="font-bold text-xl text-indigo-900 mb-4 border-b pb-2">Monologue</h3>
+                <div id="listen-text-monologue" class="text-lg leading-relaxed text-gray-700 space-y-4 font-medium mb-10">
+                    <!-- Populated by JS -->
+                </div>
+
+                <h3 class="font-bold text-xl text-indigo-900 mb-4 border-b pb-2">Questions & Answers</h3>
+                <div id="listen-text-qa" class="text-lg leading-relaxed text-gray-700 space-y-6 font-medium">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Module 2: First Letters -->
+            <div id="tab-letters" class="tab-content">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">The Actor's Trick</h2>
+                    <p class="text-gray-500 text-sm">Read using only the first letters. This forces your brain to recall the full words.</p>
+                </div>
+                <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-6">
+                    <div id="letters-text" class="text-lg leading-relaxed text-indigo-900 space-y-4 font-mono tracking-wide">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module 3: Fill in the Blanks -->
+            <div id="tab-blanks" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Fill in the Blanks</h2>
+                        <p class="text-gray-500 text-sm">Type the missing words to test your active recall.</p>
+                    </div>
+                    <button onclick="checkBlanks()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-check-double"></i> Check Answers
+                    </button>
+                </div>
+                <div id="blanks-text" class="text-lg leading-loose text-gray-700 space-y-6">
+                    <!-- Populated by JS -->
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button onclick="resetBlanks()" class="text-gray-500 hover:text-indigo-600 text-sm underline">Reset/Generate New Blanks</button>
+                </div>
+            </div>
+
+            <!-- Module 4: Mastery Test -->
+            <div id="tab-mastery" class="tab-content">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Mastery Test</h2>
+                    <p class="text-gray-500 text-sm">Type the paragraph from memory. We'll check it against the original.</p>
+                </div>
+                
+                <div id="mastery-para-buttons" class="mb-4 flex gap-2 overflow-x-auto pb-2">
+                    <!-- Populated dynamically by JS -->
+                </div>
+
+                <textarea id="mastery-input" class="w-full h-48 p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-0 resize-none text-lg leading-relaxed transition shadow-inner" placeholder="Start typing the selected paragraph from memory here..."></textarea>
+                
+                <div class="mt-4 flex justify-between items-center">
+                    <button onclick="clearMastery()" class="text-gray-500 hover:text-red-500 transition"><i class="fa-solid fa-trash"></i> Clear</button>
+                    <button onclick="checkMastery()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg shadow transition font-bold">Check Accuracy</button>
+                </div>
+
+                <div id="mastery-results" class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200 hidden">
+                    <h3 class="font-bold text-gray-700 mb-2">Results:</h3>
+                    <p id="mastery-diff" class="text-lg leading-relaxed bg-white p-4 rounded border shadow-sm"></p>
+                    <div class="mt-3 flex gap-4 text-sm font-medium">
+                        <span class="text-green-600"><i class="fa-solid fa-circle text-[10px]"></i> Correct</span>
+                        <span class="text-red-500"><i class="fa-solid fa-circle text-[10px] line-through"></i> Incorrect</span>
+                        <span class="text-amber-500 border-b border-dashed border-amber-500"><i class="fa-solid fa-circle text-[10px]"></i> Missing Original Word</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module 5: Word Builder -->
+            <div id="tab-builder" class="tab-content">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Word Builder</h2>
+                    <p class="text-gray-500 text-sm">Reconstruct the paragraph by selecting the words in the correct order.</p>
+                </div>
+                
+                <div id="builder-para-buttons" class="mb-6 flex gap-2 overflow-x-auto pb-2">
+                    <!-- Populated by JS -->
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                        <h3 class="text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider">Word Bank</h3>
+                        <div id="builder-source" class="flex flex-wrap gap-2">
+                        </div>
+                    </div>
+                    <div class="bg-indigo-50 p-6 rounded-xl border border-indigo-200 flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-sm font-bold text-indigo-800 uppercase tracking-wider">Your Sentence</h3>
+                            <button onclick="resetBuilder()" class="text-indigo-500 hover:text-indigo-700 text-sm"><i class="fa-solid fa-rotate-right"></i> Reset</button>
+                        </div>
+                        <div id="builder-target" class="flex flex-wrap gap-2 flex-1 content-start min-h-[150px] bg-white p-4 rounded border border-indigo-100">
+                        </div>
+                        <button onclick="checkBuilder()" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg shadow transition font-bold">Check Order</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module 6: Fade Out -->
+            <div id="tab-fade" class="tab-content">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Fade Out</h2>
+                    <p class="text-gray-500 text-sm">Use the slider to progressively hide words. Try to read it out loud as words disappear.</p>
+                </div>
+
+                <div class="mb-8 bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                    <label for="fade-slider" class="font-medium text-gray-700 whitespace-nowrap">Hidden: <span id="fade-percent" class="text-indigo-600 font-bold">0</span>%</label>
+                    <input type="range" id="fade-slider" min="0" max="100" value="0" step="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" oninput="updateFade()">
+                </div>
+
+                <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-6">
+                    <div id="fade-text" class="text-lg leading-relaxed text-indigo-900 space-y-4 font-medium transition-all duration-300">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="toast-container"></div>
+
+    <script>
+        // The Monologue Data
+        const monologueText = `A menudo juego a los videojuegos o navego por Internet durante mis vacaciones. ¡Qué entretenido! A veces juego al baloncesto, pero no juego al tenis con mis amigos. Cuando hace frío no salgo de casa, pero toco la batería. Cuando hace buen tiempo, mi padre y yo montamos en bici, pero no montamos a caballo.
+
+El verano pasado fui a Japón con mi familia. Viajé en avión. Saqué muchas fotos e hice turismo también. Fui de compras con mi familia, pero no fui a la playa. Lo que más me gustó fue la comida porque estaba deliciosa y la gente porque era muy simpática. Lo que menos me gustó fue que llovía a menudo. Fue divertido.
+
+El próximo verano voy a ir a Inglaterra y Gales con mi familia. Vamos a viajar en avión porque es rápido. Durante las vacaciones voy a visitar museos y montar en bicicleta. También voy a ir de compras y sacar fotos, pero no voy a visitar el parque acuático. Va a ser muy divertido`;
+
+        const qaTextBlocks = [
+            "¿Describe tu familia?\nEn mi familia hay cuatro personas: mi madre, mi padre, mi hermana mayor y yo. Mi madre se llama Jen, mi padre se llama Ian y mi hermana se llama Amelia.",
+            "¿Qué tipo de actividades suelen hacer juntos?\nSuelo ir al centro comercial con mi madre y practico el ciclismo con mi padre. Sin embargo, suelo jugar al fútbol con mi familia. Es divertido.",
+            "¿Qué hiciste ayer con tu familia?\nAyer monté en bicicleta con mi padre y fui al parque con mi familia, pero no visitamos el parque acuático. Fue aburrido.",
+            "¿Qué vas a hacer este fin de semana?\nVoy a ir al centro de la ciudad y jugar a los videojuegos, pero no voy a ir al cine con mi mejor amigo. Será muy divertido.",
+            "¿Cómo sería para ti un amigo ideal?\nUn amigo ideal sería amable, generoso y tranquilo. Nunca sería pesimista ni inmaduro."
+        ];
+
+        const monologueParagraphs = monologueText.split('\n\n');
+        
+        // State variables
+        let currentMode = 'monologue';
+        let currentMasteryParagraph = 0;
+        let currentBuilderParagraph = 0;
+        let builderCurrentSelection = [];
+        let builderCorrectOrder = [];
+        let fadeOriginalWords = [];
+
+        // Helper to get active paragraphs
+        function getActiveParagraphs() {
+            return currentMode === 'monologue' ? monologueParagraphs : qaTextBlocks;
+        }
+
+        // QWERTY Normalizer Function
+        function normalizeText(text) {
+            return text.toLowerCase()
+                .replace(/[áäâà]/g, 'a')
+                .replace(/[éëêè]/g, 'e')
+                .replace(/[íïîì]/g, 'i')
+                .replace(/[óöôò]/g, 'o')
+                .replace(/[úüûù]/g, 'u')
+                .replace(/[ñ]/g, 'n')
+                .replace(/[¡!¿?,.:;]/g, '');
+        }
+
+        // Initialize App
+        window.onload = () => {
+            initListenTab();
+            switchMode('monologue'); // Initializes all the drill tabs
+        };
+
+        // --- Navigation Logic ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-800', 'border-indigo-400', 'text-white');
+                btn.classList.add('border-transparent', 'text-indigo-200');
+                if(window.innerWidth < 768) btn.classList.remove('border-b-4');
+                else btn.classList.remove('border-l-4');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            
+            const activeBtn = document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
+            if(activeBtn) {
+                activeBtn.classList.remove('border-transparent', 'text-indigo-200');
+                activeBtn.classList.add('bg-indigo-800', 'text-white');
+                if(window.innerWidth < 768) activeBtn.classList.add('border-b-4', 'border-indigo-400');
+                else activeBtn.classList.add('border-l-4', 'border-indigo-400');
+            }
+
+            const modeToggle = document.getElementById('mode-toggle-container');
+            if(tabId === 'listen') {
+                modeToggle.classList.add('hidden');
+            } else {
+                modeToggle.classList.remove('hidden');
+            }
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            const monoBtn = document.getElementById('mode-btn-monologue');
+            const qaBtn = document.getElementById('mode-btn-qa');
+            
+            if (mode === 'monologue') {
+                monoBtn.className = 'px-6 py-2 rounded-md bg-indigo-600 text-white font-medium shadow-sm transition';
+                qaBtn.className = 'px-6 py-2 rounded-md bg-transparent text-indigo-700 hover:bg-indigo-100 font-medium transition';
+            } else {
+                qaBtn.className = 'px-6 py-2 rounded-md bg-indigo-600 text-white font-medium shadow-sm transition';
+                monoBtn.className = 'px-6 py-2 rounded-md bg-transparent text-indigo-700 hover:bg-indigo-100 font-medium transition';
+            }
+
+            initLettersTab();
+            initBlanksTab();
+            setupMasteryButtons();
+            setMasteryParagraph(0);
+            setupBuilderButtons();
+            setBuilderParagraph(0);
+            initFadeTab();
+            
+            document.getElementById('fade-slider').value = 0;
+            document.getElementById('fade-percent').innerText = '0';
+        }
+
+        // --- Module 1: Read & Listen ---
+        function initListenTab() {
+            const monoContainer = document.getElementById('listen-text-monologue');
+            monoContainer.innerHTML = monologueParagraphs.map(p => `<p>${p}</p>`).join('');
+
+            const qaContainer = document.getElementById('listen-text-qa');
+            qaContainer.innerHTML = qaTextBlocks.map(block => {
+                const parts = block.split('\n');
+                return `<div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-4"><p class="font-bold text-indigo-700 mb-2">${parts[0]}</p><p>${parts[1]}</p></div>`;
+            }).join('');
+        }
+
+        // --- Module 2: First Letters ---
+        function initLettersTab() {
+            const container = document.getElementById('letters-text');
+            const paragraphs = getActiveParagraphs();
+            
+            const firstLetterHTML = paragraphs.map(p => {
+                const words = p.split(/\s+/);
+                const converted = words.map(word => {
+                    let result = "";
+                    let foundLetter = false;
+                    for(let i=0; i<word.length; i++) {
+                        let char = word[i];
+                        if(/[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]/.test(char)) {
+                            if(!foundLetter) {
+                                result += char;
+                                foundLetter = true;
+                            } else {
+                                result += "•";
+                            }
+                        } else {
+                            result += char;
+                        }
+                    }
+                    return result;
+                }).join(' ');
+                
+                return `<p class="mb-4">${converted.replace(/\n/g, '<br><br>')}</p>`;
+            }).join('');
+            
+            container.innerHTML = firstLetterHTML;
+        }
+
+        // --- Module 3: Fill in the Blanks ---
+        function initBlanksTab() {
+            const container = document.getElementById('blanks-text');
+            const paragraphs = getActiveParagraphs();
+            let blankCount = 0;
+            
+            const blanksHTML = paragraphs.map(p => {
+                const lines = p.split('\n');
+                const convertedLines = lines.map(line => {
+                    const words = line.split(' ');
+                    return words.map((word, index) => {
+                        const cleanWordMatch = word.match(/[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]+/);
+                        if(cleanWordMatch && cleanWordMatch[0].length > 2 && Math.random() < 0.25) {
+                            const cleanWord = cleanWordMatch[0];
+                            const before = word.substring(0, word.indexOf(cleanWord));
+                            const after = word.substring(word.indexOf(cleanWord) + cleanWord.length);
+                            blankCount++;
+                            const normalizedAnswer = normalizeText(cleanWord);
+                            return `${before}<input type="text" class="cloze-input mx-1" data-answer="${normalizedAnswer}" autocomplete="off">${after}`;
+                        }
+                        return word;
+                    }).join(' ');
+                });
+                return `<p class="mb-4">${convertedLines.join('<br><br>')}</p>`;
+            }).join('');
+            
+            container.innerHTML = blanksHTML;
+            document.querySelectorAll('.cloze-input').forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') checkBlanks();
+                });
+            });
+        }
+
+        function checkBlanks() {
+            const inputs = document.querySelectorAll('.cloze-input');
+            let correctCount = 0;
+            
+            inputs.forEach(input => {
+                const answer = input.dataset.answer;
+                const userVal = normalizeText(input.value.trim());
+                
+                input.classList.remove('correct', 'incorrect');
+                if(userVal === answer && userVal !== '') {
+                    input.classList.add('correct');
+                    correctCount++;
+                } else {
+                    input.classList.add('incorrect');
+                }
+            });
+            
+            if(inputs.length > 0) {
+                if(correctCount === inputs.length) {
+                    showToast("Perfect! You got all blanks correct! 🎉", "success");
+                } else {
+                    showToast(`You got ${correctCount} out of ${inputs.length} correct. Keep trying!`, "info");
+                }
+            }
+        }
+
+        function resetBlanks() {
+            initBlanksTab();
+            showToast("New blanks generated.", "info");
+        }
+
+        // --- Module 4: Mastery Test ---
+        function setupMasteryButtons() {
+            const paragraphs = getActiveParagraphs();
+            const container = document.getElementById('mastery-para-buttons');
+            
+            container.innerHTML = paragraphs.map((_, i) => 
+                `<button onclick="setMasteryParagraph(${i})" id="btn-para-${i}" class="para-btn px-4 py-1 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm font-medium transition whitespace-nowrap">Block ${i + 1}</button>`
+            ).join('');
+        }
+
+        function setMasteryParagraph(index) {
+            currentMasteryParagraph = index;
+            document.querySelectorAll('.para-btn').forEach((btn, i) => {
+                if(i === index) {
+                    btn.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    btn.classList.add('bg-indigo-600', 'text-white');
+                } else {
+                    btn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    btn.classList.remove('bg-indigo-600', 'text-white');
+                }
+            });
+            clearMastery();
+        }
+
+        function clearMastery() {
+            document.getElementById('mastery-input').value = "";
+            document.getElementById('mastery-results').classList.add('hidden');
+        }
+
+        function checkMastery() {
+            const paragraphs = getActiveParagraphs();
+            const originalText = paragraphs[currentMasteryParagraph];
+            const userText = document.getElementById('mastery-input').value;
+            
+            if(!userText.trim()) {
+                showToast("Please type something first!", "error");
+                return;
+            }
+
+            const origWords = originalText.split(/\s+/).map(w => ({ text: w, clean: normalizeText(w) })).filter(w => w.clean);
+            const userWords = userText.split(/\s+/).map(w => ({ text: w, clean: normalizeText(w) })).filter(w => w.clean);
+
+            let diffHTML = "";
+            let i = 0;
+            let j = 0;
+            let errors = 0;
+
+            while(i < origWords.length || j < userWords.length) {
+                if(i < origWords.length && j < userWords.length && origWords[i].clean === userWords[j].clean) {
+                    diffHTML += `<span class="word-diff-correct">${userWords[j].text}</span> `;
+                    i++; j++;
+                } else if(i < origWords.length && j < userWords.length) {
+                    if(i + 1 < origWords.length && origWords[i+1].clean === userWords[j].clean) {
+                        diffHTML += `<span class="word-diff-missing" title="Missing: ${origWords[i].text}">${origWords[i].text}</span> `;
+                        i++;
+                        errors++;
+                    } else if(j + 1 < userWords.length && origWords[i].clean === userWords[j+1].clean) {
+                        diffHTML += `<span class="word-diff-incorrect" title="Extra word">${userWords[j].text}</span> `;
+                        j++;
+                        errors++;
+                    } else {
+                        diffHTML += `<span class="word-diff-incorrect" title="Expected: ${origWords[i].text}">${userWords[j].text}</span> `;
+                        diffHTML += `<span class="word-diff-missing">${origWords[i].text}</span> `;
+                        i++; j++;
+                        errors++;
+                    }
+                } else if (i < origWords.length) {
+                    diffHTML += `<span class="word-diff-missing" title="Missing word">${origWords[i].text}</span> `;
+                    i++;
+                    errors++;
+                } else if (j < userWords.length) {
+                    diffHTML += `<span class="word-diff-incorrect" title="Extra word">${userWords[j].text}</span> `;
+                    j++;
+                    errors++;
+                }
+            }
+
+            document.getElementById('mastery-diff').innerHTML = diffHTML;
+            document.getElementById('mastery-results').classList.remove('hidden');
+
+            if(errors === 0) {
+                showToast("Flawless! You have mastered this paragraph! 🏆", "success");
+            } else {
+                showToast(`Checked. You had a few mistakes. Review the highlights!`, "info");
+            }
+        }
+
+        // --- Utilities ---
+        function showToast(message, type = "info") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let colorClass = type === "success" ? "bg-green-600" : (type === "error" ? "bg-red-600" : "bg-gray-800");
+            
+            toast.className = `toast ${colorClass} text-white px-4 py-3 rounded shadow-lg flex items-center gap-2`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            // Remove
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // --- Module 5: Word Builder ---
+        function setupBuilderButtons() {
+            const paragraphs = getActiveParagraphs();
+            const container = document.getElementById('builder-para-buttons');
+            
+            container.innerHTML = paragraphs.map((_, i) => 
+                `<button onclick="setBuilderParagraph(${i})" id="build-btn-${i}" class="build-btn px-4 py-1 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm font-medium transition whitespace-nowrap">Block ${i + 1}</button>`
+            ).join('');
+        }
+
+        function setBuilderParagraph(index) {
+            currentBuilderParagraph = index;
+            document.querySelectorAll('.build-btn').forEach((btn, i) => {
+                if(i === index) {
+                    btn.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    btn.classList.add('bg-indigo-600', 'text-white');
+                } else {
+                    btn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    btn.classList.remove('bg-indigo-600', 'text-white');
+                }
+            });
+            resetBuilder();
+        }
+
+        function resetBuilder() {
+            builderCurrentSelection = [];
+            document.getElementById('builder-target').innerHTML = '';
+            
+            const paragraphs = getActiveParagraphs();
+            const pText = paragraphs[currentBuilderParagraph];
+            
+            const cleanText = pText.replace(/\n/g, ' ');
+            builderCorrectOrder = cleanText.split(/\s+/).filter(w => w.trim().length > 0);
+            
+            let shuffledWords = builderCorrectOrder.map((word, id) => ({ word, id }));
+            shuffledWords.sort(() => Math.random() - 0.5);
+            
+            const sourceContainer = document.getElementById('builder-source');
+            sourceContainer.innerHTML = '';
+            
+            shuffledWords.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = 'px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-indigo-50 hover:border-indigo-300 transition shadow-sm';
+                btn.innerText = item.word;
+                btn.onclick = () => selectBuilderWord(item, btn);
+                sourceContainer.appendChild(btn);
+            });
+        }
+
+        function selectBuilderWord(item, btnElement) {
+            btnElement.style.display = 'none'; 
+            
+            const targetContainer = document.getElementById('builder-target');
+            const targetBtn = document.createElement('button');
+            targetBtn.className = 'px-3 py-1.5 bg-indigo-100 border border-indigo-300 rounded-lg text-indigo-900 hover:bg-red-50 hover:border-red-300 transition shadow-sm cursor-pointer';
+            targetBtn.innerText = item.word;
+            
+            targetBtn.onclick = () => {
+                targetBtn.remove();
+                btnElement.style.display = 'inline-block';
+                builderCurrentSelection = builderCurrentSelection.filter(x => x.id !== item.id);
+            };
+            
+            targetContainer.appendChild(targetBtn);
+            builderCurrentSelection.push(item);
+        }
+
+        function checkBuilder() {
+            if (builderCurrentSelection.length !== builderCorrectOrder.length) {
+                showToast(`You haven't used all the words! (${builderCurrentSelection.length}/${builderCorrectOrder.length})`, "error");
+                return;
+            }
+            
+            let isCorrect = true;
+            for(let i=0; i<builderCorrectOrder.length; i++) {
+                if (builderCurrentSelection[i].word !== builderCorrectOrder[i]) {
+                    isCorrect = false;
+                    break;
+                }
+            }
+            
+            if (isCorrect) {
+                showToast("Perfect! You rebuilt the paragraph correctly! 🧩", "success");
+            } else {
+                showToast("Not quite right. Try removing some words and checking the order.", "error");
+            }
+        }
+
+        // --- Module 6: Fade Out ---
+        function initFadeTab() {
+            const container = document.getElementById('fade-text');
+            const paragraphs = getActiveParagraphs();
+            fadeOriginalWords = paragraphs.map(p => p.split(/\s+/).filter(w => w.trim().length > 0));
+            
+            renderFade(0);
+        }
+
+        function updateFade() {
+            const val = document.getElementById('fade-slider').value;
+            document.getElementById('fade-percent').innerText = val;
+            renderFade(val);
+        }
+
+        function renderFade(percentHidden) {
+            const container = document.getElementById('fade-text');
+            const probability = percentHidden / 100;
+            
+            const pseudoRandom = (seed) => {
+                let x = Math.sin(seed++) * 10000;
+                return x - Math.floor(x);
+            };
+
+            const html = fadeOriginalWords.map((paraWords, pIndex) => {
+                const wordsHtml = paraWords.map((word, wIndex) => {
+                    const seed = (pIndex + 1) * 1000 + wIndex; 
+                    if (pseudoRandom(seed) < probability) {
+                        const cleanLength = word.replace(/[.,!¡¿?]/g, '').length;
+                        return `<span class="opacity-30 border-b border-gray-400 inline-block text-transparent select-none mx-0.5" style="width: ${cleanLength * 0.6}em;">${word}</span>`;
+                    }
+                    return word;
+                }).join(' ');
+                return `<p class="mb-4">${wordsHtml}</p>`;
+            }).join('');
+            
+            container.innerHTML = html;
+        }
+
+    </script>
+</body>
+</html>
