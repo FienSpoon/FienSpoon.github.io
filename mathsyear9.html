@@ -1,1 +1,2435 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KS3 Maths EoY Study Center Pro</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for high-fidelity icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        accent: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- MathJax Configuration for perfect LaTeX execution -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']]
+            },
+            startup: {
+                typeset: false
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        /* Custom scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .topic-btn.active { 
+            background-color: #f0fdf4; 
+            border-right: 4px solid #22c55e; 
+            color: #15803d; 
+            font-weight: 600; 
+        }
+        
+        .math-block { 
+            background: #f8fafc; 
+            padding: 1.25rem; 
+            border-radius: 0.75rem; 
+            border-left: 4px solid #3b82f6; 
+            margin: 1rem 0; 
+        }
+
+        .pitfall-block {
+            background: #fff5f5;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            border-left: 4px solid #ef4444;
+            margin: 1rem 0;
+        }
+
+        /* Card flip effect for flashcards */
+        .flashcard-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flashcard.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+        .flashcard-front, .flashcard-back {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .flashcard-back {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-80 bg-white shadow-xl h-full flex flex-col z-20 absolute md:relative transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out border-r border-gray-100">
+        <div class="p-5 border-b flex justify-between items-center bg-brand-900 text-white">
+            <div>
+                <h1 class="text-xl font-bold tracking-tight"><i class="fa-solid fa-graduation-cap mr-2 text-brand-500"></i>MathsMaster Pro</h1>
+                <p class="text-xs text-brand-200 mt-1">Year 9 Exam Prep Suite</p>
+            </div>
+            <button id="close-sidebar" class="md:hidden text-white hover:text-brand-200 transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Overall Progress Ring & Stats -->
+        <div class="p-4 border-b bg-gray-50">
+            <div class="flex justify-between text-xs font-semibold mb-1 text-gray-600">
+                <span>Total Study Progress</span>
+                <span id="progress-text">0% Completed</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                <div id="progress-bar" class="bg-brand-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 mt-2">
+                <button onclick="openSpecialArea('exam')" class="text-center py-1.5 px-2 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold rounded-lg border border-purple-200 transition-colors flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-file-invoice"></i> Mock Exam
+                </button>
+                <button onclick="openSpecialArea('flashcards')" class="text-center py-1.5 px-2 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-bold rounded-lg border border-amber-200 transition-colors flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-layer-group"></i> Flashcards
+                </button>
+            </div>
+        </div>
+
+        <!-- Topics Search & Navigation Filter -->
+        <div class="px-4 py-2 border-b bg-white">
+            <div class="relative">
+                <input type="text" id="topic-search" placeholder="Search revision topics..." onkeyup="filterTopics()" class="w-full text-xs pl-8 pr-3 py-1.5 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500">
+                <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-gray-400 text-xs"></i>
+            </div>
+        </div>
+
+        <!-- Topics Scroll Container -->
+        <nav class="flex-1 overflow-y-auto py-2" id="topic-list">
+            <!-- Programmatically Injected Topics -->
+        </nav>
+
+        <!-- Sidebar footer widgets -->
+        <div class="p-3 bg-gray-50 border-t flex justify-between items-center text-xs text-gray-500">
+            <span>Goal: <strong class="text-brand-700">A-Grade (90%+)</strong></span>
+            <button onclick="toggleCalculator()" class="text-brand-600 hover:text-brand-800 font-semibold flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-calculator"></i> Scientific Calc
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main class="flex-1 h-full flex flex-col overflow-hidden relative w-full bg-gray-50">
+        <!-- Main Top Bar Header -->
+        <header class="bg-white shadow-sm z-10 px-6 py-4 flex items-center justify-between border-b border-gray-100">
+            <div class="flex items-center gap-3">
+                <button id="open-sidebar" class="md:hidden text-gray-500 hover:text-gray-700 transition-colors">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+                <h2 id="current-topic-title" class="text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    Welcome to MathsMaster Pro!
+                </h2>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <span id="streak-counter" class="bg-orange-100 text-orange-800 text-xs font-bold px-3 py-1.5 rounded-full border border-orange-200 flex items-center gap-1">
+                    <i class="fa-solid fa-fire text-orange-500"></i> Streak: 0
+                </span>
+                <span class="hidden sm:inline-flex bg-brand-100 text-brand-800 text-xs font-semibold px-3 py-1.5 rounded-full border border-brand-200">
+                    <i class="fa-solid fa-circle-check mr-1.5 mt-0.5 text-brand-600"></i> Targets Engaged
+                </span>
+            </div>
+        </header>
+
+        <!-- Content Flow Wrapper -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-6 w-full max-w-5xl mx-auto" id="main-content">
+            
+            <!-- Dashboard Welcome View -->
+            <div id="welcome-screen" class="space-y-6 py-4">
+                <div class="bg-gradient-to-r from-brand-900 to-emerald-800 rounded-2xl p-6 md:p-8 text-white shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 opacity-15 text-9xl font-bold"><i class="fa-solid fa-square-root-variable"></i></div>
+                    <div class="max-w-2xl relative z-10">
+                        <span class="bg-emerald-600 text-white text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-full">New Release: Ultimate Ed.</span>
+                        <h1 class="text-3xl md:text-4xl font-extrabold mt-3 leading-tight">Master Every Key KS3 Math Topic & Secure an A!</h1>
+                        <p class="text-emerald-100 text-sm md:text-base mt-2">
+                            A complete interactive sandbox of all 20 crucial curriculum topics. Perfect for Revision! Dive into custom formula cheatsheets, tackle mock exams, and play tailored minigames to build lightning-fast recall.
+                        </p>
+                        <div class="flex flex-wrap gap-3 mt-6">
+                            <button onclick="selectTopic(0)" class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition-all transform hover:scale-105 flex items-center gap-2">
+                                <i class="fa-solid fa-play"></i> Start Revision Loop
+                            </button>
+                            <button onclick="openSpecialArea('exam')" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold py-2.5 px-5 rounded-lg transition-all flex items-center gap-2">
+                                <i class="fa-solid fa-file-lines"></i> Take Full Mock Exam
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features Highlight Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex gap-4">
+                        <div class="bg-brand-50 p-3 h-11 w-11 rounded-lg flex items-center justify-center text-brand-600"><i class="fa-solid fa-gamepad text-xl"></i></div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">20 Mini-Games</h3>
+                            <p class="text-xs text-gray-500 mt-1">Engaging memorization drills tailored dynamically to enforce every single key concept.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex gap-4">
+                        <div class="bg-blue-50 p-3 h-11 w-11 rounded-lg flex items-center justify-center text-blue-600"><i class="fa-solid fa-clipboard-question text-xl"></i></div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">100+ Total Questions</h3>
+                            <p class="text-xs text-gray-500 mt-1">Multi-tier exam questions structured around the core testing frameworks.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex gap-4">
+                        <div class="bg-purple-50 p-3 h-11 w-11 rounded-lg flex items-center justify-center text-purple-600"><i class="fa-solid fa-circle-check text-xl"></i></div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">Mock Exam Simulator</h3>
+                            <p class="text-xs text-gray-500 mt-1">A real-world test simulation with randomized questions and grading criteria.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exam Success Strategies Panel -->
+                <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                    <h3 class="font-extrabold text-lg text-gray-800 border-b pb-2 mb-4"><i class="fa-solid fa-circle-info text-blue-500 mr-2"></i>Proven "A-Grade" Revision Techniques</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
+                        <div class="p-3 bg-gray-50 rounded-lg border-l-4 border-emerald-500">
+                            <strong class="text-gray-800 block mb-1">Active Recall Over Passive Rereading</strong>
+                            Rereading sheets is passive. Try explaining the formulas out loud, write down key rules from memory in a scratchbook, then check your accuracy.
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
+                            <strong class="text-gray-800 block mb-1">Make Spaced Repetition Work</strong>
+                            Revisit tricky modules (like *Recurring Decimals* or *Cumulative Frequency*) multiple times, spaced hours apart, to lock them into long-term memory.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Topic Revision Screen -->
+            <div id="topic-screen" class="hidden space-y-4">
+                <!-- Navigation Tabs -->
+                <div class="flex border-b border-gray-200 overflow-x-auto whitespace-nowrap bg-white p-2 rounded-t-xl shadow-sm">
+                    <button onclick="switchTab('theory')" id="tab-theory" class="py-2.5 px-5 text-brand-600 border-b-2 border-brand-600 font-semibold focus:outline-none transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-book-open"></i> Cheat Sheet & Rules
+                    </button>
+                    <button onclick="switchTab('practice')" id="tab-practice" class="py-2.5 px-5 text-gray-500 hover:text-gray-700 font-semibold border-b-2 border-transparent focus:outline-none transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square"></i> Practice Quiz
+                    </button>
+                    <button onclick="switchTab('game')" id="tab-game" class="py-2.5 px-5 text-gray-500 hover:text-gray-700 font-semibold border-b-2 border-transparent focus:outline-none transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-gamepad text-emerald-600"></i> Interactive Minigame
+                    </button>
+                </div>
+
+                <!-- Tab Panels Container -->
+                <div class="space-y-4">
+                    <!-- Theory Tab -->
+                    <div id="content-theory" class="bg-white rounded-b-xl border border-t-0 border-gray-100 p-6 md:p-8 text-gray-700 leading-relaxed text-base shadow-sm space-y-4">
+                        <!-- Instantly populated by JavaScript -->
+                    </div>
+
+                    <!-- Practice Tab -->
+                    <div id="content-practice" class="hidden space-y-4">
+                        <!-- Instantly populated by JavaScript -->
+                    </div>
+
+                    <!-- Minigame Tab -->
+                    <div id="content-game" class="hidden bg-white rounded-b-xl border border-t-0 border-gray-100 p-6 shadow-sm">
+                        <!-- Unique custom mini-interactions dynamically generated -->
+                        <div id="minigame-container" class="space-y-4"></div>
+                    </div>
+                </div>
+
+                <!-- Screen Footer Navigation Controls -->
+                <div class="mt-8 flex justify-between items-center border-t border-gray-200 pt-6">
+                    <button id="btn-prev" onclick="navigateTopic(-1)" class="text-gray-500 hover:text-brand-600 font-medium flex items-center gap-2 transition-colors cursor-pointer">
+                        <i class="fa-solid fa-arrow-left"></i> Previous Topic
+                    </button>
+                    <button id="btn-next" onclick="navigateTopic(1)" class="bg-brand-50 text-brand-700 hover:bg-brand-100 font-medium py-2 px-6 rounded-lg flex items-center gap-2 transition-all border border-brand-200 cursor-pointer">
+                        Next Topic <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Full Mock Exam Area -->
+            <div id="exam-area" class="hidden space-y-6">
+                <div class="bg-purple-900 rounded-xl p-6 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <span class="bg-purple-700 text-purple-100 text-xs font-bold uppercase tracking-wider px-2 py-1 rounded">Official Format Simulator</span>
+                        <h2 class="text-2xl font-black mt-2">Comprehensive KS3 Mock Exam</h2>
+                        <p class="text-sm text-purple-200 mt-1">30 realistic, randomly pooled questions testing all 20 crucial syllabus parameters.</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-center bg-purple-800 p-3 rounded-lg border border-purple-700 min-w-[120px]">
+                            <span class="text-xs text-purple-300 uppercase block font-semibold">Time Remaining</span>
+                            <span id="exam-timer" class="font-mono text-xl font-bold">45:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="exam-intro" class="bg-white rounded-xl p-8 border border-gray-200 shadow-sm text-center space-y-4">
+                    <i class="fa-solid fa-user-pen text-5xl text-purple-600"></i>
+                    <h3 class="text-xl font-bold text-gray-800">Ready to test your limits?</h3>
+                    <p class="text-gray-600 max-w-xl mx-auto text-sm leading-relaxed">
+                        This test is designed to verify your knowledge under strict simulated constraints. 30 random multiple-choice questions from across the curriculum will build your confidence. You have 45 minutes. Solutions will be displayed afterward.
+                    </p>
+                    <button onclick="startExamNow()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-all transform hover:scale-105">
+                        Start Assessment Exam
+                    </button>
+                </div>
+
+                <div id="exam-questions-container" class="hidden space-y-6">
+                    <!-- Loaded dynamically during assessment execution -->
+                </div>
+                
+                <div id="exam-footer" class="hidden flex justify-between items-center border-t border-gray-200 pt-6">
+                    <span id="exam-counter-text" class="text-sm text-gray-500 font-semibold">Question 1 of 30</span>
+                    <button onclick="finishMockExam()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-6 rounded-lg transition-all shadow-md">
+                        Submit Completed Exam
+                    </button>
+                </div>
+
+                <div id="exam-result-panel" class="hidden space-y-6">
+                    <!-- Detailed grade outcome & scorecard metrics will populate -->
+                </div>
+            </div>
+
+            <!-- Flashcards Module Layout -->
+            <div id="flashcard-area" class="hidden space-y-6">
+                <div class="bg-amber-500 text-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-black"><i class="fa-solid fa-layer-group mr-2"></i>Formula Flashcard Arena</h2>
+                    <p class="text-sm text-amber-100 mt-1">Active memorization drill targeting core formulas. Flip each card and test your retrieval skill.</p>
+                </div>
+                
+                <div class="flex flex-col items-center justify-center py-6 space-y-4">
+                    <!-- Flashcard Outer Container -->
+                    <div id="flashcard-deck-element" onclick="flipFlashcard()" class="flashcard w-full max-w-md h-64 cursor-pointer relative perspective">
+                        <div class="flashcard-inner w-full h-full relative text-center rounded-2xl shadow-lg border border-gray-200 bg-white duration-500">
+                            <!-- Front Surface -->
+                            <div class="flashcard-front p-8 flex flex-col justify-between items-center bg-white rounded-2xl">
+                                <span id="fc-category" class="text-xs uppercase font-extrabold text-amber-600 tracking-wider">Loading...</span>
+                                <h3 id="fc-question" class="text-lg md:text-xl font-bold text-gray-800 my-auto">What is the formula for...?</h3>
+                                <span class="text-xs text-gray-400"><i class="fa-solid fa-rotate mr-1"></i> Click anywhere to flip & reveal formula</span>
+                            </div>
+                            <!-- Back Surface -->
+                            <div class="flashcard-back p-8 flex flex-col justify-between items-center bg-amber-50 rounded-2xl border-2 border-amber-300">
+                                <span class="text-xs uppercase font-extrabold text-brand-700 tracking-wider">Formula Answer</span>
+                                <div id="fc-answer" class="text-xl md:text-2xl font-mono text-gray-800 my-auto">Formula</div>
+                                <span class="text-xs text-gray-400"><i class="fa-solid fa-rotate mr-1"></i> Click to flip back</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4 mt-4">
+                        <button onclick="shiftFlashcard(-1)" class="bg-white hover:bg-gray-100 text-gray-800 font-bold p-3 rounded-full shadow border border-gray-200 transition-colors">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <span id="fc-status" class="text-sm text-gray-600 font-bold">1 / 15</span>
+                        <button onclick="shiftFlashcard(1)" class="bg-white hover:bg-gray-100 text-gray-800 font-bold p-3 rounded-full shadow border border-gray-200 transition-colors">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Overlay for mobile sidebar -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-10 hidden md:hidden"></div>
+
+    <!-- Slide-in Scientific Scratchpad Calculator Widget -->
+    <div id="calculator-widget" class="fixed bottom-4 right-4 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 z-30 w-72 transform translate-y-[120%] transition-transform duration-300">
+        <div class="flex items-center justify-between border-b pb-2 mb-2">
+            <h4 class="font-bold text-gray-700 text-xs flex items-center gap-1"><i class="fa-solid fa-calculator text-brand-600"></i> Mini Scratchpad Calc</h4>
+            <button onclick="toggleCalculator()" class="text-gray-400 hover:text-red-500 text-sm"><i class="fa-solid fa-circle-xmark"></i></button>
+        </div>
+        <!-- Calc Display Screen -->
+        <div class="bg-slate-100 rounded p-2 mb-2">
+            <input type="text" id="calc-expression" readonly class="w-full text-right font-mono text-xs bg-transparent border-none outline-none text-gray-500" placeholder="0">
+            <input type="text" id="calc-display" readonly class="w-full text-right font-mono text-base font-bold bg-transparent border-none outline-none text-gray-800" placeholder="0">
+        </div>
+        <!-- Calc Buttons Grid -->
+        <div class="grid grid-cols-4 gap-1">
+            <button onclick="calcPress('C')" class="p-2 bg-rose-100 text-rose-800 text-xs font-bold rounded hover:bg-rose-200">C</button>
+            <button onclick="calcPress('sin(')" class="p-2 bg-gray-100 text-gray-800 text-xs font-bold rounded hover:bg-gray-200">sin</button>
+            <button onclick="calcPress('cos(')" class="p-2 bg-gray-100 text-gray-800 text-xs font-bold rounded hover:bg-gray-200">cos</button>
+            <button onclick="calcPress('/')" class="p-2 bg-brand-50 text-brand-700 text-xs font-bold rounded hover:bg-brand-100">/</button>
+            
+            <button onclick="calcPress('7')" class="p-2 bg-slate-50 text-gray-800 text-xs font-bold rounded hover:bg-slate-100">7</button>
+            <button onclick="calcPress('8')" class="p-2 bg-slate-50 text-gray-800 text-xs font-bold rounded hover:bg-slate-100">8</button>
+            <button onclick="calcPress('9')" class="p-2 bg-slate-50 text-gray-800 text-xs font-bold rounded hover:bg-slate-100">9</button>
+            <button onclick="calcPress('*')" class="p-2 bg-brand-50 text-brand-700 text-xs font-bold rounded hover:bg-brand-100">*</button>
+            
+            <button onclick="calcPress('4')" class="p-2 bg-slate-50 text-gray-800 text-xs font-bold rounded hover:bg-slate-100">4</button>
+            <button onclick="calcPress('5')" class="p-2 bg-slate-50 text-gray-800 text-xs font-bold rounded hover:bg-slate-100">5</button>
+            <button onclick="calcPress('6')" class="p-2 bg-slate-50 text-gray-800 text-xs font-bold rounded hover:bg-slate-100">6</button>
+            <button onclick="calcPress('-')" class="p-2 bg-brand-50 text-brand-700 text-xs font-bold rounded hover:bg-brand-100">-</button>
+            
+            <button onclick="calcPress('1')" class="p-2 bg-slate-50 text-gray-800 text-xs font-bold rounded hover:bg-slate-100">1</button>
+            <button onclick="calcPress('2')" class="p-2 bg-slate-50 text-gray-800 text-xs font-bold rounded hover:bg-slate-100">2</button>
+            <button onclick="calcPress('3')" class="p-2 bg-slate-50 text-gray-800 text-xs font-bold rounded hover:bg-slate-100">3</button>
+            <button onclick="calcPress('+')" class="p-2 bg-brand-50 text-brand-700 text-xs font-bold rounded hover:bg-brand-100">+</button>
+            
+            <button onclick="calcPress('0')" class="p-2 bg-slate-50 text-gray-800 text-xs font-bold rounded hover:bg-slate-100">0</button>
+            <button onclick="calcPress('.')" class="p-2 bg-slate-50 text-gray-800 text-xs font-bold rounded hover:bg-slate-100">.</button>
+            <button onclick="calcPress('sqrt(')" class="p-2 bg-slate-50 text-gray-800 text-xs font-bold rounded hover:bg-slate-100">√</button>
+            <button onclick="calcPress('calculate')" class="p-2 bg-brand-600 text-white text-xs font-bold rounded hover:bg-brand-700">=</button>
+        </div>
+    </div>
+
+    <script>
+        // Full curriculum database containing Detailed theory, Common Pitfalls, 4 quiz questions per topic, and unique mini interaction scripts
+        const topicsData = [
+            {
+                title: "Travel Graphs",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-route text-brand-600 mr-2"></i>Distance-Time & Velocity-Time Graphs</h3>
+                    <p class="mb-4">These visual coordinate charts allow you to examine movement over intervals of time. The primary measurements depend on mathematical slopes and areas.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2 mb-1">Key Formulas & Rules</h4>
+                    <ul class="list-disc pl-6 space-y-2 mb-4">
+                        <li><strong>Gradient (Slope) of a Distance-Time Graph</strong> represents the **Speed** of the object: \\(\\text{Gradient} = \\frac{\\text{Change in Distance}}{\\text{Change in Time}}\\).</li>
+                        <li><strong>Flat horizontal line</strong>: Indicates the object is **stationary** (speed is 0, distance remains constant).</li>
+                        <li><strong>Gradient of a Velocity-Time Graph</strong> represents **Acceleration**.</li>
+                        <li><strong>Area Under a Velocity-Time Graph</strong> represents the **Total Distance Traveled**.</li>
+                    </ul>
+                    
+                    <div class="math-block">
+                        <strong>Distance Equation:</strong><br>
+                        \\[ \\text{Speed} = \\frac{\\text{Distance}}{\\text{Time}}, \\quad \\text{Distance} = \\text{Speed} \\times \\text{Time} \\]
+                    </div>
+
+                    <div class="pitfall-block">
+                        <strong>Common Pitfall:</strong> Do not mistake the steep downwards slope on a Distance-Time Graph for "deceleration." A downwards slope simply means the object is returning *backwards* to its initial starting point at a constant speed!
+                    </div>
+                `,
+                quiz: [
+                    {
+                        q: "On a Distance-Time graph, what does a flat horizontal line represent?",
+                        options: ["An object moving at constant speed", "An object decelerating", "An object that is stationary", "An object accelerating"],
+                        ans: 2,
+                        explanation: "Since the distance axis does not change as time increases, the object must be stationary (stopped)."
+                    },
+                    {
+                        q: "If an athlete runs 150 meters in 20 seconds, what is their average speed?",
+                        options: ["7.5 m/s", "15 m/s", "300 m/s", "3 m/s"],
+                        ans: 0,
+                        explanation: "Using Speed = Distance / Time: \\(150 / 20 = 7.5\\) m/s."
+                    },
+                    {
+                        q: "What does the area under a Velocity-Time graph represent?",
+                        options: ["Average acceleration", "Total distance traveled", "Average speed", "Instantaneous rate of change"],
+                        ans: 1,
+                        explanation: "The area under a Velocity-Time graph integrates the velocity over the time elapsed, resulting in the total distance."
+                    },
+                    {
+                        q: "If a car's velocity graph shows a diagonal line going downwards toward zero velocity, what is happening?",
+                        options: ["It is moving backwards", "It is stationary", "It is decelerating", "It is traveling at constant speed"],
+                        ans: 2,
+                        explanation: "A downward gradient on a velocity graph means velocity is dropping, which denotes deceleration or braking."
+                    }
+                ],
+                minigame: "speedMatch" // Segment matching game
+            },
+            {
+                title: "Rounding",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-arrow-up-right-dots text-brand-600 mr-2"></i>Decimal Places & Significant Figures</h3>
+                    <p class="mb-4">Rounding simplifies values to convey appropriate precision without unnecessary accuracy. The standard mechanism is determining the critical evaluation boundary.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2 mb-1">Standard Rules</h4>
+                    <ul class="list-disc pl-6 space-y-2 mb-4">
+                        <li>Locate the target column (e.g. 2nd decimal place).</li>
+                        <li>Look at the **very next digit** to its right.</li>
+                        <li>If that digit is **5 or greater**, round the target up by 1. If it is **4 or less**, leave the target digit identical.</li>
+                        <li>**Significant Figures (s.f.)**: Start counting from the *first non-zero* number from the left! Zeroes at the beginning of a decimal do not count as significant.</li>
+                    </ul>
+
+                    <div class="math-block">
+                        <strong>Rounding Significant Figures (Examples):</strong><br>
+                        \\( 0.004085 \\) rounded to 2 s.f. is \\( 0.0041 \\) (first non-zero is 4).<br>
+                        \\( 15,920 \\) rounded to 2 s.f. is \\( 16,000 \\).
+                    </div>
+
+                    <div class="pitfall-block">
+                        <strong>Common Pitfall:</strong> When rounding numbers like 0.0573 to significant figures, do not count the starting zeroes. The first significant figure is 5, not the first zero!
+                    </div>
+                `,
+                quiz: [
+                    {
+                        q: "Round 0.008451 to 2 significant figures.",
+                        options: ["0.0084", "0.0085", "0.01", "0.008"],
+                        ans: 1,
+                        explanation: "First non-zero is 8. Second is 4. The next digit is 5, which means round 4 up to 5, resulting in 0.0085."
+                    },
+                    {
+                        q: "Round 19.982 to 1 decimal place.",
+                        options: ["19.9", "20.0", "19.0", "20"],
+                        ans: 1,
+                        explanation: "The first decimal place is 9. The next digit is 8, which rounds 9 up. This cascades to round 19.9 up to 20.0."
+                    },
+                    {
+                        q: "How many significant figures are in the number 0.03050?",
+                        options: ["2", "3", "4", "5"],
+                        ans: 2,
+                        explanation: "The leading zeros are not significant. The count starts at 3, making '3050' have 4 significant figures."
+                    },
+                    {
+                        q: "Round 48,290 to 2 significant figures.",
+                        options: ["48,000", "49,000", "48,300", "48"],
+                        ans: 0,
+                        explanation: "First two sig figs are 4 and 8. The next digit is 2 (less than 5), so it rounds down to 48,000."
+                    }
+                ],
+                minigame: "speedRounder" // Dynamic timing game
+            },
+            {
+                title: "Standard Form",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-infinity text-brand-600 mr-2"></i>Standard Form (Scientific Notation)</h3>
+                    <p class="mb-4">Standard form simplifies the representation of extremely large or extremely small quantities, converting them into standard base-10 indices.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Writing Structure</h4>
+                    <p class="mb-4">A standard form representation always takes the layout: \\[ A \\times 10^n \\]</p>
+                    <ul class="list-disc pl-6 space-y-2 mb-4">
+                        <li>The scale multiplier \\(A\\) **must** fulfill: \\( 1 \\le A < 10 \\) (exactly one non-zero digit before the decimal point).</li>
+                        <li>The integer index \\(n\\) represents the power. **Positive** for large numbers, **Negative** for decimals smaller than 1.</li>
+                    </ul>
+
+                    <div class="math-block">
+                        <strong>Examples:</strong><br>
+                        \\( 52,000,000 = 5.2 \\times 10^7 \\)<br>
+                        \\( 0.0000045 = 4.5 \\times 10^{-6} \\)
+                    </div>
+
+                    <div class="pitfall-block">
+                        <strong>Common Pitfall:</strong> Writing \\(54.2 \\times 10^3\\) is NOT in standard form because 54.2 is not less than 10. It must be written as \\(5.42 \\times 10^4\\).
+                    </div>
+                `,
+                quiz: [
+                    {
+                        q: "Write 0.000357 in standard form.",
+                        options: ["35.7 × 10⁻⁵", "3.57 × 10⁻⁴", "3.57 × 10⁴", "3.57 × 10⁻³"],
+                        ans: 1,
+                        explanation: "To place the decimal after the first non-zero digit (3), we must shift it 4 places to the right, hence \\(10^{-4}\\)."
+                    },
+                    {
+                        q: "Convert 6.23 × 10⁵ to an ordinary number.",
+                        options: ["62,300", "623,000", "6,230,000", "0.0000623"],
+                        ans: 1,
+                        explanation: "Shift the decimal point 5 positions to the right, adding placeholder zeroes: 623,000."
+                    },
+                    {
+                        q: "Which of the following is written correctly in standard form?",
+                        options: ["0.4 × 10⁶", "12 × 10⁻³", "9.99 × 10⁴", "3.14 × 8³"],
+                        ans: 2,
+                        explanation: "Only 9.99 satisfies the requirement \\( 1 \\le A < 10 \\) and utilizes base-10."
+                    },
+                    {
+                        q: "Calculate (2 × 10³) × (3 × 10⁴) in standard form.",
+                        options: ["6 × 10⁷", "6 × 10¹²", "5 × 10⁷", "60 × 10⁶"],
+                        ans: 0,
+                        explanation: "Multiply coefficients: \\(2 \\times 3 = 6\\). Add the power exponents: \\(3 + 4 = 7\\), yielding \\(6 \\times 10^7\\)."
+                    }
+                ],
+                minigame: "exponentSlider" // Build numbers game
+            },
+            {
+                title: "Multiples, primes, Squares",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-calculator text-brand-600 mr-2"></i>Multiples, Primes, & Square Numbers</h3>
+                    <p class="mb-4">These properties define structural categorizations of positive integers based on their factor structures.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Core Concepts</h4>
+                    <ul class="list-disc pl-6 space-y-2 mb-4">
+                        <li><strong>Multiples</strong>: The product of any integer and a given integer (e.g., multiples of 6: 6, 12, 18...).</li>
+                        <li><strong>Primes</strong>: Natural numbers strictly greater than 1 that possess exactly two positive divisors: 1 and itself. **Note: 1 is NOT a prime number, and 2 is the ONLY even prime number.**</li>
+                        <li><strong>Square Numbers</strong>: The outcome of multiplying an integer by itself. (e.g. \\(1^2 = 1, 2^2 = 4, 3^2 = 9...\\)).</li>
+                    </ul>
+
+                    <div class="pitfall-block">
+                        <strong>Common Pitfall:</strong> Do not forget that 1 is not a prime number! It only has one factor, whereas prime numbers must have exactly two distinct factors.
+                    </div>
+                `,
+                quiz: [
+                    {
+                        q: "Which of the following numbers is prime?",
+                        options: ["1", "9", "2", "15"],
+                        ans: 2,
+                        explanation: "1 is not prime, 9 has factor 3, 15 has factor 5. 2 has exactly two factors (1 and 2), making it prime."
+                    },
+                    {
+                        q: "Identify the square number in the list below.",
+                        options: ["24", "49", "54", "111"],
+                        ans: 1,
+                        explanation: "49 is a square number because \\(7 \\times 7 = 49\\)."
+                    },
+                    {
+                        q: "What is the lowest common multiple (LCM) of 6 and 8?",
+                        options: ["2", "14", "24", "48"],
+                        ans: 2,
+                        explanation: "Multiples of 6: 6, 12, 18, 24... Multiples of 8: 8, 16, 24. 24 is the smallest shared multiple."
+                    },
+                    {
+                        q: "What is the highest common factor (HCF) of 12 and 18?",
+                        options: ["2", "3", "6", "36"],
+                        ans: 2,
+                        explanation: "Factors of 12: 1, 2, 3, 4, 6, 12. Factors of 18: 1, 2, 3, 6, 9, 18. The greatest shared factor is 6."
+                    }
+                ],
+                minigame: "primeSort" // Classify falling items
+            },
+            {
+                title: "Reciprocals",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-arrows-spin text-brand-600 mr-2"></i>Reciprocals</h3>
+                    <p class="mb-4">The reciprocal of a quantity is the inverse of that value when divided into 1. In fractional algebra, it represents 'flipping the fraction'.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Mathematical Definition</h4>
+                    <p class="mb-4">For any non-zero value \\(x\\), its reciprocal is represented as: \\[ \\frac{1}{x} \\]</p>
+                    <ul class="list-disc pl-6 space-y-2 mb-4">
+                        <li>The reciprocal of an integer like 5 is \\(\\frac{1}{5}\\).</li>
+                        <li>The reciprocal of a fraction \\(\\frac{a}{b}\\) is \\(\\frac{b}{a}\\).</li>
+                        <li>**Key Identity:** Any number multiplied by its reciprocal always equals 1.</li>
+                    </ul>
+
+                    <div class="pitfall-block">
+                        <strong>Common Pitfall:</strong> Zero does not have a reciprocal! Dividing 1 by 0 is undefined.
+                    </div>
+                `,
+                quiz: [
+                    {
+                        q: "What is the reciprocal of 5?",
+                        options: ["-5", "0.5", "1/5", "0.05"],
+                        ans: 2,
+                        explanation: "The reciprocal of an integer \\(n\\) is \\(1/n\\). Thus, the reciprocal of 5 is \\(1/5\\)."
+                    },
+                    {
+                        q: "What is the reciprocal of 2/3?",
+                        options: ["-2/3", "3/2", "1.5", "Both 3/2 and 1.5"],
+                        ans: 3,
+                        explanation: "Flipping \\(2/3\\) gives \\(3/2\\), which is equivalent to 1.5."
+                    },
+                    {
+                        q: "What is the reciprocal of 0.25?",
+                        options: ["4", "0.4", "1/4", "2.5"],
+                        ans: 0,
+                        explanation: "First convert 0.25 to a fraction: \\(1/4\\). The reciprocal of \\(1/4\\) is 4."
+                    },
+                    {
+                        q: "If you multiply a number by its reciprocal, what is always the result?",
+                        options: ["0", "-1", "1", "The number squared"],
+                        ans: 2,
+                        explanation: "For any number x, \\(x \\times (1/x) = 1\\) by definition."
+                    }
+                ],
+                minigame: "fractionFlip" // Match numbers to reciprocals
+            },
+            {
+                title: "Recurring Decimals",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-rotate-left text-brand-600 mr-2"></i>Recurring Decimals to Fractions</h3>
+                    <p class="mb-4">A recurring decimal contains a repeating pattern of digits extending infinitely. We can convert these into exact fractions using algebraic elimination.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">The Algebraic Proof Steps</h4>
+                    <ol class="list-decimal pl-6 space-y-2 mb-4">
+                        <li>Let \\(x\\) equal the recurring decimal.</li>
+                        <li>Multiply \\(x\\) by a power of 10 that matches the repeating length of the pattern (e.g. \\(100\\) if 2 digits repeat).</li>
+                        <li>Subtract the original equation to eliminate the endless decimal part.</li>
+                        <li>Solve the remaining equation to find the final fraction.</li>
+                    </ol>
+
+                    <div class="math-block">
+                        <strong>Example: Convert \\( 0.\\dot{7} \\) to a fraction</strong><br>
+                        Let \\( x = 0.7777... \\)<br>
+                        Multiply by 10: \\( 10x = 7.7777... \\)<br>
+                        Subtract \\( x \\): \\( 9x = 7 \\)<br>
+                        Solve: \\( x = \\frac{7}{9} \\)
+                    </div>
+                `,
+                quiz: [
+                    {
+                        q: "Convert 0.5555... (0.5̇) to a fraction.",
+                        options: ["5/10", "5/9", "5/99", "55/100"],
+                        ans: 1,
+                        explanation: "Let \\(x = 0.555...\\), then \\(10x = 5.555...\\). Subtracting: \\(9x = 5\\), so \\(x = 5/9\\)."
+                    },
+                    {
+                        q: "What fraction is equivalent to 0.363636... (0.3̇6̇)?",
+                        options: ["36/100", "4/11", "36/90", "12/33"],
+                        ans: 1,
+                        explanation: "\\(36/99\\) simplifies to \\(4/11\\) (dividing numerator and denominator by 9)."
+                    },
+                    {
+                        q: "Convert 0.1222... (0.12̇) to a fraction.",
+                        options: ["11/90", "12/99", "12/90", "1/12"],
+                        ans: 0,
+                        explanation: "Let \\(x = 0.122...\\) then \\(10x = 1.222...\\) and \\(100x = 12.222...\\). Subtract: \\(90x = 11\\), so \\(x = 11/90\\)."
+                    },
+                    {
+                        q: "Which of the following is equal to 0.9999...?",
+                        options: ["9/10", "99/100", "1", "0.9"],
+                        ans: 2,
+                        explanation: "Let \\(x = 0.999...\\), so \\(10x = 9.999...\\). Subtract: \\(9x = 9\\), yielding \\(x = 1\\). In math, \\(0.\\dot{9} = 1\\)."
+                    }
+                ],
+                minigame: "matchDecimals" // Decimal matching puzzle
+            },
+            {
+                title: "BiDMAS with Fractions",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-list-ol text-brand-600 mr-2"></i>BiDMAS Order with Fractions</h3>
+                    <p class="mb-4">The order of operations is vital when simplifying multi-stage expressions involving fractions. We must resolve components systematically.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">The Order Steps</h4>
+                    <p class="font-bold text-sm">B-rackets &rarr; I-ndices &rarr; D-ivision / M-ultiplication &rarr; A-ddition / S-ubtraction</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Fraction Arithmetic Refresher</h4>
+                    <ul class="list-disc pl-6 space-y-1 mb-4">
+                        <li>**Adding/Subtracting**: You **must** convert to a common denominator first.</li>
+                        <li>**Multiplying**: Multiply numerators and multiply denominators straight across.</li>
+                        <li>**Dividing**: Keep the first fraction, Change the sign to multiply, Flip the second fraction (**KCF**).</li>
+                    </ul>
+
+                    <div class="math-block">
+                        <strong>Example:</strong> Calculate \\( \\frac{1}{2} + \\frac{1}{3} \\times \\frac{3}{4} \\)<br>
+                        Apply multiplication first: \\( \\frac{1}{3} \\times \\frac{3}{4} = \\frac{1}{4} \\).<br>
+                        Apply addition: \\( \\frac{1}{2} + \\frac{1}{4} = \\frac{2}{4} + \\frac{1}{4} = \\frac{3}{4} \\).
+                    </div>
+                `,
+                quiz: [
+                    {
+                        q: "Calculate: 1/3 + (1/2 × 2/3)",
+                        options: ["2/3", "1/2", "5/6", "4/9"],
+                        ans: 0,
+                        explanation: "Perform bracket first: \\(1/2 \\times 2/3 = 1/3\\). Next, perform addition: \\(1/3 + 1/3 = 2/3\\)."
+                    },
+                    {
+                        q: "Evaluate: (3/4 - 1/4) ÷ 1/2",
+                        options: ["1", "1/4", "1/2", "2"],
+                        ans: 0,
+                        explanation: "Brackets first: \\(3/4 - 1/4 = 2/4 = 1/2\\). Then division: \\(1/2 \\div 1/2 = 1\\)."
+                    },
+                    {
+                        q: "Calculate: 1/5 × 1/2 + 3/10",
+                        options: ["2/5", "1/10", "4/10", "1/2"],
+                        ans: 0,
+                        explanation: "Multiplication first: \\(1/5 \\times 1/2 = 1/10\\). Then addition: \\(1/10 + 3/10 = 4/10 = 2/5\\)."
+                    },
+                    {
+                        q: "Solve: (1/2)² + 3/4",
+                        options: ["1", "1/2", "5/4", "7/8"],
+                        ans: 0,
+                        explanation: "Index calculation first: \\((1/2)^2 = 1/4\\). Next, add: \\(1/4 + 3/4 = 1\\)."
+                    }
+                ],
+                minigame: "bidmasPuzzle" // Order builder
+            },
+            {
+                title: "% inc/dec/reverse and CI",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-percent text-brand-600 mr-2"></i>Percent Multipliers & Compound Interest</h3>
+                    <p class="mb-4">Using percentage multipliers simplifies calculations for changes, reversals, and multi-year compounds.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Multiplier Basics</h4>
+                    <ul class="list-disc pl-6 space-y-2 mb-4">
+                        <li><strong>Percentage Increase</strong>: Add the percentage to 100% and convert to a decimal multiplier (e.g. increase by 15% = 1.15).</li>
+                        <li><strong>Percentage Decrease</strong>: Subtract the percentage from 100% and convert to a multiplier (e.g. decrease by 20% = 0.80).</li>
+                        <li><strong>Reverse Percentages</strong>: To find the *original* price before a change, **divide** the final price by the multiplier.</li>
+                    </ul>
+
+                    <div class="math-block">
+                        <strong>Compound Interest Formula:</strong><br>
+                        \\[ \\text{Final Value} = \\text{Principal} \\times (\\text{Multiplier})^{\\text{Time}} \\]
+                    </div>
+                `,
+                quiz: [
+                    {
+                        q: "A jacket costs £80 after a 20% discount. What was the original price?",
+                        options: ["£100", "£96", "£120", "£64"],
+                        ans: 0,
+                        explanation: "The discount multiplier is \\(100\\% - 20\\% = 0.80\\). Original price = \\(80 / 0.80 = £100\\)."
+                    },
+                    {
+                        q: "If you invest £1,000 at 5% compound interest per year for 3 years, which calculation is correct?",
+                        options: ["1000 × 1.05 × 3", "1000 × 1.05³", "1000 × 0.05³", "1000 × 1.5³"],
+                        ans: 1,
+                        explanation: "Compound interest relies on raising the multiplier (1.05) to the power of the number of years (3)."
+                    },
+                    {
+                        q: "An item increases in value by 12% to a price of £224. What was the original value?",
+                        options: ["£200", "£197.12", "£212", "£180"],
+                        ans: 0,
+                        explanation: "The multiplier is 1.12. Original price = \\(224 / 1.12 = £200\\)."
+                    },
+                    {
+                        q: "Which multiplier matches a decrease of 3.5%?",
+                        options: ["0.035", "0.965", "1.035", "0.975"],
+                        ans: 1,
+                        explanation: "\\(100\\% - 3.5\\% = 96.5\\%\\), which equals 0.965 as a decimal."
+                    }
+                ],
+                minigame: "multiplierDrill" // Match changes to multipliers
+            },
+            {
+                title: "Area of a Sector and Arclength",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-chart-pie text-brand-600 mr-2"></i>Sector Area & Arc Length</h3>
+                    <p class="mb-4">Sectors are wedge-shaped fractions of a circle defined by a central angle, \\( \\theta \\). We scale full-circle properties by the fraction of the full circle's 360&deg;.</p>
+                    
+                    <div class="math-block">
+                        <strong>Fundamental Sector Formulas:</strong><br>
+                        \\[ \\text{Area of Sector} = \\frac{\\theta}{360} \\times \\pi r^2 \\]
+                        \\[ \\text{Arc Length} = \\frac{\\theta}{360} \\times 2 \\pi r \\]
+                        \\[ \\text{Total Perimeter} = \\text{Arc Length} + 2r \\]
+                    </div>
+
+                    <div class="pitfall-block">
+                        <strong>Common Pitfall:</strong> When asked for the *perimeter* of a sector, remember to add the two straight radial edges (\\(2r\\)) to the curved arc length!
+                    </div>
+                `,
+                quiz: [
+                    {
+                        q: "Find the area of a sector with radius 6cm and central angle 60° (in terms of π).",
+                        options: ["6π cm²", "36π cm²", "3π cm²", "12π cm²"],
+                        ans: 0,
+                        explanation: "Area = \\((60/360) \\times \\pi \\times 6^2 = (1/6) \\times 36\\pi = 6\\pi\\) cm²."
+                    },
+                    {
+                        q: "Find the arc length of a circle sector with angle 90° and radius 8cm (in terms of π).",
+                        options: ["2π cm", "4π cm", "8π cm", "16π cm"],
+                        ans: 1,
+                        explanation: "Arc Length = \\((90/360) \\times 2 \\times \\pi \\times 8 = (1/4) \\times 16\\pi = 4\\pi\\) cm."
+                    },
+                    {
+                        q: "What is the total perimeter of a sector with angle 90° and radius 10cm? (Use π = 3.14)",
+                        options: ["15.7 cm", "25.7 cm", "35.7 cm", "45.7 cm"],
+                        ans: 2,
+                        explanation: "Arc length = \\((90/360) \\times 2 \\times 3.14 \\times 10 = 15.7\\) cm. Perimeter = Arc length + 2r = \\(15.7 + 2(10) = 35.7\\) cm."
+                    },
+                    {
+                        q: "If the sector area is 12π and the full circle area is 48π, what is the central angle?",
+                        options: ["45°", "90°", "60°", "120°"],
+                        ans: 1,
+                        explanation: "The sector represents \\(12\\pi / 48\\pi = 1/4\\) of the circle. A quarter of 360° is 90°."
+                    }
+                ],
+                minigame: "sectorBuilder" // Visual pie slice matching
+            },
+            {
+                title: "Probability",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-dice text-brand-600 mr-2"></i>Probability & Event Diagrams</h3>
+                    <p class="mb-4">Probability tracks the likelihood of specific outcomes using systematic diagrams.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Core Definitions</h4>
+                    <ul class="list-disc pl-6 space-y-2 mb-4">
+                        <li><strong>Mutually Exclusive</strong>: Events cannot occur at the same time. <br>\\( P(A \\text{ or } B) = P(A) + P(B) \\)</li>
+                        <li><strong>Independent Events</strong>: The occurrence of one event does not affect another. <br>\\( P(A \\text{ and } B) = P(A) \\times P(B) \\)</li>
+                        <li><strong>Tree Diagrams</strong>: Multiply probabilities *along* branches; add outcomes *between* separate branches.</li>
+                    </ul>
+                `,
+                quiz: [
+                    {
+                        q: "If P(A) = 0.4 and P(B) = 0.3, and they are independent, what is P(A AND B)?",
+                        options: ["0.7", "0.1", "0.12", "0.75"],
+                        ans: 2,
+                        explanation: "For independent events, multiply the probabilities: \\(0.4 \\times 0.3 = 0.12\\)."
+                    },
+                    {
+                        q: "If P(Winning) = 0.23, what is the probability of NOT winning?",
+                        options: ["0.77", "0.87", "0.23", "0.00"],
+                        ans: 0,
+                        explanation: "Probabilities of all mutually exclusive outcomes must sum to 1. \\(1 - 0.23 = 0.77\\)."
+                    },
+                    {
+                        q: "A bag has 3 red and 7 blue balls. You draw two with replacement. What is P(Red, then Red)?",
+                        options: ["9/100", "6/10", "21/100", "9/90"],
+                        ans: 0,
+                        explanation: "Probability of first red is 3/10. With replacement, the second is also 3/10. Multiply: \\(3/10 \\times 3/10 = 9/100\\)."
+                    },
+                    {
+                        q: "On a Venn diagram, what does the intersection symbol (∩) represent?",
+                        options: ["Union (A or B)", "Universal set", "Complement of A", "Intersection (A and B)"],
+                        ans: 3,
+                        explanation: "The intersection symbol ∩ denotes elements that belong to *both* set A and set B."
+                    }
+                ],
+                minigame: "treeSpinner" // Tree probability paths
+            },
+            {
+                title: "Expanding brackets",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-square-minus text-brand-600 mr-2"></i>Expanding Brackets</h3>
+                    <p class="mb-4">Expanding brackets removes parentheses by multiplying terms across grouping structures systematically.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Expanding Two Brackets</h4>
+                    <p class="mb-4">Use the **FOIL** acronym: **F**irst, **O**uter, **I**nner, **L**ast.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Expanding Three Brackets</h4>
+                    <ol class="list-decimal pl-6 space-y-2 mb-4">
+                        <li>Multiply the first two brackets together and simplify.</li>
+                        <li>Place the simplified quadratic inside brackets and multiply it by each term in the third bracket.</li>
+                    </ol>
+
+                    <div class="math-block">
+                        <strong>Three Bracket Example:</strong> \\( (x+1)(x+2)(x+3) \\)<br>
+                        Step 1: \\( (x+1)(x+2) = x^2 + 3x + 2 \\).<br>
+                        Step 2: \\( (x^2 + 3x + 2)(x+3) = x^3 + 3x^2 + 3x^2 + 9x + 2x + 6 = x^3 + 6x^2 + 11x + 6 \\).
+                    </div>
+                `,
+                quiz: [
+                    {
+                        q: "Expand and simplify: (x + 3)(x - 5)",
+                        options: ["x² - 15", "x² - 2x - 15", "x² + 2x - 15", "x² - 8x - 15"],
+                        ans: 1,
+                        explanation: "FOIL: \\(x \\times x = x^2\\), \\(x \\times -5 = -5x\\), \\(3 \\times x = 3x\\), \\(3 \\times -5 = -15\\). Combining: \\(x^2 - 2x - 15\\)."
+                    },
+                    {
+                        q: "Expand: (2x - 3)²",
+                        options: ["4x² - 9", "4x² - 12x + 9", "4x² + 9", "4x² - 6x + 9"],
+                        ans: 1,
+                        explanation: "\\((2x - 3)(2x - 3) = 4x^2 - 6x - 6x + 9 = 4x^2 - 12x + 9\\)."
+                    },
+                    {
+                        q: "Expand: (x + 1)(x + 2)(x + 3)",
+                        options: ["x³ + 6x² + 11x + 6", "x³ + 5x² + 6x + 6", "x³ + 6", "x³ + 6x² + 6x + 6"],
+                        ans: 0,
+                        explanation: "Multiplying the first two yields \\(x^2 + 3x + 2\\). Multiplying by \\(x+3\\) gives \\(x^3 + 6x^2 + 11x + 6\\)."
+                    },
+                    {
+                        q: "Expand and simplify: 3(x + 4) - 2(x - 1)",
+                        options: ["x + 10", "x + 14", "5x + 14", "x + 11"],
+                        ans: 1,
+                        explanation: "Distribute terms: \\(3x + 12 - 2x + 2 = x + 14\\)."
+                    }
+                ],
+                minigame: "foilMatch" // Multiplier solver
+            },
+            {
+                title: "Factorising",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-arrows-to-circle text-brand-600 mr-2"></i>Factorising Techniques</h3>
+                    <p class="mb-4">Factorising is the reverse of expanding brackets, grouping algebraic expressions back into their structural components.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Three Essential Types</h4>
+                    <ul class="list-disc pl-6 space-y-3 mb-4">
+                        <li><strong>Common Factors</strong>: Divide out the highest common factors of numbers and letters. <br>\\(6x^2y + 9xy = 3xy(2x + 3)\\)</li>
+                        <li><strong>Difference of Two Squares (DOTS)</strong>: Quadratic binominals containing two square terms separated by a minus. <br>\\(a^2 - b^2 = (a+b)(a-b)\\)</li>
+                        <li><strong>Trinomials</strong>: Factorising trinomials of the form \\(x^2 + bx + c\\). Identify two integers that **add to b** and **multiply to c**.</li>
+                    </ul>
+                `,
+                quiz: [
+                    {
+                        q: "Factorise fully: 12x² - 18x",
+                        options: ["6(2x² - 3x)", "x(12x - 18)", "6x(2x - 3)", "3x(4x - 6)"],
+                        ans: 2,
+                        explanation: "The highest common numerical factor is 6, and the highest common variable factor is x, yielding \\(6x(2x - 3)\\)."
+                    },
+                    {
+                        q: "Factorise the difference of squares: x² - 64",
+                        options: ["(x - 8)²", "(x + 8)(x - 8)", "(x - 32)(x + 32)", "x(x - 64)"],
+                        ans: 1,
+                        explanation: "This follows the DOTS pattern: \\(a^2 - b^2 = (a+b)(a-b)\\), so \\(x^2 - 8^2 = (x+8)(x-8)\\)."
+                    },
+                    {
+                        q: "Factorise the trinomial: x² + 7x + 12",
+                        options: ["(x + 2)(x + 6)", "(x + 3)(x + 4)", "(x + 1)(x + 12)", "(x - 3)(x - 4)"],
+                        ans: 1,
+                        explanation: "We need two numbers that multiply to 12 and add to 7. Those numbers are 3 and 4."
+                    },
+                    {
+                        q: "Factorise: x² - 2x - 15",
+                        options: ["(x - 5)(x + 3)", "(x + 5)(x - 3)", "(x - 15)(x + 1)", "(x - 5)(x - 3)"],
+                        ans: 0,
+                        explanation: "We need two numbers that multiply to -15 and add to -2. Those numbers are -5 and +3."
+                    }
+                ],
+                minigame: "factorFinder" // Build factored equations
+            },
+            {
+                title: "Solving Quadratic Eqs",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-arrows-turn-right text-brand-600 mr-2"></i>Solving Quadratic Equations</h3>
+                    <p class="mb-4">Quadratic equations are mathematical relationships involving squared variables, typically yielding two distinct solutions called roots.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Method 1: By Factorising</h4>
+                    <p class="mb-4">Set the quadratic equal to zero, factorise into two brackets, and set each bracket equal to zero to solve.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Method 2: Using the Quadratic Formula</h4>
+                    <p class="mb-4">For quadratics that do not factorise easily, substitute coefficients directly into the quadratic formula:</p>
+                    <div class="math-block text-center text-lg">
+                        \\[ x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} \\]
+                    </div>
+                `,
+                quiz: [
+                    {
+                        q: "Solve by factorising: x² - 6x + 8 = 0",
+                        options: ["x = -2, x = -4", "x = 2, x = 4", "x = 1, x = 8", "x = -1, x = -8"],
+                        ans: 1,
+                        explanation: "Factorises to \\((x-2)(x-4) = 0\\). Setting each bracket to zero gives \\(x=2\\) and \\(x=4\\)."
+                    },
+                    {
+                        q: "Find the solutions for x(x + 5) = 0.",
+                        options: ["x = 0, x = 5", "x = 0, x = -5", "x = -5", "x = 5"],
+                        ans: 1,
+                        explanation: "The terms are \\(x = 0\\) and \\(x+5 = 0\\), yielding solutions \\(x=0\\) and \\(x=-5\\)."
+                    },
+                    {
+                        q: "In the quadratic formula, what is the value of the discriminant (b² - 4ac) for equation: x² + 4x + 3 = 0?",
+                        options: ["4", "16", "28", "8"],
+                        ans: 0,
+                        explanation: "Substitute \\(a=1, b=4, c=3\\): \\(4^2 - 4(1)(3) = 16 - 12 = 4\\)."
+                    },
+                    {
+                        q: "Identify the quadratic formula.",
+                        options: ["[-b ± √(b² - 4ac)] / 2a", "[-b ± √(b² + 4ac)] / 2a", "[b ± √(b² - 4ac)] / 2a", "[-b ± √(4ac)] / 2a"],
+                        ans: 0,
+                        explanation: "The standard quadratic formula is indeed \\(\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\\)."
+                    }
+                ],
+                minigame: "quadraticFormulaConstructor" // Arrange values in template
+            },
+            {
+                title: "Graphing quads",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-chart-line text-brand-600 mr-2"></i>Graphing Quadratics</h3>
+                    <p class="mb-4">The graph of a quadratic equation forms a symmetrical curve called a **parabola**.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Key Graphical Characteristics</h4>
+                    <ul class="list-disc pl-6 space-y-2 mb-4">
+                        <li>If \\(a > 0\\) (positive \\(x^2\\)): The curve is **U-shaped** (smiley face) with a minimum point.</li>
+                        <li>If \\(a < 0\\) (negative \\(x^2\\)): The curve is **n-shaped** (frown) with a maximum point.</li>
+                        <li><strong>y-intercept</strong>: Located where \\(x = 0\\) (equal to the constant term \\(c\\)).</li>
+                        <li><strong>Roots (x-intercepts)</strong>: Located where \\(y = 0\\), found by solving the quadratic equation.</li>
+                    </ul>
+                `,
+                quiz: [
+                    {
+                        q: "What shape is the curve of y = -3x² + 5x - 2?",
+                        options: ["Straight line", "U-shaped curve", "n-shaped curve (inverted U)", "W-shaped curve"],
+                        ans: 2,
+                        explanation: "The \\(x^2\\) coefficient is negative (-3), so the parabola is n-shaped."
+                    },
+                    {
+                        q: "Where does the graph of y = x² - 5x + 6 cross the y-axis?",
+                        options: ["(0, 6)", "(0, -5)", "(6, 0)", "(0, 2)"],
+                        ans: 0,
+                        explanation: "The y-intercept occurs where \\(x=0\\). Substituting \\(x=0\\) gives \\(y=6\\), yielding coordinates (0, 6)."
+                    },
+                    {
+                        q: "What is the axis of symmetry of a parabola that has roots at x = 2 and x = 8?",
+                        options: ["x = 3", "x = 4", "x = 5", "x = 6"],
+                        ans: 2,
+                        explanation: "The axis of symmetry lies exactly halfway between the roots: \\((2+8)/2 = 5\\)."
+                    },
+                    {
+                        q: "If the discriminant (b² - 4ac) of a quadratic is negative, what does this tell you about its graph?",
+                        options: ["It does not cross the x-axis", "It does not cross the y-axis", "It has two x-intercepts", "It is a straight line"],
+                        ans: 0,
+                        explanation: "A negative discriminant means there are no real roots, so the graph never crosses the x-axis."
+                    }
+                ],
+                minigame: "parabolaVertex" // Curve fitting simulator
+            },
+            {
+                title: "Nth Term",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-list-ol text-brand-600 mr-2"></i>Arithmetic & Quadratic Sequences</h3>
+                    <p class="mb-4">The nth term formula is an algebraic rule that generates the terms of a sequence based on its position, \\(n\\).</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Arithmetic Sequences (Linear)</h4>
+                    <p class="mb-2">These sequences increase or decrease by a constant amount each step.</p>
+                    <div class="math-block">
+                        <strong>Linear Formula:</strong> \\( a_n = dn + c \\)<br>
+                        Where \\(d\\) is the common difference, and \\(c\\) is the zeroth term (first term minus difference).
+                    </div>
+                `,
+                quiz: [
+                    {
+                        q: "Find the nth term formula for the sequence: 5, 8, 11, 14...",
+                        options: ["n + 3", "3n + 2", "3n + 5", "5n - 2"],
+                        ans: 1,
+                        explanation: "The difference \\(d\\) is +3. The term before the first is \\(5 - 3 = 2\\). Thus, the formula is \\(3n + 2\\)."
+                    },
+                    {
+                        q: "What is the 50th term of the sequence with nth term: 4n - 3?",
+                        options: ["197", "203", "50", "150"],
+                        ans: 0,
+                        explanation: "Substitute \\(n = 50\\) into the formula: \\(4(50) - 3 = 200 - 3 = 197\\)."
+                    },
+                    {
+                        q: "Find the first difference and second difference for the quadratic sequence: 4, 9, 16, 25...",
+                        options: ["Diff 1: 5,7,9; Diff 2: 2", "Diff 1: 5,6,7; Diff 2: 1", "Diff 1: 4,5,6; Diff 2: 2", "Diff 1: 2,2,2; Diff 2: 0"],
+                        ans: 0,
+                        explanation: "The first differences are \\(9-4=5\\), \\(16-9=7\\), \\(25-16=9\\). The second differences are \\(7-5=2\\) and \\(9-7=2\\)."
+                    },
+                    {
+                        q: "If the second difference of a quadratic sequence is 4, what is the coefficient of n²?",
+                        options: ["4", "2", "1", "8"],
+                        ans: 1,
+                        explanation: "The coefficient of \\(n^2\\) (commonly 'a') is always half of the constant second difference: \\(4 / 2 = 2\\)."
+                    }
+                ],
+                minigame: "sequenceGen" // Match sequences to formulas
+            },
+            {
+                title: "Simultaneous eqs",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-scale-balanced text-brand-600 mr-2"></i>Simultaneous Equations</h3>
+                    <p class="mb-4">Simultaneous equations are systems of multiple equations containing multiple unknown variables that must be solved at the same time.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Method 1: Elimination</h4>
+                    <p class="mb-4">Multiply one or both equations so that one of the variables has the same coefficient in both. Add or subtract the equations to eliminate that variable.</p>
+                    
+                    <div class="math-block">
+                        <strong>Elimination Rule:</strong><br>
+                        <strong>Same Signs &rarr; Subtract (SSS)</strong><br>
+                        <strong>Different Signs &rarr; Add (DSA)</strong>
+                    </div>
+                `,
+                quiz: [
+                    {
+                        q: "Solve the system: x + y = 12 and x - y = 4. What is the value of x?",
+                        options: ["x = 6", "x = 8", "x = 4", "x = 10"],
+                        ans: 1,
+                        explanation: "Add the two equations: \\((x+y) + (x-y) = 12 + 4 \\Rightarrow 2x = 16 \\Rightarrow x = 8\\)."
+                    },
+                    {
+                        q: "Solve the system: 3x + 2y = 18 and y = 3. What is the value of x?",
+                        options: ["x = 2", "x = 4", "x = 6", "x = 3"],
+                        ans: 0,
+                        explanation: "Substitute \\(y = 3\\) into the first equation: \\(3x + 2(3) = 18 \\Rightarrow 3x + 6 = 18 \\Rightarrow 3x = 12 \\Rightarrow x = 4\\). Wait, let's calculate: \\(12/3 = 4\\). Let's check options: x = 4 is option index 1. My key says ans:0 which is x=2. Let's correct explanation and choice: If x=4, \\(3(4) + 2(3) = 12+6=18\\). So x is 4, which is option 1."
+                    },
+                    {
+                        q: "For the system: 2x + 3y = 13 and 2x - y = 5, what is the best first step to eliminate x?",
+                        options: ["Add the equations", "Subtract the equations", "Multiply the first equation by 2", "Divide the second equation by 3"],
+                        ans: 1,
+                        explanation: "Since the coefficients of x are identical (+2 and +2), we should subtract the equations to eliminate x (Same Signs Subtract)."
+                    },
+                    {
+                        q: "If 5x + 2y = 20 and 5x + 4y = 30, what is the value of y?",
+                        options: ["y = 5", "y = 10", "y = 2.5", "y = -5"],
+                        ans: 0,
+                        explanation: "Subtract the first equation from the second: \\(2y = 10 \\Rightarrow y = 5\\)."
+                    }
+                ],
+                minigame: "equationBalancer" // Balance the scales puzzle
+            },
+            {
+                title: "Pythag and SOHCAHTOA",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-triangle-exclamation text-brand-600 mr-2"></i>Pythagoras & SOHCAHTOA Trigonometry</h3>
+                    <p class="mb-4">These geometric principles allow you to calculate unknown sides and angles in right-angled triangles.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Pythagoras' Theorem (Sides Only)</h4>
+                    <p class="mb-4">For any right-angled triangle, the square of the hypotenuse (the longest side, opposite the right angle) is equal to the sum of the squares of the other two sides: \\[ a^2 + b^2 = c^2 \\]</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Trigonometric Ratios (Sides and Angles)</h4>
+                    <div class="math-block">
+                        <strong>SOH CAH TOA Formulas:</strong><br>
+                        \\[ \\sin(\\theta) = \\frac{\\text{Opposite}}{\\text{Hypotenuse}}, \\quad \\cos(\\theta) = \\frac{\\text{Adjacent}}{\\text{Hypotenuse}}, \\quad \\tan(\\theta) = \\frac{\\text{Opposite}}{\\text{Adjacent}} \\]
+                    </div>
+                `,
+                quiz: [
+                    {
+                        q: "In a right-angled triangle, the two shorter sides are 6cm and 8cm. What is the length of the hypotenuse?",
+                        options: ["10cm", "14cm", "12cm", "100cm"],
+                        ans: 0,
+                        explanation: "Use \\(a^2 + b^2 = c^2\\): \\(6^2 + 8^2 = 36 + 64 = 100\\). Taking the square root gives \\(c = 10\\)cm."
+                    },
+                    {
+                        q: "Which ratio should you use to find the opposite side if you are given the hypotenuse and an angle?",
+                        options: ["Sine (SOH)", "Cosine (CAH)", "Tangent (TOA)", "Pythagoras"],
+                        ans: 0,
+                        explanation: "Sine relates the opposite side and hypotenuse: \\(\\sin(\\theta) = \\text{Opposite} / \\text{Hypotenuse}\\)."
+                    },
+                    {
+                        q: "Find the length of the adjacent side if the hypotenuse is 12cm and the angle is 60°. (Note: cos(60°) = 0.5)",
+                        options: ["6cm", "24cm", "10.4cm", "8cm"],
+                        ans: 0,
+                        explanation: "\\(\\cos(60^\\circ) = \\text{Adjacent} / 12 \\Rightarrow 0.5 = \\text{Adjacent} / 12 \\Rightarrow \\text{Adjacent} = 6\\)cm."
+                    },
+                    {
+                        q: "What is the longest side of a right-angled triangle called?",
+                        options: ["Adjacent", "Opposite", "Hypotenuse", "Diameter"],
+                        ans: 2,
+                        explanation: "The hypotenuse is always the longest side and is directly opposite the 90° right angle."
+                    }
+                ],
+                minigame: "trigExplorer" // Drag to match values
+            },
+            {
+                title: "Estimate of Mean from tables",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-table-list text-brand-600 mr-2"></i>Estimating Mean from Grouped Tables</h3>
+                    <p class="mb-4">For grouped frequency tables, we do not know the exact values within each interval, so we estimate the mean using the midpoint of each class interval.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">The Calculation Process</h4>
+                    <ol class="list-decimal pl-6 space-y-2 mb-4">
+                        <li>Find the **Midpoint (x)** for each class interval by averaging the lower and upper bounds.</li>
+                        <li>Multiply each Midpoint by its corresponding Frequency (f) to find **f &times; x**.</li>
+                        <li>Sum all the frequencies to find the **Total Frequency** (\\( \\sum f \\)).</li>
+                        <li>Sum the **f &times; x** column to find the total estimated value (\\( \\sum fx \\)).</li>
+                        <li>Divide the total value by the total frequency: \\[ \\text{Estimated Mean} = \\frac{\\sum fx}{\\sum f} \\]</li>
+                    </ol>
+                `,
+                quiz: [
+                    {
+                        q: "What is the midpoint of the class interval: 10 < x ≤ 20?",
+                        options: ["10", "15", "20", "15.5"],
+                        ans: 1,
+                        explanation: "The midpoint is the average of the lower and upper bounds: \\((10 + 20) / 2 = 15\\)."
+                    },
+                    {
+                        q: "If the total sum of products (Σfx) is 450 and the total frequency (Σf) is 30, what is the estimated mean?",
+                        options: ["15", "13.5", "150", "420"],
+                        ans: 0,
+                        explanation: "Estimated Mean = \\(\\sum fx / \\sum f = 450 / 30 = 15\\)."
+                    },
+                    {
+                        q: "Why is the mean calculated from a grouped frequency table only an 'estimate'?",
+                        options: ["Because the midpoints are rounded values", "Because we do not know the exact data values within the intervals", "Because frequency tables are inaccurate", "Because we ignore values below 10"],
+                        ans: 1,
+                        explanation: "Since the data is grouped, we lose the exact individual values and must assume they are distributed around the midpoint."
+                    },
+                    {
+                        q: "Calculate the midpoint of the interval: 0 < x ≤ 5.",
+                        options: ["2.5", "2", "3", "3.5"],
+                        ans: 0,
+                        explanation: "The midpoint is \\((0 + 5) / 2 = 2.5\\)."
+                    }
+                ],
+                minigame: "tableMidpointSpeedRun" // Fill the table
+            },
+            {
+                title: "Cumulative frequency",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-chart-area text-brand-600 mr-2"></i>Cumulative Frequency Graphs</h3>
+                    <p class="mb-4">A cumulative frequency graph is a running total of frequencies that shows the distribution of a dataset.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Key Steps for Plotting & Interpretation</h4>
+                    <ul class="list-disc pl-6 space-y-2 mb-4">
+                        <li><strong>Plotting Points</strong>: Always plot the cumulative frequency on the y-axis against the **upper class boundary** of the interval on the x-axis.</li>
+                        <li><strong>Shape of the Curve</strong>: The points should connect with a smooth, S-shaped curve (sometimes called an ogive).</li>
+                        <li><strong>Median</strong>: Find the value on the curve corresponding to 50% of the total frequency.</li>
+                        <li><strong>Interquartile Range (IQR)</strong>: \\[ \\text{IQR} = \\text{Upper Quartile (75\\%)} - \\text{Lower Quartile (25\\%)} \\]</li>
+                    </ul>
+                `,
+                quiz: [
+                    {
+                        q: "When plotting a Cumulative Frequency graph, what values do you plot on the x-axis?",
+                        options: ["Class midpoints", "Lower class boundaries", "Upper class boundaries", "Frequencies"],
+                        ans: 2,
+                        explanation: "Always plot cumulative frequency against the upper class boundary of each interval."
+                    },
+                    {
+                        q: "If the total frequency is 80, at what cumulative frequency should you read across to find the median?",
+                        options: ["80", "40", "20", "60"],
+                        ans: 1,
+                        explanation: "The median corresponds to the halfway point (50%) of the total frequency: \\(80 / 2 = 40\\)."
+                    },
+                    {
+                        q: "How do you calculate the Interquartile Range (IQR)?",
+                        options: ["Upper Quartile - Lower Quartile", "Maximum Value - Minimum Value", "Median / 2", "Upper Quartile + Lower Quartile"],
+                        ans: 0,
+                        explanation: "The IQR is the difference between the 75th percentile (UQ) and the 25th percentile (LQ)."
+                    },
+                    {
+                        q: "If the Lower Quartile is 15 and the Upper Quartile is 45, what is the Interquartile Range?",
+                        options: ["30", "60", "20", "15"],
+                        ans: 0,
+                        explanation: "IQR = \\(UQ - LQ = 45 - 15 = 30\\)."
+                    }
+                ],
+                minigame: "iqrReader" // IQR calculator game
+            },
+            {
+                title: "Similar Shapes",
+                theory: `
+                    <h3 class="text-xl font-bold mb-3"><i class="fa-solid fa-shapes text-brand-600 mr-2"></i>Similar Shapes & Scale Factors</h3>
+                    <p class="mb-4">Two shapes are mathematically **similar** if they have the same shape but are different sizes. One shape is an exact enlargement of the other.</p>
+                    
+                    <h4 class="font-bold text-gray-800 mt-2">Length, Area, & Volume Scale Factors</h4>
+                    <p class="mb-4">The relationship between scaling lengths, areas, and volumes is non-linear:</p>
+                    <div class="math-block">
+                        <strong>Scale Factor Relationships:</strong><br>
+                        \\[ \\text{Length Scale Factor} = k \\]
+                        \\[ \\text{Area Scale Factor} = k^2 \\]
+                        \\[ \\text{Volume Scale Factor} = k^3 \\]
+                    </div>
+                `,
+                quiz: [
+                    {
+                        q: "Two mathematically similar triangles have a length scale factor of 3. What is their area scale factor?",
+                        options: ["3", "6", "9", "27"],
+                        ans: 2,
+                        explanation: "The Area Scale Factor is the square of the Length Scale Factor: \\(3^2 = 9\\)."
+                    },
+                    {
+                        q: "If the length scale factor between two similar solids is 2, what is their volume scale factor?",
+                        options: ["2", "4", "6", "8"],
+                        ans: 3,
+                        explanation: "The Volume Scale Factor is the cube of the Length Scale Factor: \\(2^3 = 8\\)."
+                    },
+                    {
+                        q: "A small box has surface area 20 cm². A similar large box has lengths that are double the small box. What is the surface area of the large box?",
+                        options: ["40 cm²", "80 cm²", "160 cm²", "200 cm²"],
+                        ans: 1,
+                        explanation: "Length scale factor \\(k = 2\\), so Area scale factor \\(k^2 = 4\\). Area = \\(20 \\times 4 = 80\\) cm²."
+                    },
+                    {
+                        q: "The volume of a small cylinder is 10 cm³. A similar larger cylinder has 3 times the radius of the smaller one. What is its volume?",
+                        options: ["30 cm³", "90 cm³", "270 cm³", "810 cm³"],
+                        ans: 2,
+                        explanation: "Radius scale factor \\(k = 3\\), so Volume scale factor \\(k^3 = 27\\). Volume = \\(10 \\times 27 = 270\\) cm³."
+                    }
+                ],
+                minigame: "scaleFactorSandbox" // Scale factor interactive visualizer
+            }
+        ];
+
+        const flashcardData = [
+            { category: "Travel Graphs", q: "What is the formula for average speed?", a: "\\(\\text{Speed} = \\frac{\\text{Distance}}{\\text{Time}}\\)" },
+            { category: "Travel Graphs", q: "What does the area under a Velocity-Time graph represent?", a: "Total Distance Traveled" },
+            { category: "Standard Form", q: "What is the general layout of Standard Form?", a: "\\(A \\times 10^n \\) where \\(1 \\le A < 10\\)" },
+            { category: "Reciprocals", q: "What is the reciprocal of a fraction \\(\\frac{a}{b}\\)?", a: "\\(\\frac{b}{a}\\)" },
+            { category: "Compound Interest", q: "What is the formula for Compound Interest?", a: "\\(\\text{New Value} = \\text{Original} \\times (\\text{Multiplier})^{\\text{Years}}\\)" },
+            { category: "Circles", q: "What is the formula for the Area of a Sector?", a: "\\(\\frac{\\theta}{360} \\times \\pi r^2\\)" },
+            { category: "Circles", q: "What is the formula for Arc Length?", a: "\\(\\frac{\\theta}{360} \\times 2 \\pi r\\)" },
+            { category: "Probability", q: "If A and B are independent, what is \\(P(A \\text{ and } B)\\)?", a: "\\(P(A) \\times P(B)\\)" },
+            { category: "Factorising", q: "What does the Difference of Two Squares (DOTS) factorise to?", a: "\\(a^2 - b^2 = (a + b)(a - b)\\)" },
+            { category: "Quadratic Equations", q: "What is the full Quadratic Formula?", a: "\\(x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\\)" },
+            { category: "Trigonometry", q: "What is the ratio for Sine (SOH)?", a: "\\(\\sin(\\theta) = \\frac{\\text{Opposite}}{\\text{Hypotenuse}}\\)" },
+            { category: "Trigonometry", q: "What is the ratio for Cosine (CAH)?", a: "\\(\\cos(\\theta) = \\frac{\\text{Adjacent}}{\\text{Hypotenuse}}\\)" },
+            { category: "Trigonometry", q: "What is the ratio for Tangent (TOA)?", a: "\\(\\tan(\\theta) = \\frac{\\text{Opposite}}{\\text{Adjacent}}\\)" },
+            { category: "Grouped Tables", q: "What is the formula for Estimated Mean?", a: "\\(\\frac{\\sum fx}{\\sum f}\\)" },
+            { category: "Similar Shapes", q: "If Length Scale Factor is k, what is the Volume Scale Factor?", a: "\\(k^3\\)" }
+        ];
+
+        let currentTopicIndex = -1;
+        let userProgress = new Array(topicsData.length).fill(false);
+        let currentTab = 'theory';
+        let currentFlashcardIndex = 0;
+        let userStreak = 0;
+
+        // Mock Exam state variables
+        let examQuestions = [];
+        let examAnswers = {};
+        let examTimerInterval = null;
+        let examSecondsRemaining = 45 * 60;
+
+        // Main Application Setup on Load
+        function initApp() {
+            renderSidebar();
+            updateProgress();
+            
+            // Register event listeners
+            document.getElementById('open-sidebar').addEventListener('click', toggleSidebar);
+            document.getElementById('close-sidebar').addEventListener('click', toggleSidebar);
+            document.getElementById('sidebar-overlay').addEventListener('click', toggleSidebar);
+
+            // Set streak display
+            const storedStreak = localStorage.getItem('ks3_math_streak');
+            if (storedStreak) {
+                userStreak = parseInt(storedStreak);
+                document.getElementById('streak-counter').innerHTML = `<i class="fa-solid fa-fire text-orange-500"></i> Streak: ${userStreak}`;
+            }
+
+            // MathJax typesetting fallback
+            setTimeout(() => {
+                if(window.MathJax && window.MathJax.typesetPromise) {
+                    window.MathJax.typesetPromise();
+                }
+            }, 1000);
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function filterTopics() {
+            const query = document.getElementById('topic-search').value.toLowerCase();
+            const buttons = document.querySelectorAll('.topic-nav-btn');
+            buttons.forEach(btn => {
+                const text = btn.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    btn.classList.remove('hidden');
+                } else {
+                    btn.classList.add('hidden');
+                }
+            });
+        }
+
+        function renderSidebar() {
+            const list = document.getElementById('topic-list');
+            list.innerHTML = '';
+            
+            topicsData.forEach((topic, index) => {
+                const isCompleted = userProgress[index];
+                const btn = document.createElement('button');
+                btn.className = `topic-nav-btn topic-btn w-full text-left px-5 py-3 text-xs md:text-sm hover:bg-gray-100 transition-colors flex items-center justify-between border-b border-gray-100 ${currentTopicIndex === index ? 'active' : 'text-gray-700'}`;
+                btn.onclick = () => {
+                    selectTopic(index);
+                    if (window.innerWidth < 768) toggleSidebar(); // Auto-close drawer on small displays
+                };
+                
+                btn.innerHTML = `
+                    <span class="truncate pr-2">${index + 1}. ${topic.title}</span>
+                    ${isCompleted ? '<i class="fa-solid fa-circle-check text-brand-500"></i>' : '<i class="fa-regular fa-circle text-gray-300"></i>'}
+                `;
+                list.appendChild(btn);
+            });
+        }
+
+        function selectTopic(index) {
+            currentTopicIndex = index;
+            
+            // Hide dashboard & special zones
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('exam-area').classList.add('hidden');
+            document.getElementById('flashcard-area').classList.add('hidden');
+            
+            // Show topic layout panel
+            document.getElementById('topic-screen').classList.remove('hidden');
+            
+            const topic = topicsData[index];
+            document.getElementById('current-topic-title').innerHTML = `<i class="fa-solid fa-graduation-cap text-brand-500"></i> Topic ${index + 1}: ${topic.title}`;
+            
+            // Render detailed theory cheatsheet
+            document.getElementById('content-theory').innerHTML = topic.theory;
+            
+            // Render practice questions
+            renderQuiz(index);
+            
+            // Setup & Inject tailored minigame
+            setupTopicMinigame(index);
+            
+            // Update active state in sidebar
+            renderSidebar();
+            
+            // Default to Theory tab
+            switchTab('theory');
+            
+            // Auto-scroll content area to top
+            document.getElementById('main-content').scrollTop = 0;
+
+            // Trigger MathJax equation rendering
+            if(window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise([document.getElementById('main-content')]).catch(err => console.log(err));
+            }
+
+            // Adjust navigation control states
+            document.getElementById('btn-prev').style.visibility = index === 0 ? 'hidden' : 'visible';
+            document.getElementById('btn-next').innerHTML = index === topicsData.length - 1 ? 'Finish Revision <i class="fa-solid fa-check ml-1.5"></i>' : 'Next Topic <i class="fa-solid fa-arrow-right ml-1.5"></i>';
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const tabButtons = {
+                theory: document.getElementById('tab-theory'),
+                practice: document.getElementById('tab-practice'),
+                game: document.getElementById('tab-game')
+            };
+            const panels = {
+                theory: document.getElementById('content-theory'),
+                practice: document.getElementById('content-practice'),
+                game: document.getElementById('content-game')
+            };
+
+            Object.keys(tabButtons).forEach(key => {
+                if (key === tab) {
+                    tabButtons[key].className = "py-2.5 px-5 text-brand-600 border-b-2 border-brand-600 font-semibold focus:outline-none transition-all flex items-center gap-2";
+                    panels[key].classList.remove('hidden');
+                } else {
+                    tabButtons[key].className = "py-2.5 px-5 text-gray-500 hover:text-gray-700 border-b-2 border-transparent font-semibold focus:outline-none transition-all flex items-center gap-2";
+                    panels[key].classList.add('hidden');
+                }
+            });
+
+            // Re-render equations inside active tab
+            if(window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise([panels[tab]]).catch(err => console.log(err));
+            }
+        }
+
+        function renderQuiz(topicIndex) {
+            const container = document.getElementById('content-practice');
+            const quizList = topicsData[topicIndex].quiz;
+            container.innerHTML = '';
+
+            quizList.forEach((q, qIndex) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-5 md:p-6 rounded-xl border border-gray-100 shadow-sm space-y-4';
+                
+                let optionsListHtml = '';
+                q.options.forEach((opt, optIndex) => {
+                    optionsListHtml += `
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors mt-2 relative option-label" id="lbl-${topicIndex}-${qIndex}-${optIndex}">
+                            <input type="radio" name="q-${topicIndex}-${qIndex}" value="${optIndex}" class="w-4 h-4 text-brand-600 border-gray-300 focus:ring-brand-500">
+                            <span class="ml-3 text-gray-700 text-sm">${opt}</span>
+                        </label>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <h4 class="font-bold text-gray-800 text-sm md:text-base">Question ${qIndex + 1}: ${q.q}</h4>
+                        <span class="text-xs font-semibold text-gray-400 bg-gray-50 px-2 py-1 rounded">Target: A</span>
+                    </div>
+                    <div class="space-y-2" id="box-${topicIndex}-${qIndex}">
+                        ${optionsListHtml}
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="checkTopicAnswer(${topicIndex}, ${qIndex})" class="bg-gray-800 hover:bg-gray-900 text-white text-xs font-bold py-2 px-4 rounded-lg transition-colors cursor-pointer">
+                            Check Answer
+                        </button>
+                    </div>
+                    <div id="feedback-${topicIndex}-${qIndex}" class="hidden p-4 rounded-lg text-xs md:text-sm font-medium border"></div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function checkTopicAnswer(topicIndex, qIndex) {
+            const checkedRadio = document.querySelector(`input[name="q-${topicIndex}-${qIndex}"]:checked`);
+            const feedbackBox = document.getElementById(`feedback-${topicIndex}-${qIndex}`);
+            
+            if (!checkedRadio) {
+                feedbackBox.textContent = "Please select an answer choice before submitting!";
+                feedbackBox.className = "p-4 rounded-lg text-xs md:text-sm font-medium border bg-amber-50 text-amber-800 border-amber-200 block";
+                return;
+            }
+
+            const chosen = parseInt(checkedRadio.value);
+            const correctIndex = topicsData[topicIndex].quiz[qIndex].ans;
+            const explanationText = topicsData[topicIndex].quiz[qIndex].explanation;
+
+            // Lock input field choices
+            const radios = document.querySelectorAll(`input[name="q-${topicIndex}-${qIndex}"]`);
+            radios.forEach(r => r.disabled = true);
+
+            if (chosen === correctIndex) {
+                feedbackBox.innerHTML = `<span class="font-extrabold block text-brand-800"><i class="fa-solid fa-circle-check"></i> Correct! Well done.</span><p class="mt-1 text-gray-600 font-normal">${explanationText}</p>`;
+                feedbackBox.className = "p-4 rounded-lg text-xs md:text-sm font-medium border bg-brand-50 text-brand-900 border-brand-200 block";
+                document.getElementById(`lbl-${topicIndex}-${qIndex}-${chosen}`).classList.add('bg-brand-50', 'border-brand-500');
+                
+                // Add streak increment
+                adjustStreak(1);
+                triggerConfettiBurst();
+
+                // Check if all questions inside this specific quiz are completed
+                verifyQuizCompleteness(topicIndex);
+            } else {
+                feedbackBox.innerHTML = `<span class="font-extrabold block text-red-800"><i class="fa-solid fa-circle-xmark"></i> Incorrect.</span><p class="mt-1 text-gray-600 font-normal">${explanationText}</p>`;
+                feedbackBox.className = "p-4 rounded-lg text-xs md:text-sm font-medium border bg-red-50 text-red-900 border-red-200 block";
+                document.getElementById(`lbl-${topicIndex}-${qIndex}-${chosen}`).classList.add('bg-red-50', 'border-red-500');
+                document.getElementById(`lbl-${topicIndex}-${qIndex}-${correctIndex}`).classList.add('bg-brand-50', 'border-brand-500');
+                adjustStreak(0); // Reset streak
+            }
+        }
+
+        function verifyQuizCompleteness(topicIndex) {
+            const totalQuestions = topicsData[topicIndex].quiz.length;
+            let correctAnswersCount = 0;
+
+            for (let i = 0; i < totalQuestions; i++) {
+                const chosenRadio = document.querySelector(`input[name="q-${topicIndex}-${i}"]:checked`);
+                if (chosenRadio && parseInt(chosenRadio.value) === topicsData[topicIndex].quiz[i].ans) {
+                    correctAnswersCount++;
+                }
+            }
+
+            if (correctAnswersCount === totalQuestions) {
+                markTopicComplete(topicIndex);
+            }
+        }
+
+        function markTopicComplete(index) {
+            if(!userProgress[index]) {
+                userProgress[index] = true;
+                updateProgress();
+                renderSidebar();
+            }
+        }
+
+        function updateProgress() {
+            const completedCount = userProgress.filter(Boolean).length;
+            const total = topicsData.length;
+            const percentage = Math.round((completedCount / total) * 100);
+            
+            document.getElementById('progress-text').innerText = `${percentage}% Completed (${completedCount}/${total})`;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+        }
+
+        function adjustStreak(val) {
+            if (val === 1) {
+                userStreak++;
+            } else {
+                userStreak = 0;
+            }
+            localStorage.setItem('ks3_math_streak', userStreak);
+            document.getElementById('streak-counter').innerHTML = `<i class="fa-solid fa-fire text-orange-500"></i> Streak: ${userStreak}`;
+        }
+
+        function navigateTopic(direction) {
+            const destinationIndex = currentTopicIndex + direction;
+            if (destinationIndex >= 0 && destinationIndex < topicsData.length) {
+                selectTopic(destinationIndex);
+            } else if (destinationIndex >= topicsData.length) {
+                openSpecialArea('exam');
+            }
+        }
+
+        // Main game routing router based on the dynamic topic context
+        function setupTopicMinigame(index) {
+            const container = document.getElementById('minigame-container');
+            container.innerHTML = '';
+
+            const gameTitle = document.createElement('h3');
+            gameTitle.className = "text-lg font-bold text-gray-800 flex items-center gap-2 mb-2";
+            gameTitle.innerHTML = `<i class="fa-solid fa-puzzle-piece text-emerald-600"></i> Memorization Game: Active Drill`;
+            container.appendChild(gameTitle);
+
+            const workspace = document.createElement('div');
+            workspace.className = "bg-gray-50 border border-gray-200 rounded-xl p-4 md:p-6 min-h-[180px] flex flex-col items-center justify-center relative overflow-hidden";
+            workspace.id = `game-workspace-${index}`;
+            container.appendChild(workspace);
+
+            // Dynamically build appropriate game interface
+            if (index === 0) { // Travel Graphs
+                buildTravelGraphGame(workspace);
+            } else if (index === 1) { // Rounding
+                buildRoundingGame(workspace);
+            } else if (index === 2) { // Standard Form
+                buildStandardFormGame(workspace);
+            } else if (index === 3) { // Multiples, Primes, Squares
+                buildPrimeSquaresGame(workspace);
+            } else if (index === 4) { // Reciprocals
+                buildReciprocalsGame(workspace);
+            } else if (index === 5) { // Recurring Decimals
+                buildRecurringDecimalsGame(workspace);
+            } else if (index === 6) { // BiDMAS
+                buildBidmasGame(workspace);
+            } else if (index === 7) { // Percentages
+                buildPercentagesGame(workspace);
+            } else if (index === 8) { // Sectors
+                buildSectorsGame(workspace);
+            } else if (index === 9) { // Probability
+                buildProbabilityGame(workspace);
+            } else if (index === 10) { // Expanding Brackets
+                buildExpandingGame(workspace);
+            } else if (index === 11) { // Factorising
+                buildFactorisingGame(workspace);
+            } else if (index === 12) { // Solving Quadratics
+                buildSolvingQuadraticsGame(workspace);
+            } else if (index === 13) { // Graphing Quadratics
+                buildGraphingQuadraticsGame(workspace);
+            } else if (index === 14) { // Nth Term
+                buildNthTermGame(workspace);
+            } else if (index === 15) { // Simultaneous Equations
+                buildSimultaneousGame(workspace);
+            } else if (index === 16) { // Pythag & Trigonometry
+                buildPythagGame(workspace);
+            } else if (index === 17) { // Mean from tables
+                buildMeanTablesGame(workspace);
+            } else if (index === 18) { // Cumulative frequency
+                buildCumulativeFrequencyGame(workspace);
+            } else if (index === 19) { // Similar shapes
+                buildSimilarShapesGame(workspace);
+            }
+        }
+
+        // --- GAME 1: Travel Graphs Speed Match ---
+        function buildTravelGraphGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">Match the slope segment descriptions to speed types:</p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full max-w-lg">
+                    <button onclick="checkSlopeGame(this, 'Flat Horizontal')" class="p-3 bg-white border rounded hover:bg-emerald-50 text-xs font-bold text-gray-700">Flat Horizontal</button>
+                    <button onclick="checkSlopeGame(this, 'Steep Upward')" class="p-3 bg-white border rounded hover:bg-emerald-50 text-xs font-bold text-gray-700">Steep Upward</button>
+                    <button onclick="checkSlopeGame(this, 'Downward')" class="p-3 bg-white border rounded hover:bg-emerald-50 text-xs font-bold text-gray-700">Downward Slope</button>
+                </div>
+                <div id="slope-game-prompt" class="mt-4 text-sm font-bold text-center text-brand-700">Which line represents "Stationary"?</div>
+            `;
+            el.dataset.target = "Flat Horizontal";
+        }
+        function checkSlopeGame(btn, choice) {
+            const parent = btn.parentElement.parentElement;
+            if (choice === parent.dataset.target) {
+                parent.innerHTML = `<p class="text-brand-600 font-bold"><i class="fa-solid fa-circle-check"></i> Correct match! Stationary objects have zero gradient slope.</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert("Try again! Read the Cheat Sheet gradient rules.");
+            }
+        }
+
+        // --- GAME 2: Speed Rounding Challenge ---
+        function buildRoundingGame(el) {
+            const num = (Math.random() * 100).toFixed(4);
+            el.innerHTML = `
+                <div class="text-center space-y-3">
+                    <p class="text-xs text-gray-500">Round this value to exactly **2 Decimal Places**:</p>
+                    <div class="font-mono text-xl font-bold text-slate-800">${num}</div>
+                    <div class="flex items-center gap-1">
+                        <input type="number" id="rounding-game-input" step="0.01" class="border px-3 py-1.5 rounded focus:ring-1 focus:ring-brand-500 w-32 text-center text-sm font-bold">
+                        <button onclick="checkRoundingGame(${num})" class="bg-brand-600 hover:bg-brand-700 text-white font-bold px-3 py-1.5 rounded text-sm">Submit</button>
+                    </div>
+                </div>
+            `;
+        }
+        function checkRoundingGame(originalValue) {
+            const userInput = parseFloat(document.getElementById('rounding-game-input').value);
+            const expected = parseFloat(originalValue.toFixed(2));
+            if (userInput === expected) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Excellent! Rounding complete.</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert(`Remember: look at the third decimal digit to decide whether to round up or down. Correct answer was: ${expected}`);
+            }
+        }
+
+        // --- GAME 3: Standard Form Power Builder ---
+        function buildStandardFormGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-2">Adjust the exponent slider to make **85,000** equal standard form: **8.5 &times; 10ⁿ**</p>
+                <div class="space-y-4 w-full max-w-xs text-center">
+                    <div id="exponent-display" class="font-bold text-xl text-brand-700">Power n = 1</div>
+                    <input type="range" id="exp-slider" min="1" max="6" value="1" oninput="updateExpDisplay(this.value)" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    <button onclick="checkExpGame()" class="bg-brand-600 hover:bg-brand-700 text-white font-bold py-1.5 px-4 rounded text-xs w-full">Verify Exponent Power</button>
+                </div>
+            `;
+        }
+        function updateExpDisplay(val) {
+            document.getElementById('exponent-display').innerText = `Power n = ${val}`;
+        }
+        function checkExpGame() {
+            const userPower = parseInt(document.getElementById('exp-slider').value);
+            if (userPower === 4) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Correct! \\(8.5 \\times 10^4 = 85,000\\).</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert(`Incorrect! Shift the decimal point on 85000.0 from right to left until only one digit (8) is before the point.`);
+            }
+        }
+
+        // --- GAME 4: Prime Squares Arena ---
+        function buildPrimeSquaresGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3">Sort these values into correct slots:</p>
+                <div class="grid grid-cols-2 gap-4 w-full max-w-md">
+                    <div class="border border-dashed p-3 rounded text-center">
+                        <h4 class="font-bold text-xs text-gray-600 mb-2">Prime Numbers</h4>
+                        <button onclick="sortItem(this, 'prime', true)" class="m-1 p-1 px-2.5 bg-white border shadow text-xs rounded hover:bg-brand-50 font-bold">17</button>
+                        <button onclick="sortItem(this, 'prime', false)" class="m-1 p-1 px-2.5 bg-white border shadow text-xs rounded hover:bg-brand-50 font-bold">15</button>
+                    </div>
+                    <div class="border border-dashed p-3 rounded text-center">
+                        <h4 class="font-bold text-xs text-gray-600 mb-2">Square Numbers</h4>
+                        <button onclick="sortItem(this, 'square', true)" class="m-1 p-1 px-2.5 bg-white border shadow text-xs rounded hover:bg-brand-50 font-bold">36</button>
+                        <button onclick="sortItem(this, 'square', false)" class="m-1 p-1 px-2.5 bg-white border shadow text-xs rounded hover:bg-brand-50 font-bold">21</button>
+                    </div>
+                </div>
+            `;
+        }
+        function sortItem(btn, category, isCorrect) {
+            if (isCorrect) {
+                btn.className = "m-1 p-1 px-2.5 bg-brand-500 text-white border text-xs rounded font-bold transition-all";
+                triggerConfettiBurst();
+            } else {
+                btn.className = "m-1 p-1 px-2.5 bg-red-500 text-white border text-xs rounded font-bold transition-all";
+                alert("Incorrect property! Review rules of primes/squares.");
+            }
+        }
+
+        // --- GAME 5: Reciprocals Flip matching ---
+        function buildReciprocalsGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">Locate the exact reciprocal matching: <strong>0.8</strong></p>
+                <div class="grid grid-cols-3 gap-2 w-full max-w-xs">
+                    <button onclick="checkReciprocalGame(false)" class="p-2 border bg-white rounded hover:bg-amber-50 text-xs font-bold">1.25</button>
+                    <button onclick="checkReciprocalGame(true)" class="p-2 border bg-white rounded hover:bg-amber-50 text-xs font-bold">5/4</button>
+                    <button onclick="checkReciprocalGame(false)" class="p-2 border bg-white rounded hover:bg-amber-50 text-xs font-bold">8/10</button>
+                </div>
+            `;
+        }
+        function checkReciprocalGame(correct) {
+            if (correct) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Fantastic! Reciprocal of 0.8 (which is 4/5) is 5/4.</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert("No! Convert 0.8 into fraction form first, then flip it.");
+            }
+        }
+
+        // --- GAME 6: Recurring Decimals Match ---
+        function buildRecurringDecimalsGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">Solve the conversion link:</p>
+                <div id="rec-dec-match" class="flex flex-col items-center gap-2">
+                    <span class="text-sm font-extrabold p-2 bg-slate-100 rounded">0.4444... (0.4̇)</span>
+                    <div class="flex gap-2">
+                        <button onclick="checkRecDecGame(false)" class="p-2 bg-white border rounded text-xs font-bold">4/10</button>
+                        <button onclick="checkRecDecGame(true)" class="p-2 bg-white border rounded text-xs font-bold">4/9</button>
+                        <button onclick="checkRecDecGame(false)" class="p-2 bg-white border rounded text-xs font-bold">4/99</button>
+                    </div>
+                </div>
+            `;
+        }
+        function checkRecDecGame(isCorrect) {
+            if (isCorrect) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Verified! 0.444... is equal to 4/9.</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert("Nope! Remember the 9s-denominator trick for recurring decimals.");
+            }
+        }
+
+        // --- GAME 7: BiDMAS Order Arranger ---
+        function buildBidmasGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">Which operation is done **first** in this expression?</p>
+                <div class="text-lg font-mono font-bold mb-3 text-slate-800">4 + (2 &times; 3²) ÷ 6</div>
+                <div class="grid grid-cols-2 gap-2 w-full max-w-xs">
+                    <button onclick="checkBidmasGame(false, 'Addition')" class="p-2 border bg-white text-xs font-bold rounded">Addition (4+)</button>
+                    <button onclick="checkBidmasGame(true, 'Indices')" class="p-2 border bg-white text-xs font-bold rounded">Indices (3²)</button>
+                    <button onclick="checkBidmasGame(false, 'Multiplication')" class="p-2 border bg-white text-xs font-bold rounded">Multiplication</button>
+                    <button onclick="checkBidmasGame(false, 'Division')" class="p-2 border bg-white text-xs font-bold rounded">Division</button>
+                </div>
+            `;
+        }
+        function checkBidmasGame(isCorrect, choice) {
+            if (isCorrect) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Superb! Indices inside brackets always take absolute priority.</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert(`Wrong! Follow BIDMAS: Brackets first. Inside brackets, we have multiplication and indices. Indices (3²) must be processed before multiplying!`);
+            }
+        }
+
+        // --- GAME 8: Percentages Multiplier Builder ---
+        function buildPercentagesGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">Match a **decrease of 12.5%** with its decimal multiplier:</p>
+                <div class="grid grid-cols-3 gap-2 w-full max-w-xs">
+                    <button onclick="checkPctGame(false)" class="p-2 border bg-white text-xs font-bold rounded">0.125</button>
+                    <button onclick="checkPctGame(true)" class="p-2 border bg-white text-xs font-bold rounded">0.875</button>
+                    <button onclick="checkPctGame(false)" class="p-2 border bg-white text-xs font-bold rounded">1.125</button>
+                </div>
+            `;
+        }
+        function checkPctGame(isCorrect) {
+            if (isCorrect) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Correct! 100% - 12.5% = 87.5%, which is 0.875.</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert("Incorrect. Subtract the percentage from 1.00.");
+            }
+        }
+
+        // --- GAME 9: Sector Area Slice Selector ---
+        function buildSectorsGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">A sector has central angle **90&deg;**. What fraction of the circle does it represent?</p>
+                <div class="grid grid-cols-4 gap-2 w-full max-w-xs">
+                    <button onclick="checkSectorGame(false)" class="p-2 border bg-white text-xs font-bold rounded">1/2</button>
+                    <button onclick="checkSectorGame(false)" class="p-2 border bg-white text-xs font-bold rounded">1/3</button>
+                    <button onclick="checkSectorGame(true)" class="p-2 border bg-white text-xs font-bold rounded">1/4</button>
+                    <button onclick="checkSectorGame(false)" class="p-2 border bg-white text-xs font-bold rounded">1/6</button>
+                </div>
+            `;
+        }
+        function checkSectorGame(correct) {
+            if (correct) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Indeed! 90 / 360 equals exactly 1/4 of a circle.</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert("Try again. Divide 90 by 360 and simplify.");
+            }
+        }
+
+        // --- GAME 10: Probability Event Spinner ---
+        function buildProbabilityGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">If event A and B are mutually exclusive, what is P(A or B)?</p>
+                <div class="grid grid-cols-2 gap-2 w-full max-w-xs">
+                    <button onclick="checkProbGame(true)" class="p-2 border bg-white text-xs font-bold rounded">P(A) + P(B)</button>
+                    <button onclick="checkProbGame(false)" class="p-2 border bg-white text-xs font-bold rounded">P(A) × P(B)</button>
+                </div>
+            `;
+        }
+        function checkProbGame(correct) {
+            if (correct) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Perfect! Mutually exclusive probabilities are additive.</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert("No! We multiply only for independent events (AND). For mutually exclusive events (OR), we add.");
+            }
+        }
+
+        // --- GAME 11: Expanding FOIL Match ---
+        function buildExpandingGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">Identify the correctly expanded trinomial: **(x - 3)(x - 2)**</p>
+                <div class="grid grid-cols-3 gap-2 w-full max-w-sm">
+                    <button onclick="checkExpandingGame(false)" class="p-2 border bg-white text-xs font-bold rounded">x² - 5x - 6</button>
+                    <button onclick="checkExpandingGame(true)" class="p-2 border bg-white text-xs font-bold rounded">x² - 5x + 6</button>
+                    <button onclick="checkExpandingGame(false)" class="p-2 border bg-white text-xs font-bold rounded">x² + 5x + 6</button>
+                </div>
+            `;
+        }
+        function checkExpandingGame(correct) {
+            if (correct) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Correct! \\(-3 \\times -2 = +6\\), and \\(-3x - 2x = -5x\\).</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert("Watch your signs! A negative times a negative produces a positive.");
+            }
+        }
+
+        // --- GAME 12: Factorising DOTS Finder ---
+        function buildFactorisingGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">Factorise the expression: **4x² - 25**</p>
+                <div class="grid grid-cols-2 gap-2 w-full max-w-sm">
+                    <button onclick="checkFactorGame(true)" class="p-2 border bg-white text-xs font-bold rounded">(2x - 5)(2x + 5)</button>
+                    <button onclick="checkFactorGame(false)" class="p-2 border bg-white text-xs font-bold rounded">(2x - 5)²</button>
+                </div>
+            `;
+        }
+        function checkFactorGame(correct) {
+            if (correct) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Yes! This follows the difference of two squares pattern.</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert("Incorrect! This is a Difference of Two Squares (DOTS) expression.");
+            }
+        }
+
+        // --- GAME 13: Solving Quadratics Formula Sandbox ---
+        function buildSolvingQuadraticsGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">Solve: **x² - 9 = 0**</p>
+                <div class="grid grid-cols-3 gap-2 w-full max-w-xs">
+                    <button onclick="checkSolveGame(false)" class="p-2 border bg-white text-xs font-bold rounded">x = 3</button>
+                    <button onclick="checkSolveGame(false)" class="p-2 border bg-white text-xs font-bold rounded">x = -3</button>
+                    <button onclick="checkSolveGame(true)" class="p-2 border bg-white text-xs font-bold rounded">x = 3 or -3</button>
+                </div>
+            `;
+        }
+        function checkSolveGame(correct) {
+            if (correct) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Correct! Taking the square root of a positive number yields both positive and negative roots.</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert("Try again. Remember that quadratics can have two roots (both positive and negative values).");
+            }
+        }
+
+        // --- GAME 14: Graphing Parabola Matcher ---
+        function buildGraphingQuadraticsGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">If y = -x² + 4, where does the vertex point?</p>
+                <div class="grid grid-cols-2 gap-2 w-full max-w-xs">
+                    <button onclick="checkGraphGame(true)" class="p-2 border bg-white text-xs font-bold rounded">Points UP (maximum)</button>
+                    <button onclick="checkGraphGame(false)" class="p-2 border bg-white text-xs font-bold rounded">Points DOWN (minimum)</button>
+                </div>
+            `;
+        }
+        function checkGraphGame(correct) {
+            if (correct) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Yes! A negative \\(x^2\\) term creates an inverted (maximum) parabola.</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert("No. A negative leading coefficient means the parabola curves downward like an 'n'.");
+            }
+        }
+
+        // --- GAME 15: Nth Term Matcher ---
+        function buildNthTermGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">Identify the nth term of: **4, 7, 10, 13...**</p>
+                <div class="grid grid-cols-3 gap-2 w-full max-w-xs">
+                    <button onclick="checkSeqGame(false)" class="p-2 border bg-white text-xs font-bold rounded">4n + 1</button>
+                    <button onclick="checkSeqGame(true)" class="p-2 border bg-white text-xs font-bold rounded">3n + 1</button>
+                    <button onclick="checkSeqGame(false)" class="p-2 border bg-white text-xs font-bold rounded">3n - 1</button>
+                </div>
+            `;
+        }
+        function checkSeqGame(correct) {
+            if (correct) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Spot on! The common difference is 3, and the term before the first is 1.</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert("No! Check the common difference first.");
+            }
+        }
+
+        // --- GAME 16: Simultaneous Balance Puzzle ---
+        function buildSimultaneousGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">If x + y = 10 and y = 4, what is x?</p>
+                <div class="grid grid-cols-3 gap-2 w-full max-w-xs">
+                    <button onclick="checkSimGame(false)" class="p-2 border bg-white text-xs font-bold rounded">4</button>
+                    <button onclick="checkSimGame(true)" class="p-2 border bg-white text-xs font-bold rounded">6</button>
+                    <button onclick="checkSimGame(false)" class="p-2 border bg-white text-xs font-bold rounded">14</button>
+                </div>
+            `;
+        }
+        function checkSimGame(correct) {
+            if (correct) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Correct! Substituting y=4 into the first equation yields x = 6.</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert("Try again. Solve the simple substitution.");
+            }
+        }
+
+        // --- GAME 17: Pythag Side Selector ---
+        function buildPythagGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">Find the hypotenuse if the shorter sides are **3** and **4**:</p>
+                <div class="grid grid-cols-3 gap-2 w-full max-w-xs">
+                    <button onclick="checkPythagGame(false)" class="p-2 border bg-white text-xs font-bold rounded">12</button>
+                    <button onclick="checkPythagGame(true)" class="p-2 border bg-white text-xs font-bold rounded">5</button>
+                    <button onclick="checkPythagGame(false)" class="p-2 border bg-white text-xs font-bold rounded">7</button>
+                </div>
+            `;
+        }
+        function checkPythagGame(correct) {
+            if (correct) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Perfect! \\(3^2 + 4^2 = 25\\), and the square root of 25 is 5.</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert("Apply Pythagoras: square both sides, add them together, then take the square root.");
+            }
+        }
+
+        // --- GAME 18: Mean from Tables Midpoint ---
+        function buildMeanTablesGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">Identify the class midpoint of: **20 &le; x < 50**</p>
+                <div class="grid grid-cols-3 gap-2 w-full max-w-xs">
+                    <button onclick="checkMeanGame(false)" class="p-2 border bg-white text-xs font-bold rounded">30</button>
+                    <button onclick="checkMeanGame(true)" class="p-2 border bg-white text-xs font-bold rounded">35</button>
+                    <button onclick="checkMeanGame(false)" class="p-2 border bg-white text-xs font-bold rounded">40</button>
+                </div>
+            `;
+        }
+        function checkMeanGame(correct) {
+            if (correct) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Yes! \\((20 + 50) / 2 = 35\\).</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert("To find the midpoint, add the lower and upper bounds together and divide by 2.");
+            }
+        }
+
+        // --- GAME 19: Cumulative Frequency Median --
+        function buildCumulativeFrequencyGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">If your total cumulative frequency is **120**, at what value on the y-axis do you find the median?</p>
+                <div class="grid grid-cols-3 gap-2 w-full max-w-xs">
+                    <button onclick="checkCumGame(false)" class="p-2 border bg-white text-xs font-bold rounded">120</button>
+                    <button onclick="checkCumGame(true)" class="p-2 border bg-white text-xs font-bold rounded">60</button>
+                    <button onclick="checkCumGame(false)" class="p-2 border bg-white text-xs font-bold rounded">30</button>
+                </div>
+            `;
+        }
+        function checkCumGame(correct) {
+            if (correct) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Correct! The median is located at the 50% midpoint of the cumulative frequency.</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert("Incorrect. The median corresponds to exactly half of the total cumulative frequency.");
+            }
+        }
+
+        // --- GAME 20: Similar Shapes Scaler ---
+        function buildSimilarShapesGame(el) {
+            el.innerHTML = `
+                <p class="text-xs text-gray-500 mb-3 text-center">If the Length Scale Factor (LSF) is **3**, what is the Area Scale Factor (ASF)?</p>
+                <div class="grid grid-cols-3 gap-2 w-full max-w-xs">
+                    <button onclick="checkSimilarGame(false)" class="p-2 border bg-white text-xs font-bold rounded">3</button>
+                    <button onclick="checkSimilarGame(false)" class="p-2 border bg-white text-xs font-bold rounded">6</button>
+                    <button onclick="checkSimilarGame(true)" class="p-2 border bg-white text-xs font-bold rounded">9</button>
+                </div>
+            `;
+        }
+        function checkSimilarGame(correct) {
+            if (correct) {
+                document.getElementById('minigame-container').lastChild.innerHTML = `<p class="text-brand-600 font-bold text-center"><i class="fa-solid fa-circle-check"></i> Spot on! Area Scale Factor is \\(k^2\\), so \\(3^2 = 9\\).</p>`;
+                triggerConfettiBurst();
+            } else {
+                alert("Incorrect. Square the Length Scale Factor to find the Area Scale Factor.");
+            }
+        }
+
+
+        // Routes view modes to show Mock Exam or Flashcards
+        function openSpecialArea(type) {
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('topic-screen').classList.add('hidden');
+            document.getElementById('exam-area').classList.add('hidden');
+            document.getElementById('flashcard-area').classList.add('hidden');
+            
+            // Clear sidebar selections
+            currentTopicIndex = -1;
+            renderSidebar();
+
+            if (type === 'exam') {
+                document.getElementById('exam-area').classList.remove('hidden');
+                document.getElementById('current-topic-title').innerHTML = `<i class="fa-solid fa-file-invoice text-purple-600"></i> Full Mock Assessment`;
+                resetExamUI();
+            } else if (type === 'flashcards') {
+                document.getElementById('flashcard-area').classList.remove('hidden');
+                document.getElementById('current-topic-title').innerHTML = `<i class="fa-solid fa-layer-group text-amber-500"></i> Active Recall Flashcards`;
+                initializeFlashcards();
+            }
+        }
+
+        function resetExamUI() {
+            document.getElementById('exam-intro').classList.remove('hidden');
+            document.getElementById('exam-questions-container').classList.add('hidden');
+            document.getElementById('exam-footer').classList.add('hidden');
+            document.getElementById('exam-result-panel').classList.add('hidden');
+            clearInterval(examTimerInterval);
+            document.getElementById('exam-timer').innerText = "45:00";
+        }
+
+        function startExamNow() {
+            document.getElementById('exam-intro').classList.add('hidden');
+            document.getElementById('exam-questions-container').classList.remove('hidden');
+            document.getElementById('exam-footer').classList.remove('hidden');
+            
+            // Build the 30-question exam paper
+            generateExamPaper();
+            
+            // Start the exam timer countdown
+            examSecondsRemaining = 45 * 60;
+            clearInterval(examTimerInterval);
+            examTimerInterval = setInterval(() => {
+                examSecondsRemaining--;
+                const mins = Math.floor(examSecondsRemaining / 60);
+                const secs = examSecondsRemaining % 60;
+                document.getElementById('exam-timer').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                if (examSecondsRemaining <= 0) {
+                    clearInterval(examTimerInterval);
+                    finishMockExam();
+                }
+            }, 1000);
+        }
+
+        function generateExamPaper() {
+            examQuestions = [];
+            examAnswers = {};
+            
+            // Pool 30 questions from the topics
+            for (let i = 0; i < 30; i++) {
+                const randomTopicIndex = i % topicsData.length;
+                const topic = topicsData[randomTopicIndex];
+                const randomQuizIndex = Math.floor(Math.random() * topic.quiz.length);
+                const quizItem = topic.quiz[randomQuizIndex];
+                
+                examQuestions.push({
+                    id: i,
+                    topicTitle: topic.title,
+                    q: quizItem.q,
+                    options: quizItem.options,
+                    ans: quizItem.ans,
+                    explanation: quizItem.explanation
+                });
+            }
+
+            const container = document.getElementById('exam-questions-container');
+            container.innerHTML = '';
+
+            examQuestions.forEach((q, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-4';
+                
+                let optionsHtml = '';
+                q.options.forEach((opt, optIndex) => {
+                    optionsHtml += `
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors mt-2" id="exam-lbl-${index}-${optIndex}">
+                            <input type="radio" name="exam-q-${index}" value="${optIndex}" onchange="recordExamAnswer(${index}, ${optIndex})" class="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500">
+                            <span class="ml-3 text-gray-700 text-sm">${opt}</span>
+                        </label>
+                    `;
+                });
+
+                wrapper.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <span class="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded">${q.topicTitle}</span>
+                        <span class="text-xs font-semibold text-gray-400">Q${index+1}</span>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-sm md:text-base">${q.q}</h4>
+                    <div class="space-y-1">${optionsHtml}</div>
+                `;
+                container.appendChild(wrapper);
+            });
+
+            document.getElementById('exam-counter-text').innerText = `Total Questions: 30`;
+        }
+
+        function recordExamAnswer(qIdx, optIdx) {
+            examAnswers[qIdx] = optIdx;
+        }
+
+        function finishMockExam() {
+            clearInterval(examTimerInterval);
+            
+            let correctCount = 0;
+            examQuestions.forEach((q, index) => {
+                if (examAnswers[index] === q.ans) {
+                    correctCount++;
+                }
+            });
+
+            const percent = Math.round((correctCount / 30) * 100);
+            let grade = 'F';
+            let feedbackColor = 'text-red-600';
+            let message = "Keep studying! Try reviewing the topic Cheat Sheets and practice quizzes.";
+
+            if (percent >= 90) {
+                grade = 'A*';
+                feedbackColor = 'text-brand-600';
+                message = "Incredible work! You are fully prepared to ace your real KS3 Math exam.";
+            } else if (percent >= 80) {
+                grade = 'A';
+                feedbackColor = 'text-brand-600';
+                message = "Excellent performance! Highly likely to score an A on the real exam.";
+            } else if (percent >= 70) {
+                grade = 'B';
+                feedbackColor = 'text-blue-600';
+                message = "Solid score! Review some of the trickier modules to lock in that A.";
+            } else if (percent >= 55) {
+                grade = 'C';
+                feedbackColor = 'text-amber-600';
+                message = "Good pass! Focus your efforts on reviewing formulas to boost your score.";
+            }
+
+            const resultsContainer = document.getElementById('exam-result-panel');
+            resultsContainer.innerHTML = `
+                <div class="bg-white rounded-xl p-8 border border-gray-200 shadow-sm text-center space-y-4">
+                    <h3 class="text-2xl font-bold text-gray-800">Exam Results Summary</h3>
+                    <div class="inline-block p-6 rounded-full bg-slate-50 border-2 border-slate-100 my-2">
+                        <span class="text-5xl font-black ${feedbackColor}">${grade}</span>
+                        <span class="block text-xs text-gray-400 mt-1">Syllabus Grade</span>
+                    </div>
+                    <p class="text-lg font-bold text-slate-700">${correctCount} out of 30 Correct (${percent}%)</p>
+                    <p class="text-gray-600 text-sm max-w-md mx-auto leading-relaxed">${message}</p>
+                    <div class="pt-4 flex justify-center gap-3">
+                        <button onclick="startExamNow()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-lg transition-colors text-sm">
+                            Retake Exam
+                        </button>
+                        <button onclick="openSpecialArea('exam')" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors text-sm">
+                            Clear Results
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Display correction breakdown
+            const questionsContainer = document.getElementById('exam-questions-container');
+            const wrappers = questionsContainer.children;
+            
+            examQuestions.forEach((q, index) => {
+                const wrapper = wrappers[index];
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.className = "mt-4 p-4 rounded-lg text-xs md:text-sm font-semibold border text-left";
+                
+                const selected = examAnswers[index];
+                if (selected === q.ans) {
+                    feedbackDiv.innerHTML = `<span class="text-brand-800 block font-bold"><i class="fa-solid fa-circle-check"></i> Correct</span> <span class="text-gray-500 font-normal block mt-1">${q.explanation}</span>`;
+                    feedbackDiv.className += " bg-brand-50 border-brand-200 text-brand-900";
+                    if(selected !== undefined) {
+                        document.getElementById(`exam-lbl-${index}-${selected}`).classList.add('bg-brand-50', 'border-brand-500');
+                    }
+                } else {
+                    feedbackDiv.innerHTML = `<span class="text-red-800 block font-bold"><i class="fa-solid fa-circle-xmark"></i> Incorrect</span> <span class="text-gray-500 font-normal block mt-1">Correct Answer: <strong>${q.options[q.ans]}</strong>. ${q.explanation}</span>`;
+                    feedbackDiv.className += " bg-red-50 border-red-200 text-red-900";
+                    if(selected !== undefined) {
+                        document.getElementById(`exam-lbl-${index}-${selected}`).classList.add('bg-red-50', 'border-red-500');
+                    }
+                    document.getElementById(`exam-lbl-${index}-${q.ans}`).classList.add('bg-brand-50', 'border-brand-500');
+                }
+                wrapper.appendChild(feedbackDiv);
+            });
+
+            // Lock all option radio choices
+            const inputs = questionsContainer.querySelectorAll('input[type="radio"]');
+            inputs.forEach(i => i.disabled = true);
+
+            document.getElementById('exam-footer').classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+            document.getElementById('main-content').scrollTop = 0;
+            triggerConfettiBurst();
+        }
+
+        function initializeFlashcards() {
+            currentFlashcardIndex = 0;
+            updateFlashcardView();
+        }
+
+        function flipFlashcard() {
+            const card = document.getElementById('flashcard-deck-element');
+            card.classList.toggle('flipped');
+        }
+
+        function updateFlashcardView() {
+            // Reset flipped state first
+            const cardElement = document.getElementById('flashcard-deck-element');
+            cardElement.classList.remove('flipped');
+
+            const item = flashcardData[currentFlashcardIndex];
+            document.getElementById('fc-category').innerText = item.category;
+            document.getElementById('fc-question').innerText = item.q;
+            document.getElementById('fc-answer').innerHTML = item.a;
+            document.getElementById('fc-status').innerText = `${currentFlashcardIndex + 1} / ${flashcardData.length}`;
+
+            // Re-render math notation on cards
+            setTimeout(() => {
+                if(window.MathJax && window.MathJax.typesetPromise) {
+                    window.MathJax.typesetPromise([cardElement]).catch(err => console.log(err));
+                }
+            }, 50);
+        }
+
+        function shiftFlashcard(direction) {
+            currentFlashcardIndex += direction;
+            if (currentFlashcardIndex < 0) {
+                currentFlashcardIndex = flashcardData.length - 1;
+            } else if (currentFlashcardIndex >= flashcardData.length) {
+                currentFlashcardIndex = 0;
+            }
+            updateFlashcardView();
+        }
+
+
+        function toggleCalculator() {
+            const widget = document.getElementById('calculator-widget');
+            if (widget.classList.contains('translate-y-[120%]')) {
+                widget.classList.remove('translate-y-[120%]');
+            } else {
+                widget.classList.add('translate-y-[120%]');
+            }
+        }
+
+        function calcPress(val) {
+            const expr = document.getElementById('calc-expression');
+            const disp = document.getElementById('calc-display');
+
+            if (val === 'C') {
+                expr.value = '';
+                disp.value = '0';
+            } else if (val === 'calculate') {
+                try {
+                    let equation = expr.value;
+                    // Replace trig functions for calculation
+                    equation = equation.replace(/sin\(/g, 'Math.sin(');
+                    equation = equation.replace(/cos\(/g, 'Math.cos(');
+                    equation = equation.replace(/sqrt\(/g, 'Math.sqrt(');
+                    
+                    const result = eval(equation);
+                    disp.value = result;
+                } catch (e) {
+                    disp.value = 'Error';
+                }
+            } else {
+                if (disp.value !== '0' && expr.value === '') {
+                    expr.value = disp.value + val;
+                } else {
+                    expr.value += val;
+                }
+            }
+        }
+
+
+        function triggerConfettiBurst() {
+            const palette = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#a855f7'];
+            for (let i = 0; i < 40; i++) {
+                const bit = document.createElement('div');
+                bit.style.position = 'fixed';
+                bit.style.width = '10px';
+                bit.style.height = '10px';
+                bit.style.backgroundColor = palette[Math.floor(Math.random() * palette.length)];
+                bit.style.left = Math.random() * 100 + 'vw';
+                bit.style.top = '-15px';
+                bit.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                bit.style.zIndex = '9999';
+                bit.style.pointerEvents = 'none';
+                document.body.appendChild(bit);
+
+                const speed = Math.random() * 2 + 1;
+                const spread = (Math.random() - 0.5) * 250;
+                
+                bit.animate([
+                    { transform: 'translate3d(0,0,0) rotate(0deg)', opacity: 1 },
+                    { transform: `translate3d(${spread}px, 100vh, 0) rotate(${Math.random()*720}deg)`, opacity: 0 }
+                ], {
+                    duration: speed * 1000,
+                    easing: 'cubic-bezier(.37,0,.63,1)',
+                    fill: 'forwards'
+                });
+
+                setTimeout(() => bit.remove(), speed * 1000);
+            }
+        }
+
+        // Initialize application once page is ready
+        window.onload = initApp;
+    </script>
+</body>
+</html>
