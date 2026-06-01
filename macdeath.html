@@ -1,0 +1,599 @@
+THE GAME IS CURRENTLY A PROTOTYPE
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Macbeth: The Castle Nocturne (Hard Mode)</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-color: #a5a5a5;
+            --blood-red: #440000;
+            --bright-red: #cc0000;
+            --warning-yellow: #b8860b;
+            --panel-bg: #0f0f0f;
+            --stone-wall: #1c1c1c;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        #game-wrapper {
+            width: 100%;
+            max-width: 700px;
+            background: var(--panel-bg);
+            border: 3px double #333;
+            padding: 20px;
+            box-shadow: 0 0 35px rgba(0,0,0,1);
+            position: relative;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px dashed #222;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        #stage-container {
+            position: relative;
+            width: 660px;
+            height: 320px;
+            background: #000;
+            border: 2px solid var(--stone-wall);
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .controls-hint {
+            background: #111;
+            padding: 10px;
+            margin-top: 15px;
+            font-size: 12px;
+            border: 1px solid #222;
+            text-align: center;
+        }
+
+        .narration-box {
+            background: #111;
+            border-left: 4px solid var(--blood-red);
+            padding: 12px;
+            margin: 15px 0;
+            font-style: italic;
+            min-height: 45px;
+            font-size: 13px;
+        }
+
+        .minigame-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 5, 5, 0.98);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .overlay-active {
+            display: flex;
+        }
+
+        button {
+            background: #1a1a1a;
+            color: #fff;
+            border: 1px solid #333;
+            padding: 10px 20px;
+            font-family: inherit;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background: var(--blood-red);
+            border-color: var(--bright-red);
+        }
+
+        .chalice-rack {
+            display: flex;
+            gap: 40px;
+            margin: 15px 0;
+        }
+        .cup {
+            width: 60px;
+            height: 100px;
+            border: 2px solid #555;
+            border-top: none;
+            position: relative;
+            background: #111;
+        }
+        .fill-fluid {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bright-red);
+            height: 0%;
+        }
+        .safe-zone {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 65%;
+            height: 15%;
+            background: rgba(0, 255, 0, 0.12);
+            border-top: 1px dashed #00ff00;
+            border-bottom: 1px dashed #00ff00;
+        }
+
+        #heart-node {
+            width: 90px;
+            height: 90px;
+            background: #0a0a0a;
+            border: 3px solid #222;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            transition: transform 0.08s;
+        }
+        .heart-pulse {
+            border-color: #00ff00 !important;
+            background: #051a05 !important;
+            transform: scale(1.15);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-wrapper">
+        <div class="top-bar">
+            <div>LOCATION: <span id="ui-room">The Courtyard</span></div>
+            <div>SUSPICION: <span id="ui-suspicion">0</span>%</div>
+        </div>
+
+        <div id="stage-container">
+            <canvas id="gameCanvas" width="660" height="320"></canvas>
+
+            <!-- Overlay 1: Wine Pouring (Great Hall) -->
+            <div id="overlay-pour" class="minigame-overlay">
+                <h3>Drugged Possets</h3>
+                <p>Hold buttons to fill cups. The margin of error is extremely small.</p>
+                <div class="chalice-rack">
+                    <div class="cup"><div class="safe-zone"></div><div id="fluid1" class="fill-fluid"></div></div>
+                    <div class="cup"><div class="safe-zone"></div><div id="fluid2" class="fill-fluid"></div></div>
+                </div>
+                <div>
+                    <button id="pourBtn1" onmousedown="startPour(1)" onmouseup="stopPour(1)" onmouseleave="stopPour(1)">Pour Cup 1</button>
+                    <button id="pourBtn2" onmousedown="startPour(2)" onmouseup="stopPour(2)" onmouseleave="stopPour(2)" disabled>Pour Cup 2</button>
+                </div>
+                <p id="pour-status" style="font-size:12px; margin-top:10px;"></p>
+            </div>
+
+            <!-- Overlay 2: The Assassination (Bedchamber) -->
+            <div id="overlay-kill" class="minigame-overlay">
+                <h3>The Final Act</h3>
+                <p>Strike ONLY during the rapid heartbeats. Errors are fatal.</p>
+                <div id="heart-node">💤</div>
+                <div id="rhythm-text" style="margin-top: 10px; font-weight: bold; color: #444;">SLEEPING</div>
+                <p style="font-size: 13px;">Progress: <span id="kill-ui-progress">0</span>%</p>
+                <button onclick="executeStrike()" style="width: 150px; font-weight: bold;">STRIKE</button>
+                <p id="kill-feedback" style="font-size:12px; color: var(--bright-red);"></p>
+            </div>
+        </div>
+
+        <div class="narration-box" id="narrator">
+            "Basically just redlight green light"
+        </div>
+
+        <div class="controls-hint">
+            <strong>Controls:</strong> Use <b>W A S D</b> to walk. Reach the exit to advance.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let currentRoomIndex = 0; 
+        const rooms = ["COURTYARD", "GREAT HALL", "CORRIDOR", "BEDCHAMBER"];
+        let suspicion = 0;
+
+        let player = { x: 40, y: 160, size: 14, speed: 3.5 };
+        let keys = {};
+
+        // Room 0 Parameters (Hardened AI)
+        let banquo = { x: 330, y: 160, state: "LOOKING_AWAY", timer: 0 };
+
+        // Room 1 Parameters
+        let guardTable = { x: 500, y: 160, size: 30, active: true };
+        let pourInterval;
+        let cup1Fluid = 0, cup2Fluid = 0;
+
+        // Room 2 Parameters (More, Smaller Phantoms)
+        let phantoms = [
+            { x: 140, y: 80, r: 10, active: true },
+            { x: 260, y: 240, r: 10, active: true },
+            { x: 380, y: 100, r: 10, active: true },
+            { x: 480, y: 200, r: 10, active: true },
+            { x: 550, y: 90, r: 10, active: true }
+        ];
+
+        // Room 3 Parameters
+        let duncanBed = { x: 520, y: 160, size: 40 };
+        let rhythmInterval;
+        let isVulnerable = false;
+        let murderProgress = 0;
+
+        window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
+        window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+        canvas.addEventListener('mousedown', handleCanvasClick);
+
+        function changeRoom(index) {
+            currentRoomIndex = index;
+            document.getElementById('ui-room').innerText = rooms[index];
+            player.x = 30; 
+            player.y = 160;
+
+            clearInterval(pourInterval);
+            clearInterval(rhythmInterval);
+            document.getElementById('overlay-pour').classList.remove('overlay-active');
+            document.getElementById('overlay-kill').classList.remove('overlay-active');
+
+            const narrative = document.getElementById('narrator');
+            if(index === 1) {
+                narrative.innerText = '"The guards sit on a table. Spike their drinks to knock them out."';
+            } else if(index === 2) {
+                narrative.innerText = '"3"';
+            } else if(index === 3) {
+                narrative.innerText = '"4"';
+            }
+        }
+
+        function raiseSuspicion(amount) {
+            suspicion = Math.min(Math.max(suspicion + amount, 0), 100);
+            document.getElementById('ui-suspicion').innerText = Math.floor(suspicion);
+            if(suspicion >= 100) {
+                alert("Game Over");
+                resetGameGlobal();
+            }
+        }
+
+        function loop() {
+            updateMechanics();
+            renderGraphics();
+            requestAnimationFrame(loop);
+        }
+
+        function updateMechanics() {
+            if (document.querySelector('.overlay-active')) return;
+
+            let moving = false;
+
+            if (keys['w'] || keys['arrowup']) { player.y -= player.speed; moving = true; }
+            if (keys['s'] || keys['arrowdown']) { player.y += player.speed; moving = true; }
+            if (keys['a'] || keys['arrowleft']) { player.x -= player.speed; moving = true; }
+            if (keys['d'] || keys['arrowright']) { player.x += player.speed; moving = true; }
+
+            if (player.x < 15) player.x = 15;
+            if (player.y < 20) player.y = 20;
+            if (player.y > canvas.height - 20) player.y = canvas.height - 20;
+
+            if (player.x > canvas.width - 20) {
+                if (currentRoomIndex === 0) {
+                    changeRoom(1);
+                } else if (currentRoomIndex === 1 && !guardTable.active) {
+                    changeRoom(2);
+                } else if (currentRoomIndex === 2 && phantoms.every(p => !p.active)) {
+                    changeRoom(3);
+                } else if (currentRoomIndex === 1 || currentRoomIndex === 2) {
+                    player.x = canvas.width - 35;
+                }
+            }
+
+            // Room 0 Logic: Tighter, faster Windows
+            if (currentRoomIndex === 0) {
+                banquo.timer++;
+                
+                if (banquo.state === "LOOKING_AWAY" && banquo.timer > 90) {
+                    banquo.state = "WARNING";
+                    banquo.timer = 0;
+                } else if (banquo.state === "WARNING" && banquo.timer > 28) { // Shrunk reaction window
+                    banquo.state = "WATCHING";
+                    banquo.timer = 0;
+                } else if (banquo.state === "WATCHING" && banquo.timer > 70) {
+                    banquo.state = "LOOKING_AWAY";
+                    banquo.timer = 0;
+                }
+
+                if (moving && banquo.state === "WATCHING") {
+                    raiseSuspicion(3.5); // Increased penalty speed
+                }
+            }
+
+            if (currentRoomIndex === 1 && guardTable.active) {
+                let dist = Math.hypot(player.x - guardTable.x, player.y - guardTable.y);
+                if (dist < 40) {
+                    document.getElementById('overlay-pour').classList.add('overlay-active');
+                }
+            }
+
+            if (currentRoomIndex === 3) {
+                let dist = Math.hypot(player.x - duncanBed.x, player.y - duncanBed.y);
+                if (dist < 50) {
+                    document.getElementById('overlay-kill').classList.add('overlay-active');
+                    setupRhythmGame();
+                }
+            }
+        }
+
+        function renderGraphics() {
+            ctx.fillStyle = "#030303";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = "#111";
+            ctx.lineWidth = 4;
+            ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+            let exitUnlocked = false;
+            if (currentRoomIndex === 0) exitUnlocked = true;
+            if (currentRoomIndex === 1 && !guardTable.active) exitUnlocked = true;
+            if (currentRoomIndex === 2 && phantoms.every(p => !p.active)) exitUnlocked = true;
+
+            if (exitUnlocked) {
+                ctx.fillStyle = "rgba(110, 0, 0, 0.4)";
+                ctx.fillRect(canvas.width - 25, 100, 15, 120);
+                ctx.fillStyle = "#444";
+                ctx.font = "9px Arial";
+                ctx.fillText("EXIT", canvas.width - 23, 165);
+            }
+
+            if (currentRoomIndex === 0) {
+                let color = "#333";
+                let text = "LOOKING AWAY";
+                
+                if (banquo.state === "WARNING") {
+                    color = varWarningYellow();
+                    text = "TURNING...";
+                } else if (banquo.state === "WATCHING") {
+                    color = varBrightRed();
+                    text = "ALERT!";
+                }
+
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(banquo.x, banquo.y, 16, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = "#888";
+                ctx.font = "10px monospace";
+                ctx.textAlign = "center";
+                ctx.fillText(text, banquo.x, banquo.y - 25);
+            } 
+            else if (currentRoomIndex === 1) {
+                ctx.fillStyle = guardTable.active ? "#331a00" : "#140a00";
+                ctx.fillRect(guardTable.x - guardTable.size/2, guardTable.y - guardTable.size/2, guardTable.size, guardTable.size);
+                ctx.fillStyle = "#888";
+                ctx.font = "10px monospace";
+                ctx.textAlign = "center";
+                ctx.fillText(guardTable.active ? "GUARD TABLE" : "PASSED OUT", guardTable.x, guardTable.y - 25);
+            } 
+            else if (currentRoomIndex === 2) {
+                phantoms.forEach(p => {
+                    if (!p.active) return;
+                    ctx.fillStyle = "rgba(170, 0, 0, 0.8)";
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = "#fff";
+                    ctx.font = "10px monospace";
+                    ctx.fillText("🗡️", p.x - 5, p.y + 4);
+                });
+            } 
+            else if (currentRoomIndex === 3) {
+                ctx.fillStyle = "#251030";
+                ctx.fillRect(duncanBed.x - 20, duncanBed.y - 35, 40, 70);
+                ctx.fillStyle = "#888";
+                ctx.font = "10px monospace";
+                ctx.textAlign = "center";
+                ctx.fillText("DUNCAN", duncanBed.x, duncanBed.y - 45);
+            }
+
+            ctx.fillStyle = "#770000";
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#fff";
+            ctx.font = "11px monospace";
+            ctx.textAlign = "center";
+            ctx.fillText("M", player.x, player.y + 4);
+        }
+
+        function handleCanvasClick(e) {
+            if (currentRoomIndex !== 2) return;
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            phantoms.forEach(p => {
+                if (!p.active) return;
+                let clickDist = Math.hypot(mouseX - p.x, mouseY - p.y);
+                if (clickDist <= p.r + 4) {
+                    p.active = false;
+                }
+            });
+
+            if (phantoms.every(p => !p.active)) {
+                document.getElementById('narrator').innerText = '"The path is clear. The doorway stands unblocked before you."';
+            }
+        }
+
+        function startPour(num) {
+            clearInterval(pourInterval);
+            pourInterval = setInterval(() => {
+                if (num === 1 && cup1Fluid < 100) {
+                    cup1Fluid += 2.0; // Faster pour rate
+                    document.getElementById('fluid1').style.height = cup1Fluid + '%';
+                } else if (num === 2 && cup2Fluid < 100) {
+                    cup2Fluid += 2.0;
+                    document.getElementById('fluid2').style.height = cup2Fluid + '%';
+                }
+            }, 30);
+        }
+
+        function stopPour(num) {
+            clearInterval(pourInterval);
+            let checkVal = num === 1 ? cup1Fluid : cup2Fluid;
+
+            // Tight target window: 65% to 80%
+            if (checkVal >= 65 && checkVal <= 80) {
+                document.getElementById('pour-status').innerText = `Cup ${num} prepared securely.`;
+                document.getElementById('pour-status').style.color = "#4caf50";
+                if (num === 1) {
+                    document.getElementById('pourBtn1').disabled = true;
+                    document.getElementById('pourBtn2').disabled = false;
+                } else {
+                    guardTable.active = false;
+                    document.getElementById('overlay-pour').classList.remove('overlay-active');
+                    document.getElementById('narrator').innerText = '"The guards drink heavily, dropping directly into slumber. Move to the eastern exit."';
+                }
+            } else {
+                raiseSuspicion(35); // Harder penalty
+                document.getElementById('pour-status').innerText = "Spill detected! The fluid bounds are lost. Resetting...";
+                document.getElementById('pour-status').style.color = varBrightRed();
+                if (num === 1) {
+                    cup1Fluid = 0;
+                    document.getElementById('fluid1').style.height = '0%';
+                } else {
+                    cup2Fluid = 0;
+                    document.getElementById('fluid2').style.height = '0%';
+                }
+            }
+        }
+
+        function setupRhythmGame() {
+            clearInterval(rhythmInterval);
+            murderProgress = 0;
+            document.getElementById('kill-ui-progress').innerText = murderProgress;
+            document.getElementById('kill-feedback').innerText = "";
+            runRhythmLoop();
+        }
+
+        function runRhythmLoop() {
+            if (!document.getElementById('overlay-kill').classList.contains('overlay-active')) return;
+            
+            const heartNode = document.getElementById('heart-node');
+            const rhythmText = document.getElementById('rhythm-text');
+            
+            isVulnerable = !isVulnerable;
+            
+            if (isVulnerable) {
+                heartNode.innerText = "❤️";
+                heartNode.classList.add('heart-pulse');
+                rhythmText.innerText = "STRIKE NOW";
+                rhythmText.style.color = "#4caf50";
+                rhythmInterval = setTimeout(runRhythmLoop, 850); // Shrunk vulnerability window
+            } else {
+                heartNode.innerText = "💤";
+                heartNode.classList.remove('heart-pulse');
+                rhythmText.innerText = "SLEEPING";
+                rhythmText.style.color = "#444";
+                rhythmInterval = setTimeout(runRhythmLoop, 1500);
+            }
+        }
+
+        function executeStrike() {
+            const fb = document.getElementById('kill-feedback');
+            if (isVulnerable) {
+                murderProgress += 25; // Requires 4 accurate strikes instead of 3
+                if (murderProgress > 100) murderProgress = 100;
+                document.getElementById('kill-ui-progress').innerText = murderProgress;
+                fb.innerText = "The blow matches his breath rhythm perfectly.";
+                fb.style.color = "#4caf50";
+                
+                if (murderProgress >= 100) {
+                    clearInterval(rhythmInterval);
+                    document.getElementById('overlay-kill').classList.remove('overlay-active');
+                    document.getElementById('stage-container').innerHTML = `
+                        <div style="color:var(--bright-red); text-align:center; padding-top:100px; font-family:inherit;">
+                            <h2>REGICIDE COMMITTED</h2>
+                            <p>"Sleep no more! Macbeth does murder sleep..."</p>
+                            <p style="color:#aaa; font-size:12px;">Prototype Complete. The crown is secured.</p>
+                            <button onclick="window.location.reload()">Restart Experience</button>
+                        </div>`;
+                }
+            } else {
+                raiseSuspicion(40); // Severe mistime penalty
+                fb.innerText = "Duncan gasped loudly! The rhythm was broken.";
+                fb.style.color = varBrightRed();
+            }
+        }
+
+        function resetGameGlobal() {
+            suspicion = 0;
+            cup1Fluid = 0;
+            cup2Fluid = 0;
+            guardTable.active = true;
+            banquo.state = "LOOKING_AWAY";
+            banquo.timer = 0;
+            phantoms.forEach(p => p.active = true);
+            document.getElementById('fluid1').style.height = '0%';
+            document.getElementById('fluid2').style.height = '0%';
+            document.getElementById('pourBtn1').disabled = false;
+            document.getElementById('pourBtn2').disabled = true;
+            document.getElementById('ui-suspicion').innerText = suspicion;
+            changeRoom(0);
+        }
+
+        function varBrightRed() { return '#cc0000'; }
+        function varWarningYellow() { return '#b8860b'; }
+
+        changeRoom(0);
+        loop();
+    </script>
+</body>
+</html>
+
+
+<!--
+
+name: macdeath - the tale of regicide
+
+you are: a henchman hired by lady mac as in this timeline, macbeth is way too scared to commit regicide, called "marb"
+setting: the witches hut -> castle yard -> the castle -> duncans chamber
+
+minigames:
+
+- game 0 (the witches hut) - getting the prophecy pieces from the witches and lady macbeth, you have to collect them as notes on the floor and piece them together to get the task and progress
+- game 1 (entering the castle, outside, banquo guarding) - red light green light with banquo like normal
+- game 2 (inside where you have to put most guards to sleep) - timed where you have to spike the drink when the guards are unaware with the sleeping powder
+- game 3 (inside the armoury) - you have to find the real dagger, and if you grab a fake dagger suspicion goes up
+- game 4 (hallway to chamber) - halway with guards moving around with the flashlight vision minigame effect, if you are in the vision area, you get chased and suspicion meter goes up until you are out of the vision area (and the guard stops chasing you) and get to the end.
+- final game (duncans chamber) - duncan where you need to do the duncan minigame.
+- post game(optional extension area) - going back to lady macbeth and trying to wash the blood off and put the daggers in place within 30 seconds.
+
+-->
