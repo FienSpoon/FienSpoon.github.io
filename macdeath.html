@@ -50,7 +50,7 @@
         
         /* Duncan Assassination Minigame Bar */
         #duncan-bar-container { position: absolute; bottom: 10%; left: 50%; transform: translateX(-50%); width: 400px; height: 30px; border: 3px solid white; background: #111; z-index: 60;}
-        #duncan-target { position: absolute; left: 40%; width: 20%; height: 100%; background: rgba(0, 255, 0, 0.4); border-left: 2px dashed #0f0; border-right: 2px dashed #0f0;}
+        #duncan-target { position: absolute; left: 35%; width: 30%; height: 100%; background: rgba(0, 255, 0, 0.4); border-left: 2px dashed #0f0; border-right: 2px dashed #0f0;}
         #duncan-cursor { position: absolute; left: 0%; width: 4px; height: 100%; background: white; z-index: 61;}
         
         /* Speedrun Timer */
@@ -66,6 +66,8 @@
     <!-- Audio Elements (Will likely fail to load, handled gracefully in JS) -->
     <audio id="bgm-menu" src="musicMenu.mp3" loop></audio>
     <audio id="bgm-game" src="musicGame.mp3" loop></audio>
+    <audio id="bgm-boss" src="bossMusic.mp3" loop></audio>
+    <audio id="bgm-victory" src="victoryMusic.mp3" loop></audio>
 
     <div id="game-wrapper" class="relative w-[800px] h-[600px] pixel-border bg-black overflow-hidden">
         
@@ -144,11 +146,70 @@
             <button onclick="showMenu('menu-main')" class="mt-12 px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white border border-gray-500">Back</button>
         </div>
 
-        <!-- Minigames (Placeholder) -->
-        <div id="menu-minigames" class="absolute inset-0 z-50 hidden flex flex-col items-center justify-center bg-black/90">
-            <h2 class="text-3xl text-white mb-8">OTHER MINIGAMES</h2>
-            <p class="text-gray-400">Locked. Complete the main campaign first!</p>
-            <button onclick="showMenu('menu-main')" class="mt-12 px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white border border-gray-500">Back</button>
+        <!-- Minigames Section -->
+        <div id="menu-minigames" class="absolute inset-0 z-50 hidden flex flex-col items-center justify-center bg-black/95 backdrop-blur-sm overflow-y-auto p-8">
+            <h2 class="text-4xl font-bold text-blood mb-4 tracking-widest uppercase shadow-black drop-shadow-lg">Arcade Vault</h2>
+            <p class="text-gray-400 mb-6 text-center max-w-lg text-sm font-bold">Select a stage to practice your skills. Speedrun timer will run during practice.</p>
+            
+            <div class="grid grid-cols-2 gap-4 w-full max-w-2xl">
+                <button onclick="startArcade(0)" class="p-3 bg-gray-800 hover:bg-blood text-white border border-gray-600 transition-all flex flex-col items-center text-center">
+                    <span class="text-base font-bold">Witches' Hut</span>
+                    <span class="text-[9px] text-gray-400 uppercase tracking-tighter mt-1">Collect the prophecy pieces</span>
+                </button>
+                <button onclick="startArcade(1)" class="p-3 bg-gray-800 hover:bg-blood text-white border border-gray-600 transition-all flex flex-col items-center text-center">
+                    <span class="text-base font-bold">Castle Yard</span>
+                    <span class="text-[9px] text-gray-400 uppercase tracking-tighter mt-1">Sneak past Lord Banquo</span>
+                </button>
+                <button onclick="startArcade(2)" class="p-3 bg-gray-800 hover:bg-blood text-white border border-gray-600 transition-all flex flex-col items-center text-center">
+                    <span class="text-base font-bold">Kitchen Brew</span>
+                    <span class="text-[9px] text-gray-400 uppercase tracking-tighter mt-1">Spike the guards' drinks</span>
+                </button>
+                <button onclick="startArcade(3)" class="p-3 bg-gray-800 hover:bg-blood text-white border border-gray-600 transition-all flex flex-col items-center text-center">
+                    <span class="text-base font-bold">The Armoury</span>
+                    <span class="text-[9px] text-gray-400 uppercase tracking-tighter mt-1">Find the Golden Dagger</span>
+                </button>
+                <button onclick="startArcade(4)" class="p-3 bg-gray-800 hover:bg-blood text-white border border-gray-600 transition-all flex flex-col items-center text-center">
+                    <span class="text-base font-bold">Hallway Patrol</span>
+                    <span class="text-[9px] text-gray-400 uppercase tracking-tighter mt-1">Evade the lantern lights</span>
+                </button>
+                <button onclick="startArcade(5)" class="p-3 bg-gray-800 hover:bg-blood text-white border border-gray-600 transition-all flex flex-col items-center text-center">
+                    <span class="text-base font-bold">Royal Bed</span>
+                    <span class="text-[9px] text-gray-400 uppercase tracking-tighter mt-1">Assassinate King Duncan</span>
+                </button>
+                <button onclick="startArcade(6)" class="p-3 bg-gray-800 hover:bg-blood text-white border border-gray-600 transition-all flex flex-col items-center text-center col-span-2">
+                    <span class="text-base font-bold">Post-Deed Cleanup</span>
+                    <span class="text-[9px] text-gray-400 uppercase tracking-tighter mt-1">Wash blood and plant evidence</span>
+                </button>
+            </div>
+            
+            <button onclick="showMenu('menu-main')" class="mt-8 px-8 py-2 bg-gray-700 hover:bg-gray-600 text-white border border-gray-500 font-bold uppercase text-sm tracking-widest">Back to Hall</button>
+        </div>
+
+        <!-- Dev Menu -->
+        <div id="menu-dev" class="absolute inset-0 z-[60] hidden flex flex-col items-center justify-center bg-purple-900/90 backdrop-blur-md font-mono">
+            <h2 class="text-3xl text-white font-bold mb-6 border-b-2 border-white pb-2 uppercase tracking-widest text-center">Dev Tools</h2>
+            <div class="grid grid-cols-2 gap-8 w-[600px]">
+                <div class="flex flex-col gap-2">
+                    <p class="text-white text-xs font-bold uppercase mb-1 text-purple-200">Teleport to Level</p>
+                    <button onclick="devTp(0)" class="px-2 py-1 bg-gray-800 hover:bg-purple-700 text-white border border-gray-600 text-sm">0: Witches Hut</button>
+                    <button onclick="devTp(1)" class="px-2 py-1 bg-gray-800 hover:bg-purple-700 text-white border border-gray-600 text-sm">1: Castle Yard</button>
+                    <button onclick="devTp(2)" class="px-2 py-1 bg-gray-800 hover:bg-purple-700 text-white border border-gray-600 text-sm">2: Kitchen</button>
+                    <button onclick="devTp(3)" class="px-2 py-1 bg-gray-800 hover:bg-purple-700 text-white border border-gray-600 text-sm">3: Armoury</button>
+                    <button onclick="devTp(4)" class="px-2 py-1 bg-gray-800 hover:bg-purple-700 text-white border border-gray-600 text-sm">4: Hallway</button>
+                    <button onclick="devTp(5)" class="px-2 py-1 bg-gray-800 hover:bg-purple-700 text-white border border-gray-600 text-sm">5: Duncan Chamber</button>
+                    <button onclick="devTp(6)" class="px-2 py-1 bg-gray-800 hover:bg-purple-700 text-white border border-gray-600 text-sm">6: Post Game</button>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <p class="text-white text-xs font-bold uppercase mb-1 text-purple-200">State / Cheats</p>
+                    <button onclick="addSuspicion(-50)" class="px-2 py-1 bg-green-800 hover:bg-green-700 text-white border border-gray-600 text-sm">Lower Suspicion</button>
+                    <button onclick="addSuspicion(50)" class="px-2 py-1 bg-red-800 hover:bg-red-700 text-white border border-gray-600 text-sm">Raise Suspicion</button>
+                    <button onclick="pickedWeaponIndex = 1; showMessage('Cheat: Dagger Equipped')" class="px-2 py-1 bg-gray-800 hover:bg-purple-700 text-white border border-gray-600 text-sm">Give Correct Dagger</button>
+                    <button onclick="bloodWashed = true; daggersPlaced = true; showMessage('Cheat: Evidence Handled')" class="px-2 py-1 bg-gray-800 hover:bg-purple-700 text-white border border-gray-600 text-sm">LV6: Skip Tasks</button>
+                    <button onclick="gameState='PLAYING'; document.getElementById('menu-dev').classList.add('hidden');" class="px-2 py-1 bg-blue-800 hover:bg-blue-700 text-white border border-gray-600 text-sm">Force Play Mode</button>
+                    <button onclick="winGame(); document.getElementById('menu-dev').classList.add('hidden');" class="px-2 py-1 bg-yellow-600 hover:bg-yellow-500 text-black border border-gray-600 text-sm font-bold">Instant Victory</button>
+                </div>
+            </div>
+            <button onclick="document.getElementById('menu-dev').classList.add('hidden')" class="mt-8 px-8 py-2 bg-gray-700 hover:bg-gray-600 text-white border border-gray-500 font-bold">CLOSE</button>
         </div>
 
         <!-- Game Over Screen -->
@@ -190,15 +251,17 @@
             banquoTurning: { src: 'banquoturning.png', fallback: '#aa5500', w: 48, h: 48, label: 'BANQUO' },
             banquoLooking: { src: 'banquolooking.png', fallback: '#880000', w: 48, h: 48, label: 'BANQUO' },
             wp1: { src: 'wp1.png', fallback: '#777', w: 48, h: 48, label: 'MACE' },
-            wp2: { src: 'wp2.png', fallback: '#cc0', w: 48, h: 48, label: 'DAGGER' },
+            wp2: { src: 'wp2.png', fallback: '#cc0', w: 64, h: 64, label: 'DAGGER' },
             wp3: { src: 'wp3.png', fallback: '#77a', w: 48, h: 48, label: 'SWORD' },
-            drink: { src: 'drink.png', fallback: 'silver', w: 22, h: 30, label: 'DRINK' },
-            drinkSpiked: { src: 'drinkSpiked.png', fallback: 'purple', w: 22, h: 30, label: 'SPIKED DRINK' },
-            prophecyPiece: { src: 'prophecyPiece.png', fallback: 'white', w: 24, h: 24, label: 'PROPHECY' },
+            drink: { src: 'drink.png', fallback: 'silver', w: 60, h: 80, label: 'DRINK' },
+            drinkSpiked: { src: 'drinkSpiked.png', fallback: 'purple', w: 60, h: 80, label: 'SPIKED DRINK' },
+            prophecyPiece: { src: 'prophecyPiece.png', fallback: 'white', w: 72, h: 72, label: 'PROPHECY' },
             cauldron: { src: 'cauldron.png', fallback: '#0a2a0a', w: 120, h: 120, label: 'CAULDRON' },
             daggerBloody: { src: 'daggerBloody.png', fallback: '#cc0000', w: 48, h: 48, label: 'BLOODY DAGGER' },
             heart: { src: 'heart.png', fallback: '#f00', w: 48, h: 48, label: 'HEART' },
             floorStone: { src: 'floorStone.png', fallback: '#3a3a3a' },
+            sink: { src: 'sink.png', fallback: '#88ccff', w: 80, h: 80, label: 'SINK' },
+            sinkBloody: { src: 'sinkBloody.png', fallback: '#cc0000', w: 80, h: 80, label: 'SINK' },
             floorWood: { src: 'floorWood.png', fallback: '#4a2f1d' },
             floorGrass: { src: 'floorGrass.png', fallback: '#1a3a1a' }
         },
@@ -222,16 +285,18 @@
     const WIDTH = canvas.width;
     const HEIGHT = canvas.height;
 
-    let gameState = 'MENU'; // MENU, PLAYING, DIALOGUE, GAMEOVER, VICTORY
-    let currentLevelIndex = 0;
-    let lineStartTime = 0;
+    let gameState = 'LOADING'; // Initial state is LOADING
+    let currentLevelIndex = 0; // Initialize currentLevelIndex
+    let killStage = 0; // 0: Aim, 1: Timing, 2: Mash // Initialize killStage
+    let lineStartTime = 0; // Initialize lineStartTime
     
-    let suspicion = 0;
-    const MAX_SUSPICION = 100;
+    let suspicion = 0; // Initialize suspicion
+    const MAX_SUSPICION = 100; // Define MAX_SUSPICION
     
-    let pickedWeaponIndex = -1;
     let bloodWashed = false;
     let daggersPlaced = false;
+
+    let pickedWeaponIndex = -1; // Initialize
 
     // Timer logic
     let startTime = 0;
@@ -447,16 +512,18 @@
     /* --- RENDERING --- */
     function drawSprite(imgObj, x, y, angle = 0) {
         if (!imgObj) return;
+        const w = imgObj.w || 48; // Safety default
+        const h = imgObj.h || 48;
         ctx.save();
-        ctx.translate(x + imgObj.w / 2, y + imgObj.h / 2);
+        ctx.translate(x + w / 2, y + h / 2);
         ctx.rotate(angle);
         
         if (imgObj.failed || !imgObj.complete) {
             // Fallback rendering
             ctx.fillStyle = imgObj.fallback || '#FFF';
-            ctx.fillRect(-imgObj.w / 2, -imgObj.h / 2, imgObj.w, imgObj.h);
+            ctx.fillRect(-w / 2, -h / 2, w, h);
         } else {
-            ctx.drawImage(imgObj, -imgObj.w / 2, -imgObj.h / 2, imgObj.w, imgObj.h);
+            ctx.drawImage(imgObj, -w / 2, -h / 2, w, h);
         }
         ctx.restore();
 
@@ -465,7 +532,7 @@
             ctx.fillStyle = '#FFF';
             ctx.font = '10px Courier';
             ctx.textAlign = 'center';
-            ctx.fillText(imgObj.label, x + imgObj.w / 2, y - 5);
+            ctx.fillText(imgObj.label, x + w / 2, y - 5);
         }
     }
 
@@ -578,7 +645,7 @@
                         this.collected++;
                         showMessage(`Prophecy Piece ${this.collected}/3 Collected`);
                         if (this.collected >= 3 && !this.puzzleLaunched) {
-                            showMessage("All pieces gathered! Go to the cauldron to assemble the prophecy.", 5000);
+                            showMessage("All pieces gathered! Go to the cauldron and press 'E' to assemble the prophecy.", 5000);
                         }
                     }
                 });
@@ -632,7 +699,9 @@
                 // Draw Notes
                 this.notes.forEach(n => {
                     if (!n.active) return;
-                    drawSprite(ASSETS.loadedImages.prophecyPiece, n.x, n.y);
+                    const img = ASSETS.loadedImages.prophecyPiece;
+                    // Center large image over small hitbox
+                    drawSprite(img, n.x + (n.w - img.w)/2, n.y + (n.h - img.h)/2);
                 });
 
                 player.draw();
@@ -705,12 +774,12 @@
         {
             banquoState: 'AWAY', // AWAY, TURNING, LOOKING
             stateTimer: 0,
-            path: [ // Define a more winding path
-                {x: 350, y: 50, w: 100, h: 200}, // Top vertical segment
-                {x: 100, y: 300, w: 600, h: 80}  // cross path
-            ],
+            pathAmplitude: 150,
+            pathFrequency: 0.01396, // (2 * PI) / 450 to sync path at y=50 and y=500
+            pathWidth: 100,
             init: function() {
-                player.x = 110; player.y = 310;
+                // Center player on the start of the wavy vertical path
+                player.x = 400 - player.w/2; player.y = 500;
                 this.banquoState = 'AWAY';
                 this.stateTimer = 3000;
                 startDialogue("Marb (Thinking)", [
@@ -721,17 +790,11 @@
             },
             update: function(dt) {
                 player.update(dt); // Update player movement first
-
-                let onPath = false;
-                this.path.forEach(p => {
-                    // Check if player's center is within the path segment
-                    const playerCenterX = player.x + player.w / 2;
-                    const playerCenterY = player.y + player.h / 2;
-                    if (playerCenterX > p.x && playerCenterX < p.x + p.w &&
-                        playerCenterY > p.y && playerCenterY < p.y + p.h) {
-                        onPath = true;
-                    }
-                });
+                
+                const playerCenterX = player.x + player.w / 2;
+                const playerCenterY = player.y + player.h / 2;
+                const pathCenterX = 400 + Math.sin((playerCenterY - 50) * this.pathFrequency) * this.pathAmplitude;
+                let onPath = Math.abs(playerCenterX - pathCenterX) < (this.pathWidth / 2);
 
                 // Slower movement and suspicion if off path
                 if (!onPath) {
@@ -768,19 +831,12 @@
             draw: function() {
                 drawMapBackground('grass');
                 
-                // Draw Windy Path
-                ctx.fillStyle = '#666'; // Darker path color
-                ctx.fillRect(350, 50, 100, 550); // Main vertical path
-                ctx.fillRect(100, 300, 600, 80); // Main horizontal path
-
+                // Draw Wavy Path segments
                 ctx.fillStyle = '#444';
-                this.path.forEach(p => {
-                    ctx.fillRect(p.x, p.y, p.w, p.h);
-                    // Path border
-                    ctx.strokeStyle = '#555';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(p.x, p.y, p.w, p.h);
-                });
+                for (let y = 50; y < 550; y += 4) {
+                    const x = 400 + Math.sin((y - 50) * this.pathFrequency) * this.pathAmplitude;
+                    ctx.fillRect(x - this.pathWidth/2, y, this.pathWidth, 5);
+                }
 
                 // Draw Banquo
                 let sprite = ASSETS.loadedImages.banquoAway;
@@ -857,7 +913,7 @@
 
                 // Drink
                 const drinkImg = this.drinkSpiked ? ASSETS.loadedImages.drinkSpiked : ASSETS.loadedImages.drink;
-                drawSprite(drinkImg, 400, 290);
+                drawSprite(drinkImg, 400 - drinkImg.w/2, 290 - drinkImg.h/2);
 
                 // Progress Bar
                 if (this.spikeProgress > 0) {
@@ -928,7 +984,7 @@
                     {x: 200, y: 220, w: 400, h: 20}, // Central island floor
                 ];
 
-                startDialogue("Marb", ["So many blades. I must find the *true* dagger.", "Lady Mac said: 'The King's blade bears a golden rune upon the hilt.'"], null, true);
+                startDialogue("Marb", ["Now to find the weapon.", "It must be a dagger, otherwise I will get caught.'"], null, true);
             },
             update: function(dt) {
                 let oldX = player.x;
@@ -984,22 +1040,35 @@
                     ctx.fillStyle = '#fff';
                     ctx.fillRect(740, 250, 10, 100); // Door on right
                 }
+
+                // Darkness effect (Fog of War) - Limit visibility radius
+                const lightRadius = 160;
+                ctx.save();
+                const gradient = ctx.createRadialGradient(
+                    player.x + player.w / 2, player.y + player.h / 2, 40,
+                    player.x + player.w / 2, player.y + player.h / 2, lightRadius
+                );
+                gradient.addColorStop(0, 'rgba(0,0,0,0)');
+                gradient.addColorStop(1, 'rgba(0,0,0,0.98)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, WIDTH, HEIGHT);
+                ctx.restore();
             }
         },
 
         // GAME 4: Hallway (Vision Cones)
         {
             guards: [],
-            hallwayLength: 3000,
+            hallwayLength: 2600,
             cameraX: 0,
             init: function() {
                 player.x = 60; player.y = 300;
                 this.cameraX = 0;
                 this.guards = [];
-                // Generate 35 guards for an extremely long hallway feel
-                for(let i = 0; i < 35; i++) {
+                // Spread guards further apart (160px vs 80px) to make navigation easier
+                for(let i = 0; i < 13; i++) {
                     this.guards.push({
-                        x: 250 + i * 80, 
+                        x: 400 + i * 160, 
                         y: 100 + Math.random() * 300, 
                         dir: Math.random() > 0.5 ? 1 : -1, 
                         speed: 0.05 + Math.random() * 0.1, 
@@ -1007,7 +1076,7 @@
                         min: 80
                     });
                 }
-                startDialogue("Marb", ["This hallway is endless... and swarming with guards.", "I must keep moving right to reach the King's chambers.", "The shadows between lanterns are my only friends."], null, true);
+                startDialogue("Marb", ["This hallway is endless... and swarming with guards.", "I must keep moving right to reach the King's chambers.", "I mustn't be seen by the guards."], null, true);
             },
             update: function(dt) {
                 // Custom update for scrolling: allow movement across the long length
@@ -1084,49 +1153,114 @@
         // GAME 5: Duncan Chamber
         {
             duncanAwake: false,
-            stabs: 0,
             crosshair: { x: 400, y: 300 },
             target: { x: 400, y: 200, r: 20 },
+            sliderPos: 0,
+            sliderDir: 1,
+            mashCount: 0,
+            noise: 0,
+            mumbleTimer: 0,
+            isMumbling: false,
+            stage0Hits: 0,
+            stage1Hits: 0,
+            eLastFrame: false,
             init: function() {
                 player.x = 400; player.y = 500;
-                this.stabs = 0;
-                startDialogue("Marb", ["The King slumbers.", "I must aim for his cold heart and strike with SPACE!"]);
+                killStage = 0;
+                this.mashCount = 0; // Success progress (0-100)
+                this.noise = 0;
+                this.sliderPos = 50; 
+                this.stage0Hits = 0;
+                this.stage1Hits = 0;
+                this.eLastFrame = false;
+                startDialogue("Marb", [
+                    "The King slumbers.",
+                    "Stage 1: I must aim for his cold heart and strike with SPACE!",
+                    "I need 5 precise strikes to weaken him."
+                ]);
             },
             update: function(dt) {
                 player.update(dt);
 
-                // Aiming Minigame Logic: Crosshair wobbles around target
-                const time = Date.now() * 0.003;
-                this.crosshair.x = this.target.x + Math.sin(time) * 60;
-                this.crosshair.y = this.target.y + Math.cos(time * 0.7) * 40;
-
                 // Near bed
                 if (checkCollision(player, {x: 300, y: 150, w: 200, h: 200})) {
-                    if (keys.space && !spaceProcessed) {
-                        spaceProcessed = true;
-                        
-                        // Check if the correct weapon was picked
-                        if (pickedWeaponIndex !== 1) {
-                            triggerGameOver("You used the wrong weapon! It shattered against the King's armor!");
-                            return;
-                        }
-                        
-                        // Check Aim
-                        let dist = Math.hypot(this.crosshair.x - this.target.x, this.crosshair.y - this.target.y);
-                        let inZone = (dist < this.target.r);
+                    if (killStage === 0) {
+                        // Stage 0: Aiming (Easier: slower wobble)
+                        const time = Date.now() * 0.0035; 
+                        this.target.r = 30; // Larger hitbox
+                        this.crosshair.x = this.target.x + Math.sin(time) * 80;
+                        this.crosshair.y = this.target.y + Math.cos(time * 0.8) * 50;
 
-                        if (inZone) {
-                            this.stabs++;
-                            showMessage(`Strike ${this.stabs}/3!`);
-                            if (this.stabs >= 3) {
-                                loadLevel(6); // Post game
-                                showMessage("Duncan is no more. The deed is done.", 5000);
+                        if (keys.space && !spaceProcessed) {
+                            spaceProcessed = true;
+                            if (pickedWeaponIndex !== 1) {
+                                triggerGameOver("Wrong weapon! It shattered!");
+                                return;
                             }
+                            let dist = Math.hypot(this.crosshair.x - this.target.x, this.crosshair.y - this.target.y);
+                            if (dist < this.target.r) {
+                                this.stage0Hits++;
+                                if (this.stage0Hits >= 5) {
+                                    killStage = 1;
+                                    showMessage("He's gasping...", 3000);
+                                    startDialogue("Marb", ["He's struggling for breath!", "Stage 2: I must time my next 5 strikes perfectly with his heavy breathing. Press SPACE in the center!"]);
+                                } else {
+                                    showMessage(`Precise Strike ${this.stage0Hits}/5!`, 2000);
+                                }
+                            } else {
+                                addSuspicion(25, "Duncan grunted! You missed the heart!");
+                            }
+                        }
+                    } else if (killStage === 1) {
+                        // Stage 1: Timing Slider (Easier: slower speed)
+                        document.getElementById('duncan-ui').classList.remove('hidden');
+                        const speed = 0.08;
+                        this.sliderPos += speed * this.sliderDir * dt;
+                        if (this.sliderPos > 100 || this.sliderPos < 0) this.sliderDir *= -1;
+                        
+                        document.getElementById('duncan-cursor').style.left = `${this.sliderPos}%`;
+
+                        if (keys.space && !spaceProcessed) {
+                            spaceProcessed = true;
+                            if (this.sliderPos > 35 && this.sliderPos < 65) {
+                                this.stage1Hits++;
+                                if (this.stage1Hits >= 5) {
+                                    killStage = 2;
+                                    document.getElementById('duncan-ui').classList.add('hidden');
+                                    showMessage("The final struggle!", 3000);
+                                    startDialogue("Marb", ["He's fighting back!", "Stage 3: Use 'A' and 'D' to keep the dagger steady in the center! Don't let it slip outside the zone!"]);
+                                } else {
+                                    showMessage(`Rhythmic Strike ${this.stage1Hits}/5!`, 2000);
+                                }
+                            } else {
+                                addSuspicion(20, "Gasp! You missed the rhythm!");
+                            }
+                        }
+                    } else if (killStage === 2) {
+                        // Stage 2: Steady Grip / Balance Struggle (Harder: higher jitter and slower progress)
+                        // Increased struggle force
+                        const struggleForce = (Math.sin(Date.now() * 0.005) * 0.5) + (Math.random() - 0.5) * 2.0;
+                        this.sliderPos += struggleForce;
+
+                        if (keys.a) this.sliderPos -= 1.0;
+                        if (keys.d) this.sliderPos += 1.0;
+
+                        this.sliderPos = Math.max(0, Math.min(100, this.sliderPos));
+
+                        const inZone = (this.sliderPos > 40 && this.sliderPos < 60);
+                        if (inZone) {
+                            this.mashCount += 0.02 * dt; // Slower progress
                         } else {
-                            addSuspicion(30, "Duncan grunted! You struck while he stirred!");
-                            // Knockback
-                            showMessage("Missed the timing! Duncan stirred!", 3000);
-                            player.y += 50;
+                            this.noise += 0.1 * dt;
+                            if (this.noise > 100) {
+                                addSuspicion(15, "Duncan is thrashing! Keep him steady!");
+                                this.noise = 0;
+                            }
+                        }
+
+                        if (this.mashCount >= 100) {
+                            loadLevel(6);
+                            showMessage("The King is dead.", 5000);
                         }
                     }
                 }
@@ -1147,15 +1281,38 @@
                 // Duncan
                 drawSprite(ASSETS.loadedImages.duncan, 384, 160);
 
-                // Aiming UI
-                if (checkCollision(player, {x: 300, y: 150, w: 200, h: 200})) {
-                    drawSprite(ASSETS.loadedImages.heart, this.target.x - 24, this.target.y - 24);
-                    ctx.beginPath(); ctx.arc(this.target.x, this.target.y, this.target.r, 0, Math.PI*2); ctx.stroke();
-                    
-                    ctx.strokeStyle = 'white';
-                    ctx.lineWidth = 1;
-                    ctx.beginPath(); ctx.moveTo(this.crosshair.x - 10, this.crosshair.y); ctx.lineTo(this.crosshair.x + 10, this.crosshair.y); ctx.stroke();
-                    ctx.beginPath(); ctx.moveTo(this.crosshair.x, this.crosshair.y - 10); ctx.lineTo(this.crosshair.x, this.crosshair.y + 10); ctx.stroke();
+                const inBedRange = checkCollision(player, {x: 300, y: 150, w: 200, h: 200});
+                if (inBedRange) {
+                    if (killStage === 0) {
+                        drawSprite(ASSETS.loadedImages.heart, this.target.x - 24, this.target.y - 24);
+                        ctx.beginPath(); ctx.arc(this.target.x, this.target.y, this.target.r, 0, Math.PI*2); ctx.stroke();
+                        ctx.strokeStyle = 'white';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath(); ctx.moveTo(this.crosshair.x - 10, this.crosshair.y); ctx.lineTo(this.crosshair.x + 10, this.crosshair.y); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(this.crosshair.x, this.crosshair.y - 10); ctx.lineTo(this.crosshair.x, this.crosshair.y + 10); ctx.stroke();
+                        ctx.fillStyle = "white"; ctx.fillText(`STRIKES: ${this.stage0Hits}/5`, 400, 390);
+                    } else if (killStage === 1) {
+                         ctx.fillStyle = "white"; ctx.textAlign = "center";
+                         ctx.fillText(`RHYTHM: ${this.stage1Hits}/5`, 400, 390);
+                    } else if (killStage === 2) {
+                        // Draw Steady/Balance UI
+                        ctx.fillStyle = "white";
+                        ctx.font = "14px Courier";
+                        ctx.textAlign = "center";
+                        ctx.fillText("STEADY THE BLADE (A/D)", 400, 400);
+                        
+                        ctx.fillStyle = "#111";
+                        ctx.fillRect(300, 410, 200, 20); // Bar
+                        ctx.fillStyle = "rgba(0, 255, 0, 0.4)";
+                        ctx.fillRect(300 + 80, 410, 40, 20); // Sweet spot
+                        ctx.fillStyle = "red";
+                        ctx.fillRect(300 + (this.sliderPos * 2) - 2, 405, 4, 30); // Cursor
+                        
+                        ctx.fillStyle = "darkred";
+                        ctx.fillRect(300, 450, 200, 10);
+                        ctx.fillStyle = "red";
+                        ctx.fillRect(300, 450, this.mashCount * 2, 10); // Final Progress
+                    }
                 }
 
                 player.draw();
@@ -1205,10 +1362,9 @@
                 ctx.font = '24px Courier';
                 ctx.fillText(`Time Left: ${Math.ceil(this.timer/1000)}s`, 150, 40);
 
-                // Sink
-                ctx.fillStyle = bloodWashed ? '#88ccff' : '#cc0000'; // Water color changes
-                ctx.fillRect(100, 200, 50, 50);
-                ctx.fillStyle = '#fff'; ctx.font = '12px Courier'; ctx.fillText('SINK', 125, 190);
+                // Sink (Updated to use asset)
+                const sinkImg = bloodWashed ? ASSETS.loadedImages.sink : ASSETS.loadedImages.sinkBloody;
+                drawSprite(sinkImg, 100 - (sinkImg.w-50)/2, 200 - (sinkImg.h-50)/2);
 
                 // Sleeping Guards (Place daggers)
                 drawSprite(ASSETS.loadedImages.guard, 650, 200, Math.PI);
@@ -1231,13 +1387,15 @@
         document.getElementById('menu-main').classList.add('hidden');
         document.getElementById('hud').classList.remove('hidden');
         gameState = 'PLAYING';
-        
-        try { document.getElementById('bgm-menu').pause(); } catch(e){}
-        try { 
-            let gMusic = document.getElementById('bgm-game');
-            gMusic.volume = 0.3;
-            gMusic.play().catch(e => console.log("Audio play prevented")); 
-        } catch(e){}
+
+        // Music start logic
+        const menuBgm = document.getElementById('bgm-menu');
+        const gameBgm = document.getElementById('bgm-game');
+        if (menuBgm) menuBgm.pause();
+        if (gameBgm) {
+            gameBgm.volume = 0.8;
+            gameBgm.play().catch(e => console.warn("Audio interaction needed"));
+        }
 
         suspicion = 0;
         updateSuspicionUI();
@@ -1252,6 +1410,21 @@
     function loadLevel(index) {
         document.getElementById('duncan-ui').classList.add('hidden');
         keys.w = keys.a = keys.s = keys.d = keys.e = keys.space = false;
+
+        // Dynamic Music Handling
+        try {
+            const gMusic = document.getElementById('bgm-game');
+            const bMusic = document.getElementById('bgm-boss');
+            if (index === 5) {
+                gMusic.pause();
+                bMusic.volume = 0.8;
+                bMusic.play().catch(e => {});
+            } else {
+                bMusic.pause();
+                if (gameState === 'PLAYING') gMusic.play().catch(e => {});
+            }
+        } catch(e) {}
+
         if (levels[index]) {
             currentLevelIndex = index;
             levels[index].init();
@@ -1274,7 +1447,13 @@
         document.getElementById('duncan-ui').classList.add('hidden');
         
         try { document.getElementById('bgm-game').pause(); } catch(e){}
-        try { document.getElementById('bgm-menu').play().catch(e=>{}); } catch(e){}
+        try { document.getElementById('bgm-boss').pause(); } catch(e){}
+        try { document.getElementById('bgm-victory').pause(); } catch(e){}
+        try { 
+            let mMusic = document.getElementById('bgm-menu');
+            mMusic.volume = 0.8;
+            mMusic.play().catch(e=>{}); 
+        } catch(e){}
         
         gameState = 'MENU';
         showMenu('menu-main');
@@ -1292,6 +1471,15 @@
         const now = Date.now();
         const diff = now - startTime;
         
+        // Switch to Victory Music
+        try {
+            document.getElementById('bgm-game').pause();
+            document.getElementById('bgm-boss').pause();
+            const vMusic = document.getElementById('bgm-victory');
+            vMusic.volume = 0.8;
+            vMusic.play().catch(e => {});
+        } catch(e) {}
+
         document.getElementById('screen-victory').classList.remove('hidden');
         
         if (speedrunActive) {
@@ -1307,7 +1495,20 @@
 
     // Initial setup
     document.addEventListener("DOMContentLoaded", () => {
-        try { document.getElementById('bgm-menu').play().catch(e => console.log("User interaction required for audio")); } catch(e){}
+        // Audio Unlocker: Modern browsers require a user gesture to play sound
+        const unlockAudio = () => {
+            sfx.init(); // Initialize context
+            if (sfx.ctx && sfx.ctx.state === 'suspended') sfx.ctx.resume();
+            
+            const menuBgm = document.getElementById('bgm-menu');
+            if (menuBgm) {
+                menuBgm.volume = 0.8;
+                if (gameState === 'LOADING' || gameState === 'MENU') menuBgm.play().catch(() => {});
+            }
+            
+            window.removeEventListener('click', unlockAudio);
+        };
+        window.addEventListener('click', unlockAudio);
         
         // Ensure scale fits screen width
         function resize() {
@@ -1319,6 +1520,54 @@
         resize();
     });
 
+    /* --- DEV TOOLS --- */
+    const devPhrase = "devmenu";
+    let devBuffer = "";
+    let lastDevKeyAt = 0;
+
+    window.addEventListener('keydown', e => {
+        const key = e.key.toLowerCase();
+        if (!/^[a-z0-9]$/.test(key)) return;
+        const now = Date.now();
+        if (now - lastDevKeyAt > 1500) devBuffer = "";
+        lastDevKeyAt = now;
+        devBuffer += key;
+        if (devBuffer.length > devPhrase.length) devBuffer = devBuffer.slice(-devPhrase.length);
+        if (devBuffer === devPhrase) {
+            document.getElementById('menu-dev').classList.toggle('hidden');
+            devBuffer = "";
+        }
+    });
+
+    function startArcade(levelIndex) {
+        document.getElementById('menu-minigames').classList.add('hidden');
+        document.getElementById('hud').classList.remove('hidden');
+        if (startTime === 0 || gameState !== 'PLAYING') startTime = Date.now();
+        
+        // Handle music transition
+        const menuBgm = document.getElementById('bgm-menu');
+        const gameBgm = document.getElementById('bgm-game');
+        if (menuBgm) menuBgm.pause();
+        if (gameBgm) {
+            gameBgm.volume = 0.8;
+            gameBgm.play().catch(e => {});
+        }
+
+        suspicion = 0;
+        updateSuspicionUI();
+        gameState = 'PLAYING';
+        if (speedrunActive) document.getElementById('speedrun-timer').classList.remove('hidden');
+        loadLevel(levelIndex);
+    }
+
+    function devTp(level) {
+        document.getElementById('menu-dev').classList.add('hidden');
+        document.getElementById('menu-main').classList.add('hidden');
+        document.getElementById('hud').classList.remove('hidden');
+        if (startTime === 0) startTime = Date.now();
+        gameState = 'PLAYING';
+        loadLevel(level);
+    }
 </script>
 </body>
 </html>
