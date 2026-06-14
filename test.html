@@ -1,0 +1,45 @@
+<!-- MINI API SUB COUNTER -->
+<div id="api-sub-counter" style="
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 15px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #ff0000;
+    font-family: sans-serif;
+    font-weight: bold;
+    width: fit-content;
+">
+    <span style="font-size: 12px; color: #aaa;">SUBS:</span>
+    <span id="sub-count-display">...</span>
+    
+    <script>
+        (function() {
+            const API_KEY = 'AIzaSyCsWWSOmgYlre0pvyOCivCppACCQ1TlhhY';
+            const CHANNEL_ID = 'UCvqwHR6iSA653e12bsh9avg';
+            const display = document.getElementById('sub-count-display');
+
+            async function updateCount() {
+                try {
+                    const r = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${CHANNEL_ID}&key=${API_KEY}`);
+                    const d = await r.json();
+                    const num = d.items[0].statistics.subscriberCount;
+                    display.innerText = Number(num).toLocaleString();
+                } catch (e) {
+                    display.innerText = "OFFLINE";
+                }
+            }
+
+            updateCount();
+            setInterval(updateCount, 300000); // Updates every 5 mins to save API quota
+        })();
+    </script>
+</div>
+
+
+
+
+
+<!--  -->

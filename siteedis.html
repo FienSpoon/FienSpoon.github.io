@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/x-icon" href="icon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeepSmol | Welcome!</title> 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://thegreenroom.neocities.org/webrings/tvtimewebring/onionring.css"/>
+    <link rel="stylesheet" href="https://epiccity.nekoweb.org/ring//onionring - small.css">
+    <style>
+        :root {
+            --bg-dark: #1a1a2e; /* Deep dark purple/blue */
+            --panel-bg: #2d3436; /* Dark grey panels */
+            --text-main: #f1f5f9;
+            --purple-accent: #a29bfe; /* Lighter purple for dark mode visibility */
+            --yellow-accent: #facc15;
+            --indie-border: 1px solid #000;
+        }
+
+        body {
+            font-family: sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            border: ridge rgb(175, 148, 29) 20px;
+            background-image: url('placeholder.png');
+            background-repeat: repeat; /* This is the default, but ensures tiling */
+            background-size: 100px 100px; /* Adjust this to control the size of each grid square */
+        }
+
+        /* --- Main Layout --- */
+        .site-container {
+            max-width: 900px;
+            margin: 60px auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .content-box {
+            background: var(--panel-bg);
+            border: ridge rgb(0, 0, 0) 6px;
+            margin-bottom: 30px;
+            position: relative;
+            box-shadow: 0 0 10px 12.5px rgba(0,0,0,0.3);
+            background-image: linear-gradient(to bottom, #494636, #2d3436);
+        }
+
+        .box-title {
+            background: var(--purple-accent);
+            color: #1a1a2e; /* Dark text for contrast on light purple */
+            padding: 2px 15px;
+            font-family: sans-serif;
+            font-size: 1.5rem;
+            display: inline-block;
+            margin-top: -18px;
+            margin-left: 15px;
+            border: ridge rgb(0, 0, 0) 3px;
+            font-weight: bold;
+        }
+
+        .box-body { padding: 25px; }
+
+        .marquee-box {
+            background: #000000;
+            color: var(--yellow-accent);
+            padding: 8px;
+            font-family: sans-serif;
+            border: var(--indie-border);
+            margin-bottom: 30px;
+        }
+
+        .sidebar-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-layout { grid-template-columns: 1fr; }
+        }
+
+        .profile-pic-container {
+            background: var(--yellow-accent);
+            border: var(--indie-border);
+            padding: 8px;
+            margin-bottom: 15px;
+        }
+
+        .profile-pic {
+            width: 100%;
+            display: block;
+            border: 2px solid #000;
+            filter: contrast(1.1);
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--yellow-accent);
+            border: 2px solid #000;
+            color: #000;
+            font-size: 1.2rem;
+            margin: 0 5px;
+            box-shadow: 2px 2px 0px #000;
+        }
+
+        .social-link:hover {
+            background: var(--purple-accent);
+            color: #000;
+            transform: translateY(-2px);
+        }
+
+        footer {
+            margin: 50px 0;
+            text-align: center;
+            font-family: sans-serif;
+            color: var(--yellow-accent);
+            background: #000;
+            padding: 10px 20px;
+            border: 2px solid var(--purple-accent);
+            display: block;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: #55efc4;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            border: 1px solid #000;
+        }
+
+        a { color: var(--yellow-accent); transition: 0.2s; }
+        a:hover { color: var(--purple-accent); }
+
+        /* Typography tweaks for dark mode */
+        h3 { color: var(--purple-accent); }
+
+        .webring {
+            display: inline-block;
+            vertical-align: middle;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+
+    <style>
+    :root {
+        --bg-dark: #1a1a2e;
+        --panel-dark: #2d3436;
+        --purple-accent: #a29bfe;
+        --yellow-accent: #facc15;
+        --indie-border: 1px solid #000;
+    }
+
+    .nav-wrapper {
+        background: var(--bg-dark);
+        border-bottom: var(--indie-border);
+        padding: 15px 10px;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        text-align: center;
+    }
+
+    .nav-title {
+        font-family: sans-serif;
+        font-size: 2.8rem;
+        color: var(--yellow-accent);
+        text-shadow: 3px 3px 0px #000;
+        margin-bottom: 12px;
+        display: block;
+        text-decoration: none;
+    }
+
+    .nav-links {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .nav-links a {
+        background: var(--purple-accent);
+        color: #1a1a2e;
+        border: 2px solid #000;
+        padding: 6px 16px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 1.2rem;
+        box-shadow: 3px 3px 0px #000;
+        transition: all 0.1s;
+        text-transform: uppercase;
+    }
+
+    .nav-links a:hover {
+        background: var(--yellow-accent);
+        transform: translate(-2px, -2px);
+        box-shadow: 5px 5px 0px #000;
+    }
+
+    .nav-links a:active {
+        transform: translate(1px, 1px);
+        box-shadow: 1px 1px 0px #000;
+    }
+</style>
+
+<div class="nav-wrapper">
+    <a href="index.html" class="nav-title">BEEPSMOL.COM</a>
+    <div class="nav-links">
+    <a href="https://beepsmol.com">Home</a>
+    <a href="https://beepsmol.com/projects">Projects</a>
+    <a href="https://beepsmol.com/music">Music</a>
+    <a href="https://beepsmol.com/blog">Blog</a>
+    </div>
+</div>
+
+    <div class="site-container">
+        <div class="marquee-box">
+            <marquee scrollamount="6">BEEP BEEP IM A SHEEP | I LIKE MAKING STUFF | THE INDIE WEB IS MY HOME | I LIKE BEES AND SHEEP | BEES + SHEEP = BEEP | NO I DO NOT HAVE PNEUMONOULTRAMICROSCOPICSILICOVOLCANOCONIOSIS | I REALLY LIKE UNDERTALE AND DELTARUNE | STUDIO GHIBLI IS SO COOL | YOU SHOULD SUBSCRIBE TO MY YOUTUBE CHANNEL | HOW'S YOUR DAY BEEN GOING? | ENJOY YOUR VISIT! | SPAMTON SPAMTON SPAMTON SPAMTON | PIPIS PIPIS PIPIS PIPIS | BREAKING NEWS : ABSOLUTELY NOTHING HAPPENED! | BREAKING NEWS: YOU JUST BLINKED AND BREATHED IN! YOU'RE WELCOME! | NO I'M (SADLY) NOT SECRETLY TOBY FOX STOP ASKING ME THAT </marquee>
+        </div>
+
+        <div class="sidebar-layout">
+            <!-- Sidebar -->
+            <aside>
+                <div class="content-box">
+                    <span class="box-title">ME!</span>
+                    <div class="box-body text-center">
+                        <div class="profile-pic-container">
+                            <img src="placeholder.png" 
+                                 onerror="this.src='https://via.placeholder.com/300/facc15/6c5ce7?text=BeepSmol'" 
+                                 alt="BeepSmol" 
+                                 class="profile-pic">
+                        </div>
+                        <h2 class="font-bold text-lg uppercase tracking-tighter text-yellow-400">BeepSmol</h2>
+                        <p class="text-[11px] mb-4 text-gray-400 font-bold italic">Game Dev / Music Maker</p>
+                        
+                        
+                        <div class="flex justify-center mt-2">
+                            <a href="https://www.youtube.com/@beepsmol?sub_confirmation=1" class="social-link"><i class="fab fa-youtube"></i></a>
+                            <a href="COMING SOON" class="social-link"><i class="fab fa-discord"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <span class="box-title">LINKS</span>
+                    <div class="box-body text-sm">
+                        <ul class="space-y-2 font-bold">
+                            <li><a href="https://beepsmol.atabook.org/?page=1">Sign the Guestbook!</a></li>
+                            <li><a href="https://beepsmol.com/projects">Some Projects</a></li>
+                            <li><a href="https://beepsmol.com/youtube">Youtube</a></li>
+                            <li><a href="https://www.yourworldoftext.com/~BeepSmol/">My World Of Text</a></li>
+                                <!--make the links pop out more so ppl click em-->
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <span class="box-title">CHATROOM</span>
+                    <div class="box-body" style="padding: 0;">
+                        <iframe src="https://www3.cbox.ws/box/?boxid=3553093&boxtag=rlb8eh" width="100%" height="450" allowtransparency="yes" allow="autoplay" frameborder="0" marginheight="0" marginwidth="0" scrolling="auto"></iframe>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main -->
+            <main>
+                <div class="content-box">
+                    <span class="box-title">ABOUT ME</span>
+                    <div class="box-body">
+                        <h3 class="text-3xl font-bold mb-4">Hi, I'm BeepSmol!</h3>
+                        <p class="mb-4 leading-relaxed text-gray-200">
+                            Welcome to my corner of the internet. I'm a Game developer, 
+                            Music producer, and YouTuber.
+                        </p>
+                        <p class="mb-4 text-gray-300">
+                            I like coding, making games, and producing music. This website is where I keep all my stuff and just hang out.
+                        </p>
+                        <img src="https://hitscounter.dev/api/hit?url=https%3A%2F%2Fbeepsmol.com&label=Site+Visits&icon=dot&color=%23a98eda&message=&style=for-the-badge&tz=UTC">
+                    </div>
+                </div>
+
+                <div class="content-box">
+                    <span class="box-title">STATUS</span>
+                    <div class="box-body">
+                        <div class="bg-black/40 border-2 border-purple-500 p-4">
+                            <div id="status-text" class="flex flex-col gap-2 font-bold text-sm uppercase text-gray-100">
+                                <div class="flex items-center gap-2">
+                                    <div class="status-dot animate-pulse"></div>
+                                    <span>Loading live status...</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-2 text-right">
+                            Powered by Discord + Lanyard
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                    <a href="https://beepsmol.com/youtube" target="_blank" class="block group" style="text-decoration: none;">
+                        <div class="bg-red-600 border-4 border-black p-4 flex items-center justify-center h-full transition-all transform hover:-translate-y-1">
+                            <i class="fab fa-youtube text-2xl text-white mr-3 group-hover:text-yellow-300 transition-all"></i>
+                            <span class="font-mono text-2xl font-black text-white tracking-widest group-hover:text-yellow-300 transition-all">SUBSCRIBE</span>
+                        </div>
+                    </a>
+                    <a href="https://beepsmol.com/pixelartgallery.html" class="block group" style="text-decoration: none;">
+                        <div class="bg-[#6c5ce7] border-4 border-black p-4 flex items-center justify-center h-full transition-all transform hover:-translate-y-1">
+                            <i class="fas fa-palette text-2xl text-white mr-3 group-hover:text-yellow-300 transition-all"></i>
+                            <span class="font-mono text-2xl font-black text-white tracking-widest group-hover:text-yellow-300 transition-all">GALLERY</span>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="content-box">
+                    <span class="box-title">BUTTONS</span>
+                    <div class="box-body text-center">
+                        <p class="mb-4 text-gray-300">It would be highly appreciated if you could link to my site if you like my work!</p>
+                        
+                        <div class="flex flex-col items-center gap-4 mb-8">
+                            <a href="https://beepsmol.com" target="_top"><img src="https://beepsmol.com/beepyicon.png" title="Beep's Website" alt="Beep's Website"/></a>
+                            
+                            <div class="w-full max-w-md">
+                                <p class="text-xs text-left mb-1 text-gray-400 font-bold uppercase">Copy Code:</p>
+                                <textarea readonly class="w-full bg-black text-green-400 font-mono text-xs p-3 border border-gray-600 h-24 focus:outline-none focus:border-yellow-400 resize-none" onclick="this.select()"><a href="https://beepsmol.com" target="_top"><img src="https://beepsmol.com/beepyicon.png" title="Beep's Website" alt="Beep's Website"/></a></textarea>
+                            </div>
+                        </div>
+
+                        <div class="border-t-2 border-dashed border-gray-700 pt-6">
+                            <h4 class="font-sans text-2xl text-yellow-400 mb-4">NEIGHBOURS/FRIENDS/COOL SITES</h4>
+                            <div class="flex flex-wrap justify-center gap-4 mb-6">
+                                <a href="https://kirbydogs.neocities.org/" target="_blank"><img src="https://kirbydogs.neocities.org/location-img/buttons/KDP%20and%20Inflect%20Now!.png" title="Visit KDP, today!" width="88"></a>
+                                <a href="https://winbows.neocities.org/" target="_blank"><img src="https://winbows.neocities.org/resources/winbows-btn.png" title="Winbows XP" alt="Winbows XP"/></a>
+                                <a href="https://onio.neocities.org" title="Visit Onio Café" target="_blank"><img src="https://onio.neocities.org/thebutton.gif" alt="Come Chat With Us!" width="88" height="31"></a>
+                                <a href="https://www.stopkillinggames.com/" target="_blank"><img src="https://www.stopkillinggames.com/_next/image?url=%2Flogos%2Fskg-logo-white.png&w=3840&q=75&dpl=dpl_ABP1NbVTdK8fmCjuoP3UiadEEMEj" alt="Stop Killing Games" width="88" height="31" style="border:0;"></a>
+
+                            </div>
+
+                            <div class="border-t-2 border-dashed border-gray-700 pt-6">
+                            <h4 class="font-sans text-2xl text-yellow-400 mb-4">BADGES</h4>
+                            <div class="flex flex-wrap justify-center gap-4 mb-6">
+                                <img src="https://basher.xyz/assets/graphix/decor/buttons/button_fuck_mobile.gif" width="88" height="31">
+                                <img src="https://cyber.dabamos.de/88x31/anybestviewed.gif" alt="anybestviewed" height="31" width="88">
+                                <img src="https://cyber.dabamos.de/88x31/besteyes3.gif" alt="besteyes3" height="31" width="88">
+                                
+                            
+                            <div class="border-t-2 border-dashed border-gray-700 pt-6">
+                                <p></p>
+                            <h4 class="font-sans text-2xl text-yellow-400 mb-4">OTHERS</h4>
+                            <div class="flex flex-wrap justify-center gap-4">
+                                <a href='http://internetometer.com/give/51679'><img src='http://internetometer.com/imagesmall/51679.png'/></a>
+                                <div id="api-sub-counter" style="
+                                    display: inline-flex;
+                                    align-items: center;
+                                    gap: 10px;
+                                    padding: 8px 15px;
+                                    background: #111;
+                                    border: 1px solid #333;
+                                    border-radius: 4px;
+                                    color: #ff0000;
+                                    font-family: sans-serif;
+                                    font-weight: bold;
+                                    width: fit-content;
+                                ">
+                                    <span style="font-size: 12px; color: #aaa;">SUBS:</span>
+                                    <span id="sub-count-display">...</span>
+                                    
+                                    <script>
+                                        (function() {
+                                            const API_KEY = 'AIzaSyCsWWSOmgYlre0pvyOCivCppACCQ1TlhhY';
+                                            const CHANNEL_ID = 'UCvqwHR6iSA653e12bsh9avg';
+                                            const display = document.getElementById('sub-count-display');
+
+                                            async function updateCount() {
+                                                try {
+                                                    const r = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${CHANNEL_ID}&key=${API_KEY}`);
+                                                    const d = await r.json();
+                                                    const num = d.items[0].statistics.subscriberCount;
+                                                    display.innerText = Number(num).toLocaleString();
+                                                } catch (e) {
+                                                    display.innerText = "OFFLINE";
+                                                }
+                                            }
+
+                                            updateCount();
+                                            setInterval(updateCount, 300000); // Updates every 5 mins to save API quota
+                                        })();
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                </div>
+                </div>
+
+                <div class="content-box">
+                    <span class="box-title">WEBRINGS</span>
+                    <div class="box-body" style="max-height: 350px; overflow-y: auto; display: flex; justify-content: center;"> 
+                        <center>
+                        <div id="tvtimering">
+                            <script type="text/javascript" src="https://thegreenroom.neocities.org/webrings/tvtimewebring/onionring-variables.js"></script>
+                            <script type="text/javascript" src="https://thegreenroom.neocities.org/webrings/tvtimewebring/onionring-widget.js"></script>
+                        </div>
+                        <div id="tadw-webring"></div>
+                        <script src="https://oliverspace.neocities.org/TADCWebring.js"></script>
+                        </center>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+            <p>BEEPSMOL &copy; 2026</p>
+        </footer>
+    </div>
+
+
+    <script>
+        const USER_ID = '1222130339124740097';
+        const statusTextContainer = document.getElementById('status-text');
+        let socket = null;
+        let heartbeatInterval = null;
+
+        const NON_DISCORD_STATUSES = [
+            "pixeling my art",
+            "creating music",
+            "youtuber stuff"
+        ];
+
+        function updateUI(user) {
+            const statusColors = {
+                online: '#22c55e',
+                idle: '#facc15',
+                dnd: '#ef4444',
+                offline: '#71717a'
+            };
+            
+            let activeThings = [];
+
+            // 1. Music (Spotify)
+            if (user.listening_to_spotify && user.spotify) {
+                activeThings.push({
+                    text: `🎵 Listening to: ${user.spotify.song} - ${user.spotify.artist}`,
+                    color: '#1DB954'
+                });
+            }
+
+            // 2. Games
+            const games = user.activities.filter(a => a.type === 0);
+            games.forEach(g => activeThings.push({
+                text: `🎮 Playing: ${g.name}`,
+                color: '#a29bfe'
+            }));
+            
+            // 3. Custom status
+            const custom = user.activities.find(a => a.type === 4);
+            if (custom && custom.state) activeThings.push({
+                text: `✨ ${custom.state}`,
+                color: '#facc15'
+            });
+            
+            statusTextContainer.innerHTML = '';
+
+            const createItem = (msg, color) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-2';
+                row.innerHTML = `<div class="status-dot animate-pulse" style="background-color: ${color}"></div><span>${msg}</span>`;
+                return row;
+            };
+
+            if (activeThings.length > 0) {
+                activeThings.forEach(thing => statusTextContainer.appendChild(createItem(thing.text, thing.color)));
+            } else {
+                const color = statusColors[user.discord_status] || statusColors.offline;
+                const msg = user.discord_status === 'offline' ? 'Currently: Offline' : `Currently: ${user.discord_status.toUpperCase()}`;
+                statusTextContainer.appendChild(createItem(msg, color));
+            }
+            
+            // Add a divider line between Discord activities and manual statuses
+            if (NON_DISCORD_STATUSES.length > 0) {
+                const divider = document.createElement('div'); // Create a container for the divider and text
+                divider.className = 'relative flex justify-center items-center my-2'; // Use flexbox for centering
+                divider.innerHTML = '<div class="absolute w-full border-t-2 border-dashed border-gray-700"></div>' +
+                                    '<span class="relative bg-black/40 px-2 text-xs text-gray-400 uppercase font-bold">non-live status:</span>';
+                statusTextContainer.appendChild(divider);
+            }
+
+            // Append Non-Discord Statuses to the same container
+            NON_DISCORD_STATUSES.forEach(text => {
+                let displayText = text;
+                let dotColor = '#22c55e'; // Default to green for active
+
+                if (text.toLowerCase().includes('offline')) {
+                    dotColor = '#71717a'; // Gray for offline
+                    if (user.discord_status === 'offline') {
+                        displayText = text.replace(/offline/i, 'tracking offline');
+                    }
+                }
+
+                const extraItem = createItem(displayText, dotColor);
+                statusTextContainer.appendChild(extraItem);
+            });
+        }
+
+        function connectWebSocket() {
+            socket = new WebSocket('wss://api.lanyard.rest/socket');
+
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+
+                if (data.op === 1) { // Hello Opcode
+                    heartbeatInterval = setInterval(() => socket.send(JSON.stringify({ op: 3 })), data.d.heartbeat_interval);
+                    socket.send(JSON.stringify({ op: 2, d: { subscribe_to_id: USER_ID } }));
+                }
+
+                if (data.t === 'INIT_STATE' || data.t === 'PRESENCE_UPDATE') {
+                    updateUI(data.d);
+                }
+            };
+
+            socket.onclose = () => {
+                clearInterval(heartbeatInterval);
+                setTimeout(connectWebSocket, 5000); // Reconnect after 5s if dropped
+            };
+        }
+
+        connectWebSocket();
+    </script>
+</body>
+</html>

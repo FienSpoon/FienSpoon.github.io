@@ -1,0 +1,2310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/x-icon" href="icon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Time Waster v7: Chaos Expansion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* LOW EFFORT UI THEME - BRUTALIST */
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #050505;
+            color: #e0e0e0;
+            overflow-x: hidden;
+            user-select: none;
+        }
+        
+        body.comic-sans {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif !important;
+        }
+
+        /* Box Style */
+        .box {
+            border: 2px solid #ffffff;
+            background: #000000;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 4px 4px 0px #333;
+            transition: all 0.2s;
+        }
+
+        .btn {
+            background: #000000;
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.1s;
+            text-transform: uppercase;
+        }
+
+        /* GameDev Trick: Hover scaling */
+        .btn:hover:not(:disabled) {
+            transform: scale(1.02);
+            background: #ffffff;
+            color: #000000;
+            box-shadow: 2px 2px 0px #888;
+        }
+        .btn:active:not(:disabled) {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+        .btn:disabled {
+            border-color: #555;
+            color: #555;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #000; border-left: 2px solid #fff; }
+        ::-webkit-scrollbar-thumb { background: #fff; }
+
+        /* Canvas Layers */
+        #boredomCanvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+        }
+        
+        .content-layer {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Hard Mode Overlay */
+        #hardModeOverlay {
+            pointer-events: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 999;
+            opacity: 0;
+            background: radial-gradient(circle, transparent 20%, #000 120%);
+            backdrop-filter: blur(0px);
+            transition: opacity 0.5s;
+        }
+        .hard-mode-active #hardModeOverlay {
+            opacity: 1;
+            backdrop-filter: blur(2px) contrast(150%) brightness(60%);
+            mix-blend-mode: hard-light;
+        }
+        .hard-mode-active body {
+             text-shadow: 0 0 5px rgba(255,255,255,0.5);
+        }
+
+        /* Golden Second */
+        .golden-second {
+            position: fixed;
+            font-size: 2rem;
+            color: #ffd700;
+            cursor: pointer;
+            user-select: none;
+            animation: floatUp 4s linear forwards;
+            z-index: 50;
+            transition: transform 0.2s, opacity 0.2s;
+            text-shadow: 0 0 5px #ffaa00;
+        }
+        .golden-second.captured {
+            color: #00ff00;
+            transform: scale(1.5) !important;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff00;
+            pointer-events: none;
+            animation: none;
+            opacity: 1;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Knowledge Bonus Glow */
+        .knowledge-glow {
+            animation: knowledge-pulse 2s infinite alternate;
+        }
+        @keyframes knowledge-pulse {
+            from { text-shadow: 0 0 2px #3b82f6; }
+            to { text-shadow: 0 0 8px #3b82f6; }
+        }
+
+        /* Entropy Multiplier Popup */
+        .entropy-popup {
+            position: fixed;
+            font-weight: bold;
+            color: #ff4444;
+            pointer-events: none;
+            z-index: 1000;
+            animation: float-up-fade 1s ease-out forwards;
+        }
+
+        @keyframes float-up-fade {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+
+        /* Themes */
+        body.theme-matrix { background-color: #001100; color: #00ff00; }
+        body.theme-matrix .box, body.theme-matrix .btn, body.theme-matrix .game-card { border-color: #00ff00; }
+        body.theme-matrix .btn:hover { background: #00ff00; color: #000; }
+        
+        body.theme-blood { background-color: #1a0000; color: #ff0000; }
+        body.theme-blood .box, body.theme-blood .btn, body.theme-blood .game-card { border-color: #880000; }
+        
+        body.theme-golden { background-color: #1a1500; color: #ffd700; }
+        body.theme-golden .box, body.theme-golden .btn, body.theme-golden .game-card { border-color: #ffd700; }
+
+        /* Shake Animation */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        .shake { animation: shake 0.5s; }
+        .shake-heavy { animation: shake 0.2s infinite; }
+
+        /* Floating Particle Text */
+        .floating-text {
+            position: fixed;
+            pointer-events: none;
+            font-weight: bold;
+            z-index: 1001;
+            animation: float-up-fade 0.8s ease-out forwards;
+            text-shadow: 2px 2px 0px #000;
+        }
+        .rank-up-flash {
+            animation: flash 0.5s ease-out;
+        }
+        
+        /* Conversion Flash */
+        @keyframes flash {
+            0% { background-color: #fff; }
+            50% { background-color: rgba(255, 255, 255, 0.5); }
+            100% { background-color: transparent; }
+        }
+        .flash-effect { animation: flash 0.3s ease-out; }
+        .flash-effect-strong { animation: flash 0.2s ease-out; }
+
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .modal-content {
+            border: 2px solid white;
+            background: black;
+            padding: 2rem;
+            max-width: 800px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 8px 8px 0px #555;
+        }
+
+        /* Devtools Panel */
+        #devtoolsPanel {
+            position: fixed;
+            top: 10px; right: 10px;
+            width: 300px;
+            background: #111;
+            border: 2px solid #0f0;
+            color: #0f0;
+            padding: 10px;
+            z-index: 99999;
+            display: none;
+            font-family: monospace;
+            box-shadow: 0 0 20px #0f0;
+        }
+
+        /* Achievement Toast */
+        #achieveToast {
+            position: fixed;
+            bottom: -100px;
+            right: 20px;
+            background: #000;
+            border: 2px solid #ffd700;
+            color: #ffd700;
+            padding: 15px;
+            z-index: 200;
+            transition: bottom 0.5s ease-out;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            max-width: 300px;
+        }
+
+        /* Stock Market Chart */
+        .stock-chart {
+            height: 60px;
+            background: #111;
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            padding: 2px;
+            border: 1px solid #333;
+        }
+        .stock-bar { width: 4px; background: #0f0; }
+        .stock-bar.down { background: #f00; }
+        
+        /* 1 Pixel Button */
+        #pixelBtn {
+            position: fixed;
+            bottom: 0; right: 0;
+            width: 2px; height: 2px;
+            background: #111;
+            cursor: pointer;
+            z-index: 9999;
+        }
+        #pixelBtn:hover { background: red; width: 10px; height: 10px; }
+
+        /* Context Menu */
+        #customCtx {
+            display: none;
+            position: fixed;
+            background: #000;
+            border: 2px solid white;
+            z-index: 10000;
+            box-shadow: 4px 4px 0 #555;
+            min-width: 150px;
+        }
+        .ctx-item {
+            padding: 8px 16px;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .ctx-item:hover { background: #fff; color: #000; }
+
+        /* Fake Update */
+        #fakeUpdate {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            background: #333;
+            border: 1px solid #fff;
+            padding: 10px;
+            display: none;
+            z-index: 500;
+            cursor: pointer;
+            animation: pulse 2s infinite;
+        }
+        
+        /* Idle Overlay */
+        #idleOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 2000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Bubble Wrap */
+        .bubble {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            border: 2px solid #555;
+            cursor: pointer;
+            background: #222;
+        }
+        .bubble.popped {
+            background: transparent;
+            border-color: #333;
+            transform: scale(0.9);
+        }
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #333;
+            padding: 4px;
+            cursor: pointer;
+        }
+        .todo-item:hover { background: #111; }
+        
+        /* Skill Tree Visuals */
+        .skill-node {
+            border: 1px solid #444;
+            padding: 15px;
+            position: relative;
+            background: #000;
+        }
+        .skill-node.unlocked {
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        /* Connectors for "Tree" look (Simplified grid) */
+        .skill-tree-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            position: relative;
+        }
+        
+        /* Minigame Window */
+        .minigame-window {
+            border: 2px dashed #666;
+            margin-bottom: 1rem;
+            position: relative;
+            background: #000;
+        }
+        .minigame-close {
+            position: absolute;
+            top: 0; right: 0;
+            background: #f00;
+            color: #fff;
+            width: 20px; height: 20px;
+            text-align: center;
+            line-height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4">
+
+  <!-- Audio Asset -->
+  <audio id="bgMusic" loop src="timewasted.mp3"></audio>
+
+  <div id="hardModeOverlay"></div>
+  <div id="pixelBtn" title="?"></div>
+  
+  <div id="customCtx">
+      <div class="ctx-item" onclick="ctxAction('uninstall')">Uninstall Boredom</div>
+      <div class="ctx-item" onclick="ctxAction('speed')">Speed Up Time (Paid)</div>
+      <div class="ctx-item" onclick="ctxAction('free')">Free Clocks</div>
+  </div>
+
+  <div id="fakeUpdate">
+      <div class="font-bold text-sm">⚠ System Update Available</div>
+      <div class="text-xs">Click to install now...</div>
+  </div>
+
+  <div id="devtoolsPanel">
+      <h3 class="font-bold border-b border-green-500 mb-2">DEVTOOLS (ADMIN)</h3>
+      <button onclick="devAddSec()" class="btn text-xs w-full mb-1 border-green-500 text-green-500">+10k Seconds</button>
+      <button onclick="devAddClk()" class="btn text-xs w-full mb-1 border-green-500 text-green-500">+1k Clocks</button>
+      <button onclick="devAddChr()" class="btn text-xs w-full mb-1 border-green-500 text-green-500">+5 Chronotons</button>
+      <button onclick="devUnlockAll()" class="btn text-xs w-full mb-1 border-green-500 text-green-500">Unlock All Achievements</button>
+      <button onclick="document.getElementById('devtoolsPanel').style.display='none'" class="btn text-xs w-full border-red-500 text-red-500">CLOSE</button>
+  </div>
+
+  <div id="idleOverlay">
+      <h1 class="text-4xl font-bold mb-4 text-center">ARE YOU STILL THERE?</h1>
+      <p class="mb-4 text-gray-400">Progression paused due to inactivity.</p>
+      <button onclick="resumeIdle()" class="btn">I'M HERE</button>
+  </div>
+
+  <!-- Desktop Layout Wrapper -->
+  <div class="w-full max-w-[1500px] flex flex-col xl:flex-row gap-6 items-start justify-center relative z-10 px-4">
+    <!-- LEFT SIDEBAR: QUESTS & SHOP -->
+    <div class="w-full xl:w-64 xl:sticky xl:top-4 flex flex-col gap-4 shrink-0">
+        <div class="box border-blue-500 p-2">
+            <div class="text-xs font-bold border-b border-blue-500 mb-2 pb-1 text-center">DAILY QUESTS</div>
+            <div id="questContainer" class="space-y-2"></div>
+        </div>
+        <div class="w-full">
+            <div class="flex flex-col border-b-2 border-white mb-2 pb-1 bg-white/5">
+                <div class="flex justify-between items-center">
+                    <button onclick="changeShopPage(-1)" class="btn p-2 text-lg border-none hover:bg-white hover:text-black font-black">&lt;</button>
+                    <h2 class="font-bold text-sm tracking-tighter text-center" id="shopPageTitle">SECONDS SHOP</h2>
+                    <button onclick="changeShopPage(1)" class="btn p-2 text-lg border-none hover:bg-white hover:text-black font-black">&gt;</button>
+                </div>
+                <div id="shopPageIndicator" class="text-[9px] text-center text-gray-500 font-bold mt-1 uppercase tracking-widest">Page 1 / 4</div>
+            </div>
+            <div id="shopGrid" class="space-y-1 transition-opacity duration-200"></div>
+        </div>
+    </div>
+
+    <!-- CENTER COLUMN: MAIN GAME -->
+    <div class="content-layer w-full max-w-2xl">
+        <div id="achieveToast" class="pointer-events-none">
+            <div class="font-bold text-sm text-yellow-500">ACHIEVEMENT UNLOCKED</div>
+            <div id="achieveName" class="text-lg">Title Here</div>
+        </div>
+        <canvas id="boredomCanvas"></canvas>
+        <header class="text-center mb-8 border-b-2 border-white pb-4">
+            <h1 class="text-4xl font-bold uppercase tracking-tighter" id="mainTitle">THE TIME WASTER</h1>
+            <div class="flex justify-center gap-2 mt-2">
+                <span class="text-xs" id="rankTitle">RANK: NOVICE</span>
+                <span class="text-xs text-gray-600 hidden" id="rankUpText">RANK UP!</span>
+                <span class="text-xs text-blue-400 knowledge-glow" id="knowledgeDisplay">KNOWLEDGE: 1.0x</span>
+            </div>
+            <div class="flex flex-wrap justify-center gap-2 mt-4 transition-all duration-300">
+                <button onclick="toggleMusic()" class="btn text-xs lbl-music">[TOGGLE MUSIC]</button>
+                <button onclick="openModal('questModalMobile')" class="btn text-xs xl:hidden border-blue-400 text-blue-400">[QUESTS]</button>
+                <button onclick="openModal('settingsModal')" class="btn text-xs border-gray-400 text-gray-400 lbl-settings">[SETTINGS]</button>
+                <button onclick="openModal('achieveModal')" class="btn text-xs border-yellow-500 text-yellow-500 lbl-shame">[HALL OF SHAME]</button>
+                <button onclick="triggerReset()" class="btn text-xs hover:bg-red-600 hover:text-white border-red-500 text-red-500 lbl-reset">[HARD RESET]</button>
+            </div>
+            <div id="offlineBadge" class="hidden mt-4 border border-green-500 text-green-500 p-2 text-xs">
+                OFFLINE PROGRESS: GAINED <span id="offlineGain">0</span> SECONDS
+            </div>
+        </header>
+        <div class="box flex flex-col items-center">
+            <div class="grid grid-cols-2 w-full gap-4 text-center mb-4 border-b border-gray-700 pb-4">
+                <div>
+                    <div class="text-xs text-purple-400 font-bold lbl-life">LIFETIME</div>
+                    <div class="text-xl font-bold text-purple-300" id="chronoTotalDisplay">0.0</div>
+                </div>
+                <div>
+                    <div class="text-xs text-blue-400 font-bold lbl-run">TOTAL (THIS RUN)</div>
+                    <div class="text-xl font-bold text-blue-300" id="runTotalDisplay">0.0</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-3 w-full gap-2 text-center mb-6 items-center transition-all duration-300">
+                <div class="col-span-1">
+                    <div class="text-xs text-gray-500 lbl-wasted">TIME WASTED</div>
+                    <div class="text-3xl font-bold" id="secondsDisplay">0.0</div>
+                    <div class="text-xs" id="rateDisplay">+0.0/s</div>
+                </div>
+                <div id="chronoColumn" class="col-span-1 border-x border-gray-800 hidden">
+                    <div class="text-xs text-purple-400">CHRONOTONS</div>
+                    <div class="text-3xl font-bold text-purple-400" id="chronotonDisplay">0</div>
+                    <div class="text-[10px] text-purple-300" id="chronoMultDisplay">+0% BONUS</div>
+                </div>
+                <div id="chronoSpacer" class="col-span-1 border-x border-gray-800 flex items-center justify-center">
+                    <div class="text-xs text-gray-700">LOCKED</div>
+                </div>
+                <div class="col-span-1">
+                    <div class="text-xs text-gray-500 lbl-clocks">CLOCKS</div>
+                    <div class="text-3xl font-bold text-yellow-300" id="clocksDisplay">0</div>
+                    <div class="text-xs lbl-curr">CURRENCY</div>
+                </div>
+            </div>
+            <div class="w-full flex flex-col items-center mb-4 p-2 border border-dashed border-red-500 bg-red-950/10">
+                <div class="flex justify-between w-full text-[10px] mb-1">
+                    <span class="text-red-400">ENTROPY: <span id="entropyDisplay">1.0</span>x (CAP: <span id="entropyCapDisplay">1.5</span>x SPEED)</span>
+                    <span class="text-gray-500">GOAL: <span id="nextGoalDisplay">100</span> (+0.5x CAP)</span>
+                </div>
+                <div class="w-full bg-gray-900 h-1 mb-2">
+                    <div id="clickProgressBar" class="bg-red-600 h-full transition-all duration-300 shadow-[0_0_8px_red]" style="width: 0%"></div>
+                </div>
+                <button id="entropyBtn" onclick="handleEntropyClick(event)" class="btn w-full py-2 border-red-500 text-red-500 text-sm flex justify-between px-4">
+                    <span>AGITATE TIME</span>
+                    <span id="totalClicksDisplay">0</span>
+                </button>
+            </div>
+            <div class="flex gap-2 w-full mb-2">
+                <button id="convertBtn" class="btn flex-grow py-4 text-lg border-dashed">
+                    <span class="lbl-convert">CONVERT</span> <span id="convertCost">60</span>s -> 1 <span class="lbl-clk-sing">CLOCK</span>
+                </button>
+                <button id="bulkConvertBtn" onclick="bulkConvert()" class="btn w-20 text-xs border-dashed flex flex-col items-center justify-center" title="Convert Max (25% Penalty)">
+                    <span class="lbl-bulk">BULK</span>
+                    <span class="text-[9px] text-red-400 lbl-tax" id="bulkTaxLabel">-25% TAX</span>
+                </button>
+            </div>
+            <div id="convertMsg" class="h-4 text-xs text-red-500 text-center opacity-0 mb-2 lbl-insufficient transition-opacity">INSUFFICIENT FUNDS</div>
+            <div id="boredomDiscountMsg" class="hidden text-[10px] text-green-400 text-center animate-pulse mb-2">BOREDOM DISCOUNT ACTIVE (-50% ALL COSTS)</div>
+        </div>
+        <div id="activeMinigame" class="mt-4 flex flex-col gap-4"></div>
+        <div id="prestigeSection" class="hidden box border-purple-500 text-center">
+            <h3 class="text-purple-400 font-bold mb-2 lbl-machine">THE CHRONOTON TIME MACHINE</h3>
+            <p class="text-xs mb-4">
+                <span class="lbl-machine-desc">The machine hums. Reset run for Chronotons.</span>
+                <br>REQ: <span id="nextChronoReq">25,000</span> LIFETIME SECONDS.
+                <br>EFFECT: +100% SPEED.
+            </p>
+            <div id="potentialChrono" class="text-lg mb-4 text-white">REWARD: 0 CHRONOTONS</div>
+            <button onclick="prestige()" class="btn w-full border-purple-500 text-purple-400 hover:bg-purple-900 lbl-activate">[ACTIVATE TIME MACHINE]</button>
+        </div>
+        <div id="skillTreeBtnContainer" class="hidden box border-green-500 text-center p-2">
+             <button onclick="openModal('skillModal')" class="btn w-full border-green-500 text-green-400 lbl-tablet-btn">[OPEN ANCIENT TABLET]</button>
+        </div>
+    </div>
+
+    <!-- RIGHT SIDEBAR: CARD MENU & BOREDOM SHOP -->
+    <div class="w-full xl:w-64 xl:sticky xl:top-4 flex flex-col gap-4 shrink-0">
+        <button onclick="openModal('cardModal')" class="btn w-full border-yellow-500 text-yellow-500 py-4 text-lg shadow-[4px_4px_0px_#854d0e]">OPEN CARD MENU</button>
+        <div id="boredomSection" class="opacity-50 pointer-events-none transition-opacity">
+            <h2 class="font-bold border-b-2 border-white mb-2 lbl-zone text-sm text-right">BOREDOM ZONE</h2>
+        </div>
+        <div class="text-[10px] text-gray-600 mt-4 text-center italic">The shop has moved to the left sidebar. Flip pages to find distractions.</div>
+    </div>
+  </div> <!-- End Layout Wrapper -->
+
+  <div class="w-full max-w-3xl mt-4 px-4">
+        <!-- Log -->
+        <div class="box h-32 overflow-y-auto text-xs font-mono text-gray-400 scroll-smooth" id="gameLog">
+            <!-- Log entries go here -->
+        </div>
+  </div>
+
+    <!-- MODALS -->
+
+    <!-- Quest Modal Mobile -->
+    <div id="questModalMobile" class="modal">
+        <div class="modal-content border-blue-500">
+            <h2 class="text-2xl font-bold text-blue-400 mb-4 border-b border-blue-500 pb-2">ACTIVE QUESTS</h2>
+            <div id="questContainerMobile" class="space-y-4"></div>
+            <button onclick="closeModal('questModalMobile')" class="btn mt-4 w-full">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- Card Collection Modal -->
+    <div id="cardModal" class="modal">
+        <div class="modal-content border-yellow-500">
+            <div class="flex justify-between items-center border-b border-yellow-500 mb-4 pb-2">
+                <h2 class="text-3xl font-bold text-yellow-400">CARD COLLECTION</h2>
+                <div id="cardStats" class="text-sm font-bold bg-yellow-950/40 px-3 py-1">0 FOUND</div>
+            </div>
+            <div class="mb-4 bg-black p-4 border border-yellow-900 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="text-xs text-gray-400">Collect artifacts to boost your knowledge of time.</div>
+                <button onclick="buyCardPack()" class="btn border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black">BUY PACK (50 CLOCKS)</button>
+            </div>
+            <div id="cardGrid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2 max-h-[50vh] overflow-y-auto pr-2"></div>
+            <button onclick="closeModal('cardModal')" class="btn mt-6 w-full">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content border-gray-400">
+            <h2 class="text-2xl font-bold text-gray-300 mb-4 border-b border-gray-500 pb-2 lbl-settings">SETTINGS</h2>
+            <div class="mb-6 space-y-4">
+                <div>
+                    <div class="flex justify-between text-xs mb-1"><span>SFX VOLUME</span><span id="sfxVal">100%</span></div>
+                    <input type="range" id="sfxSlider" min="0" max="1" step="0.1" value="1" oninput="updateSettings()" class="w-full">
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs mb-1"><span>MUSIC VOLUME</span><span id="musicVal">100%</span></div>
+                    <input type="range" id="musicSlider" min="0" max="1" step="0.1" value="1" oninput="updateSettings()" class="w-full">
+                </div>
+            </div>
+            <div class="mb-4">
+                <div class="text-xs mb-1">ACTIVE THEME</div>
+                <select id="themeSelector" onchange="updateSettings()" class="w-full bg-black border border-white p-2 text-xs">
+                    <option value="default">DEFAULT (No Bonus)</option>
+                    <option value="matrix" disabled id="opt-matrix">MATRIX (+10% Gen) [LOCKED]</option>
+                    <option value="blood" disabled id="opt-blood">BLOOD (Cheap Shop) [LOCKED]</option>
+                    <option value="golden" disabled id="opt-golden">GOLDEN (2x Golden Seconds) [LOCKED]</option>
+                </select>
+            </div>
+            <div class="mb-6 border-t border-gray-700 pt-4">
+                 <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <div class="font-bold text-purple-400">LOLCAT MODE</div>
+                        <div class="text-[10px] text-gray-400">I CAN HAS CHEEZBURGER?</div>
+                    </div>
+                    <input type="checkbox" id="lolcatCheck" class="w-6 h-6" onchange="updateSettings()">
+                </div>
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <div class="font-bold text-red-500">HARD MODE</div>
+                        <div class="text-[10px] text-gray-400">Visual distortion. 100x Slower.</div>
+                    </div>
+                    <input type="checkbox" id="hardModeCheck" class="w-6 h-6" onchange="updateSettings()">
+                </div>
+                <div class="flex justify-between items-center">
+                    <div>
+                        <div class="font-bold text-blue-400">REDUCE MOTION</div>
+                        <div class="text-[10px] text-gray-400">No animations.</div>
+                    </div>
+                    <input type="checkbox" id="motionCheck" class="w-6 h-6" onchange="updateSettings()">
+                </div>
+            </div>
+            <button onclick="closeModal('settingsModal')" class="btn mt-4 w-full">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- Skill Tree Modal -->
+    <div id="skillModal" class="modal">
+        <div class="modal-content border-green-500 h-full max-h-screen flex flex-col">
+            <h2 class="text-2xl font-bold text-green-400 mb-4 border-b border-green-500 pb-2 lbl-tablet">ANCIENT TABLET</h2>
+            <div class="flex justify-between mb-4 bg-black py-2 border-b border-gray-800 shrink-0">
+                <span class="text-green-300">FRAGMENTS: <span id="fragDisplay">0</span></span>
+                <button onclick="buyFragment()" class="text-xs border px-2 border-green-500 hover:bg-green-900 transition-colors lbl-frag-buy">100 CLOCKS -> 1 FRAG</button>
+            </div>
+            <div id="skillList" class="skill-tree-grid overflow-y-auto p-1">
+                <!-- Injected via JS -->
+            </div>
+            <button onclick="closeModal('skillModal')" class="btn mt-4 w-full shrink-0">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- Hall of Shame Modal -->
+    <div id="achieveModal" class="modal">
+        <div class="modal-content border-yellow-500">
+            <h2 class="text-2xl font-bold text-yellow-400 mb-4 border-b border-yellow-500 pb-2 lbl-shame-title">REGISTRY OF HEROES</h2>
+            <div class="mb-2 text-xs text-right" id="achieveCount">0 / 0</div>
+            <div id="achieveList" class="grid grid-cols-1 gap-2 max-h-[60vh] overflow-y-auto pr-2">
+                <!-- Injected via JS -->
+            </div>
+            <button onclick="closeModal('achieveModal')" class="btn mt-4 w-full">CLOSE</button>
+        </div>
+    </div>
+
+    <script>
+        // --- SFX System ---
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctxAudio = new AudioCtx();
+        const SFX = {
+            play: (type) => {
+                const vol = state.settings ? state.settings.sfxVol : 1;
+                if (vol <= 0) return;
+                if (ctxAudio.state === 'suspended') ctxAudio.resume();
+                const osc = ctxAudio.createOscillator();
+                const gain = ctxAudio.createGain();
+                gain.connect(ctxAudio.destination);
+                const now = ctxAudio.currentTime;
+
+                if (type === 'click') {
+                    osc.type = 'square'; osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    gain.gain.setValueAtTime(0.1*vol, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.1);
+                    osc.connect(gain); osc.start(); osc.stop(now+0.1);
+                } else if (type === 'convert') {
+                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, now);
+                    osc.frequency.linearRampToValueAtTime(50, now+0.1);
+                    gain.gain.setValueAtTime(0.2*vol, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.2);
+                    osc.connect(gain); osc.start(); osc.stop(now+0.2);
+                } else if (type === 'golden') {
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.linearRampToValueAtTime(1500, now+0.3);
+                    gain.gain.setValueAtTime(0.1*vol, now); gain.gain.linearRampToValueAtTime(0, now+0.3);
+                    osc.connect(gain); osc.start(); osc.stop(now+0.3);
+                } else if (type === 'prestige') {
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(40, now);
+                    osc.frequency.exponentialRampToValueAtTime(10, now + 1.5);
+                if(!state.settings.reduceMotion) document.body.classList.add('flash-effect-strong');
+                    gain.gain.setValueAtTime(0.3*vol, now); gain.gain.linearRampToValueAtTime(0, now + 1.5);
+                    osc.connect(gain); osc.start(); osc.stop(now + 1.5);
+                } else if (type === 'error') {
+                    osc.type = 'square'; osc.frequency.setValueAtTime(60, now);
+                    gain.gain.setValueAtTime(0.05*vol, now); gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                    osc.connect(gain); osc.start(); osc.stop(now + 0.2);
+                } else if (type === 'ding') {
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(500, now);
+                    gain.gain.setValueAtTime(0.1*vol, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.5);
+                    osc.connect(gain); osc.start(); osc.stop(now+0.5);
+                }
+            }
+        };
+
+        const CONFIG = {
+            BASE_CONVERSION: 60,
+            CONVERSION_SCALE: 1.01,
+            OFFLINE_RATE: 5, 
+            CHRONO_THRESHOLD: 25000,
+            CHRONO_SCALE: 100, 
+            SAVE_KEY: 'timeWaster_v6_entropy'
+        };
+
+        const assets = { dvd: new Image(), music: document.getElementById('bgMusic') };
+        assets.dvd.src = 'dvdlogo.png';
+        
+        let state = {
+            seconds: 0, clocks: 0, fragments: 0, chronotons: 0, prestigeCount: 0,
+            totalSecondsWasted: 0, runSecondsWasted: 0, conversions: 0,
+            entropyMultiplier: 1.0, entropyCap: 1.5, totalClicks: 0,
+            cards: [], knowledgeMult: 1.0, 
+            shopPage: 0,
+            lastRank: "NOVICE",
+            quests: [], lastQuestDate: null,
+            activeTheme: 'default',
+            stocks: { VOID: { p: 10, h: [10] }, TIME: { p: 10, h: [10] }, STAGN: { p: 10, h: [10] } },
+            ownedStocks: { VOID: 0, TIME: 0, STAGN: 0 },
+            lastSaveTime: Date.now(), startTime: Date.now(),
+            settings: { sfxVol: 1, musicVol: 1, hardMode: false, lolcat: false, comicSans: false, reduceMotion: false, shopCollapsed: false },
+            shopCounts: { gears: 0, chrono: 0, machine: 0, dilator: 0, toaster: 0, field: 0, trash: 0, dissolver: 0, engine: 0, skill_key: 0 },
+            skills: { accel_pulse: false, shiny_magnet: false, eff_expert: false, deep_focus: false, time_warp: false, compound: false, cheap_shop: false, auto_conv: false },
+            achievements: [],
+            unlocks: { bg: false, dvd: false, chat: false, rock: false, mushroom: false, bubble: false, draw: false, unsorter: false, todo: false, waitroom: false, almost: false, dontclick: false, sub_box: false, netflix: false },
+            stats: { rockFed: 0, bubblesPopped: 0, bgChanges: 0, fakeClicks: 0, convertSpree: 0, almostFail: 0, chatMsgs: 0, unaffordableTry: 0 },
+            timers: { lastInput: Date.now() },
+        };
+
+        const SKILLS = [
+            { id: 'accel_pulse', name: 'Accelerated Pulse', desc: '+10% Base Time Gen', cost: 1 },
+            { id: 'shiny_magnet', name: 'Shiny Magnet', desc: '2x Golden Second Spawn Rate', cost: 2 },
+            { id: 'eff_expert', name: 'Efficiency Expert', desc: '-0.5% Conversion Cost Scaling', cost: 3 },
+            { id: 'deep_focus', name: 'Deep Focus', desc: '2x Offline Gains', cost: 5 },
+            { id: 'time_warp', name: 'Time Warp', desc: '+50% All Production', cost: 10 },
+            { id: 'compound', name: 'Compound Interest', desc: '+1% Clocks on Convert', cost: 15 },
+            { id: 'cheap_shop', name: 'Coupon Clipper', desc: 'Shop prices -5%', cost: 20 },
+            { id: 'auto_conv', name: 'Auto-Converter', desc: 'Auto convert 1% of Secs/s', cost: 50 }
+        ];
+
+        const ACHIEVEMENTS = [
+            { id: 'anyone', title: "Is anyone there?", desc: "Waste 24 hours total (86400s).", check: (s) => s.totalSecondsWasted >= 86400 },
+            { id: 'missed', title: "Missed Opportunity", desc: "Let a Golden Second float away.", manual: true },
+            { id: 'collector', title: "Collector of Nothing", desc: "Hold 1,000 Clocks at once.", check: (s) => s.clocks >= 1000 },
+            { id: 'pointless', title: "Pointless Endeavor", desc: "Feed the Pet Rock 100 times.", check: (s) => s.stats.rockFed >= 100 },
+            { id: 'bubbles', title: "Master of Bubbles", desc: "Pop 1,200 Bubbles total.", check: (s) => s.stats.bubblesPopped >= 1200 },
+            { id: 'rebel', title: "Respect the Button", desc: "Click the 'Don't Click' button.", manual: true },
+            { id: 'traveler', title: "Time Traveler", desc: "Prestige for the first time.", check: (s) => s.prestigeCount >= 1 },
+            { id: 'efficient', title: "Efficiency Is Boring", desc: "Buy the Procrastinator's Engine.", check: (s) => s.shopCounts.engine >= 1 },
+            { id: 'online', title: "Chronically Online", desc: "Accumulate 1 Week of time wasted.", check: (s) => s.totalSecondsWasted >= 604800 },
+            { id: 'productive', title: "Actually Productive", desc: "Close the game for > 48 hours.", manual: true },
+            { id: 'speed_demon', title: "Speed Demon", desc: "Convert 10 times in 5 seconds.", manual: true },
+            { id: 'indecisive', title: "Indecisive", desc: "Change BG 20 times in 1 minute.", manual: true },
+            { id: 'wait_what', title: "Wait, what?", desc: "Find the secret button in Chat.", manual: true },
+            { id: 'max_effort', title: "Maximum Effort", desc: "1M Lifetime Secs, 0 Shop items.", check: (s) => s.totalSecondsWasted >= 1000000 && Object.values(s.shopCounts).reduce((a,b)=>a+b,0) === 0 },
+            { id: 'the_one_percent', title: "The 1%", desc: "Watch 'Almost Bar' fail.", manual: true },
+            { id: 'waiter', title: "Professional Waiter", desc: "Get number called in Waiting Room.", manual: true },
+            { id: 'paradox', title: "Paradox", desc: "Prestige with exactly 0 Seconds.", manual: true },
+            { id: 'clickbait', title: "Clickbait Victim", desc: "Click Fake Update 5 times.", check: (s) => s.stats.fakeClicks >= 5 },
+            { id: 'zen', title: "Zen Master", desc: "No mouse move for 5 mins.", manual: true },
+            { id: 'budgeting', title: "Budgeting", desc: "Try to buy item when 1 Clock short.", manual: true },
+            { id: 'long_dist', title: "Long Distance", desc: "DVD logo hit 4 corners.", manual: true },
+            { id: 'heist', title: "Time Heist", desc: "Capture 5 Golden Seconds in 1 min.", manual: true },
+            { id: 'completionist', title: "The Completionist", desc: "Unlock all Boredom items.", check: (s) => Object.values(s.unlocks).every(u => u) },
+            { id: 'regret', title: "Infinite Regret", desc: "Reset save after reaching highest rank.", manual: true },
+            { id: 'persistence', title: "Persistence", desc: "Try buy unaffordable 50 times.", check: (s) => s.stats.unaffordableTry >= 50 },
+            { id: 'anticlimax', title: "Anti-Climactic", desc: "Reach 99% on Almost Bar 5 times.", check: (s) => s.stats.almostFail >= 5 },
+            { id: 'speed_reader', title: "Speed Reader", desc: "100 Chat messages generated.", check: (s) => s.stats.chatMsgs >= 100 },
+            { id: 'overachiever', title: "Overachiever", desc: "1000x Multiplier.", check: (s) => (1 + s.chronotons * 100) >= 1000 },
+            { id: 'did_i', title: "Did I do that?", desc: "Click Golden Second while busy.", manual: true },
+            { id: 'worse', title: "Embrace Hard Mode", desc: "Turn on Hard Mode.", manual: true },
+            { id: 'font', title: "Forbidden Font", desc: "Activate Comic Sans mode.", manual: true },
+            { id: 'janitor', title: "The First Janitor", desc: "Unlock the Ancient Tablet.", check: (s) => s.shopCounts.skill_key > 0 },
+            { id: 'turbulence', title: "Turbulence", desc: "Reach 100 seconds per second.", check: (s) => false }, 
+            { id: 'bad_trade', title: "Terrible Investment", desc: "Exchange a Clock for 10 seconds via the Mushroom.", manual: true },
+            { id: 'beat', title: "Beat the Game?", desc: "Have everything + 5 Chronotons.", check: (s) => checkBeatGame(s) }
+        ];
+
+        const RANKS = [
+            { t: 0, title: "NOVICE" }, { t: 60, title: "WASTER" }, { t: 300, title: "IDLER" },
+            { t: 1000, title: "SLACKER" }, { t: 3600, title: "PROCRASTINATOR" },
+            { t: 10000, title: "DAYDREAMER" }, { t: 25000, title: "CHRONO-SCOUT" },
+            { t: 50000, title: "CLOCK WATCHER" }, { t: 86400, title: "TIME BANDIT" },
+            { t: 250000, title: "EPOCH EATER" }, { t: 500000, title: "ERA ERASER" },
+            { t: 1000000, title: "ENTROPY GOD" }, { t: 10000000, title: "TIME LORD" },
+            { t: 50000000, title: "ETERNAL VOID" }, { t: 100000000, title: "JANITOR OF THE VOID" }
+        ];
+
+        const SHOP_ITEMS = [
+            { id: 'gears', name: 'RUSTY GEARS', desc: '+0.5 sec/s', cost: 1, power: 0.5, category: 'seconds' },
+            { id: 'chrono', name: 'DIGITAL WATCH', desc: '+2.0 sec/s', cost: 10, power: 2.0, category: 'seconds' },
+            { id: 'machine', name: 'FLUX CAPACITOR', desc: '+10.0 sec/s', cost: 50, power: 10.0, category: 'seconds' },
+            { id: 'dilator', name: 'TIME DILATOR', desc: '+50.0 sec/s', cost: 200, power: 50.0, category: 'seconds' },
+            { id: 'toaster', name: 'QUANTUM TOASTER', desc: '+250.0 sec/s', cost: 1000, power: 250.0, category: 'seconds' },
+            { id: 'field', name: 'STASIS FIELD GEN', desc: '+500.0 sec/s', cost: 5000, power: 500.0, category: 'seconds' },
+            { id: 'trash', name: 'BLACK HOLE BIN', desc: '+1.0k sec/s', cost: 20000, power: 1000.0, category: 'seconds' },
+            { id: 'dissolver', name: 'NARRATIVE DISSOLVER', desc: '+5.0k sec/s', cost: 100000, power: 5000.0, category: 'seconds' },
+            { id: 'engine', name: 'PROCRASTINATOR ENGINE', desc: 'Auto-collect Gold (50%)', cost: 500, power: 0, special: true, category: 'seconds' },
+
+            { id: 'weight_plates', name: 'WEIGHT PLATES', desc: '+0.02 Agitation/Click', cost: 150, power: 0, category: 'agitation' },
+            { id: 'vibration_core', name: 'VIBRATION CORE', desc: '+0.05 Agitation/Click', cost: 800, power: 0, category: 'agitation' },
+
+            { id: 'lubricant', name: 'CLOCK LUBRICANT', desc: '-2 Base Conv Cost', cost: 300, power: 0, category: 'clocks' },
+            { id: 'overclocker', name: 'TIME OVERCLOCKER', desc: '-0.2% Cost Scaling', cost: 1500, power: 0, category: 'clocks' },
+            { id: 'skill_key', name: 'ANCIENT TABLET', desc: 'Unlock Skill Tree', cost: 500, power: 0, special: true, category: 'clocks' }
+        ];
+        
+        const DISTRACTIONS = [
+            { id: 'bg', name: 'COLOR_SHIFT', desc: 'Change Bg', cost: 1, curr: 'c', action: () => changeBg() },
+            { id: 'rock', name: 'PET_ROCK', desc: 'Feed Clocks', cost: 2, curr: 'c', action: () => renderRock() },
+            { id: 'dvd', name: 'DVD_SCREEN', desc: 'Bouncing Logo', cost: 5, curr: 'c', action: () => toggleDVD() },
+            { id: 'chat', name: 'LIVESTREAM', desc: 'Read Spam', cost: 8, curr: 'c', action: () => renderChat() },
+            { id: 'bubble', name: 'BUBBLE WRAP', desc: 'Pop pop pop', cost: 10, curr: 'c', action: () => renderBubble() },
+            { id: 'draw', name: 'DRAWING PAD', desc: 'Useless Art', cost: 15, curr: 'c', action: () => renderDraw() },
+            { id: 'stock', name: 'STAGN MARKET', desc: 'Lose Clocks', cost: 25, curr: 'c', action: () => renderStockMarket() },
+            { id: 'blackjack', name: 'BLACKJACK', desc: 'High Stakes', cost: 30, curr: 'c', action: () => renderBlackjack() },
+            { id: 'cards', name: 'CARD PACK', desc: 'Collect items', cost: 50, curr: 'c', action: () => buyCardPack() },
+            { id: 'todo', name: 'INF. TO-DO', desc: 'Never ending', cost: 40, curr: 'c', action: () => renderTodo() },
+            { id: 'waitroom', name: 'WAITING ROOM', desc: 'Get in line', cost: 50, curr: 'c', action: () => renderWaiting() },
+            { id: 'almost', name: 'ALMOST BAR', desc: '99% Loading', cost: 60, curr: 'c', action: () => renderAlmost() },
+            { id: 'sub_box', name: 'SUB BOX', desc: 'Mystery Gifts', cost: 5, curr: 'c', action: () => toggleSubBox() },
+            { id: 'netflix', name: 'NETFLIX BLOCKER', desc: 'No Idle Pause', cost: 10, curr: 'k', action: () => activateNetflix() },
+            { id: 'dontclick', name: 'DO NOT CLICK', desc: 'Seriously', cost: 100, curr: 'c', action: () => renderDontClick() }
+        ];
+
+        // --- DOM ---
+        const els = {
+            sec: document.getElementById('secondsDisplay'),
+            clk: document.getElementById('clocksDisplay'),
+            rate: document.getElementById('rateDisplay'),
+            btnConv: document.getElementById('convertBtn'),
+            costConv: document.getElementById('convertCost'),
+            msgConv: document.getElementById('convertMsg'),
+            shop: document.getElementById('shopGrid'),
+            log: document.getElementById('gameLog'),
+            zone: document.getElementById('boredomSection'),
+            mini: document.getElementById('activeMinigame'),
+            cvs: document.getElementById('boredomCanvas'),
+            prestige: document.getElementById('prestigeSection'),
+            chrono: document.getElementById('chronotonDisplay'),
+            chronoCol: document.getElementById('chronoColumn'),
+            chronoSpc: document.getElementById('chronoSpacer'),
+            chronoMult: document.getElementById('chronoMultDisplay'),
+            potChrono: document.getElementById('potentialChrono'),
+            offline: document.getElementById('offlineBadge'),
+            chronoTotal: document.getElementById('chronoTotalDisplay'),
+            runTotal: document.getElementById('runTotalDisplay'),
+            skillBtn: document.getElementById('skillTreeBtnContainer'),
+            frag: document.getElementById('fragDisplay'),
+            knowledge: document.getElementById('knowledgeDisplay'),
+            entropy: document.getElementById('entropyDisplay'),
+            entropyCap: document.getElementById('entropyCapDisplay'),
+            totalClicks: document.getElementById('totalClicksDisplay'),
+            clickProgress: document.getElementById('clickProgressBar'),
+            nextGoalDisplay: document.getElementById('nextGoalDisplay'),
+            questCont: document.getElementById('questContainer'),
+            cardGrid: document.getElementById('cardGrid'),
+            boredomMsg: document.getElementById('boredomDiscountMsg')
+        };
+
+        // --- Loop ---
+        let lastTime = Date.now();
+        let saveTimer = 0;
+        let goldenTimer = 0;
+        let dingTimer = 0;
+        let fakeUpdTimer = 0;
+        let subTimer = 0;
+        let autoConvTimer = 0;
+        let questTimer = 0;
+        let shopGenerated = false;
+        
+        // Trackers
+        let convertClicks = [];
+        let bgClicks = [];
+        let goldenSpree = [];
+        
+        // Devtools
+        let keyBuffer = "";
+
+        function gameLoop() {
+            const now = Date.now();
+            const dt = (now - lastTime) / 1000;
+            lastTime = now;
+
+            // Idle Check
+            if (now - state.timers.lastInput > 600000 && !state.unlocks.netflix) { 
+                document.getElementById('idleOverlay').style.display = 'flex';
+                requestAnimationFrame(gameLoop);
+                return; 
+            }
+
+            const boredomActive = els.mini.children.length > 0;
+            els.boredomMsg.classList.toggle('hidden', !boredomActive);
+
+            // Entropy Decay
+            if (state.entropyMultiplier > 1.0) {
+                state.entropyMultiplier = Math.max(1.0, state.entropyMultiplier - (0.05 * dt));
+            }
+
+            // Calc Rate
+            let baseRate = 1 * (state.knowledgeMult || 1.0);
+            if(state.skills.accel_pulse) baseRate *= 1.10;
+            SHOP_ITEMS.forEach(item => { if(item.category === 'seconds') baseRate += (state.shopCounts[item.id] || 0) * item.power; });
+            if(state.skills.time_warp) baseRate *= 1.5;
+            
+            // Theme Buffs
+            if(state.activeTheme === 'matrix') baseRate *= 1.1;
+            
+            const prestigeMult = 1 + ((Number(state.chronotons) || 0) * 100); 
+            const realWorldMult = getRealWorldMult();
+            let finalRate = baseRate * prestigeMult * realWorldMult * state.entropyMultiplier;
+
+            if (state.settings.hardMode) finalRate *= 0.01;
+            
+            if (finalRate >= 100) unlockAchievement(ACHIEVEMENTS.find(a=>a.id==='turbulence'));
+
+            checkRankUp();
+
+            // Quests Refresh & Progress (Throttled for performance)
+            questTimer += dt;
+            if (questTimer > 1) {
+                checkDailyQuests();
+                updateQuestProgress();
+                questTimer = 0;
+            }
+
+            const gain = finalRate * dt;
+            state.seconds += gain;
+            state.totalSecondsWasted += gain;
+            state.runSecondsWasted += gain;
+
+            // Auto Convert Skill
+            if (state.skills.auto_conv) {
+                autoConvTimer += dt;
+                if (autoConvTimer >= 1) {
+                    const cost = getConversionCost();
+                    if (state.seconds >= cost) {
+                        state.seconds -= cost;
+                        state.clocks++;
+                        state.conversions++;
+                    }
+                    autoConvTimer = 0;
+                }
+            }
+
+            // Random Ding
+            dingTimer += dt;
+            if (dingTimer > (600 + Math.random()*600)) { 
+                SFX.play('ding');
+                const toast = document.getElementById('achieveToast');
+                document.getElementById('achieveName').innerText = getText("Nothing happened. Just checking.");
+                toast.style.bottom = "20px";
+                setTimeout(() => { toast.style.bottom = "-100px"; }, 3000);
+                dingTimer = 0;
+            }
+
+            // Fake Update
+            fakeUpdTimer += dt;
+            if (fakeUpdTimer > 60) {
+                if (Math.random() < 0.05) {
+                    document.getElementById('fakeUpdate').style.display = 'block';
+                }
+                fakeUpdTimer = 0;
+            }
+
+            // Sub Box
+            if (state.unlocks.sub_box) {
+                subTimer += dt;
+                if (subTimer > 600) { 
+                    if (state.clocks >= 10) {
+                        state.clocks -= 10;
+                        log("SUBSCRIPTION GIFT: You feel satisfaction!");
+                        SFX.play('golden');
+                    }
+                    subTimer = 0;
+                }
+            }
+
+            // Updates
+            updateUI(finalRate, prestigeMult);
+            checkAchievements();
+            
+            // Autosave (10s)
+            saveTimer += dt;
+            if (saveTimer > 10) { saveGame(); saveTimer = 0; }
+
+            // Golden Seconds (Rarer)
+            goldenTimer += dt;
+            const spawnChance = state.skills.shiny_magnet ? 0.02 : 0.005; // Rare
+            if (goldenTimer > 1) { 
+                if (Math.random() < spawnChance) spawnGoldenSecond(); 
+                goldenTimer = 0;
+            }
+
+            // Zen Master Check
+            if (now - state.timers.lastInput > 300000) unlockAchievement(ACHIEVEMENTS.find(a=>a.id==='zen'));
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- Logic ---
+        function getRealWorldMult() {
+            const h = new Date().getHours();
+            return (h >= 1 && h < 4) ? 2.0 : 1.0;
+        }
+
+        function getConversionCost() {
+            const prestigePenalty = Math.pow(10, (Number(state.prestigeCount) || 0));
+            let scale = CONFIG.CONVERSION_SCALE;
+            if(state.skills.eff_expert) scale -= 0.005;
+            
+            // Upgrade effect
+            scale -= (state.shopCounts.overclocker || 0) * 0.002;
+            const base = CONFIG.BASE_CONVERSION - (state.shopCounts.lubricant || 0) * 2;
+            
+            return Math.floor((base * prestigePenalty) * Math.pow(scale, state.conversions));
+        }
+
+        function getNextChronoCost() {
+            return CONFIG.CHRONO_THRESHOLD * Math.pow(CONFIG.CHRONO_SCALE, state.chronotons);
+        }
+
+        function checkBeatGame(s) {
+            const allShop = SHOP_ITEMS.every(i => s.shopCounts[i.id] > 0);
+            const allDist = DISTRACTIONS.every(d => s.unlocks[d.id]);
+            const allAch = ACHIEVEMENTS.filter(a => a.id !== 'beat').every(a => s.achievements.includes(a.id));
+            return allShop && allDist && s.chronotons >= 5 && allAch;
+        }
+
+        function getText(text) {
+             return state.settings.lolcat ? lolcat(text) : text;
+        }
+
+        // --- UI ---
+        function updateUI(rate, pMult) {
+            const lol = state.settings.lolcat;
+            const boredomDiscount = getBoredomDiscount();
+            
+            els.sec.innerText = formatNum(state.seconds);
+            els.clk.innerText = formatNum(state.clocks);
+            els.rate.innerText = `+${formatNum(rate)}/s`;
+            els.chronoTotal.innerText = formatNum(state.totalSecondsWasted);
+            els.runTotal.innerText = formatNum(state.runSecondsWasted);
+            els.chrono.innerText = formatNum(state.chronotons);
+            els.chronoMult.innerText = `+${formatNum((pMult - 1) * 100)}% BONUS`;
+            els.frag.innerText = state.fragments;
+            els.knowledge.innerText = `KNOWLEDGE: ${state.knowledgeMult.toFixed(2)}x`;
+
+            els.entropy.innerText = state.entropyMultiplier.toFixed(1);
+            els.entropyCap.innerText = state.entropyCap.toFixed(1);
+            els.totalClicks.innerText = formatNum(state.totalClicks);
+            
+            const goals = [100, 500, 1000, 5000, 10000, 50000];
+            const nextGoal = goals.find(g => g > state.totalClicks) || 999999;
+            els.nextGoalDisplay.innerText = formatNum(nextGoal);
+            const prevGoal = goals[goals.indexOf(nextGoal) - 1] || 0;
+            const goalProgress = ((state.totalClicks - prevGoal) / (nextGoal - prevGoal)) * 100;
+            els.clickProgress.style.width = `${goalProgress}%`;
+
+            // Static Labels - Dynamic Update
+            document.getElementById('mainTitle').innerText = getText("THE TIME WASTER");
+            document.getElementById('rankTitle').innerText = `RANK: ${getText(getRankTitle())}`;
+            
+            if (Math.random() < 0.05) { // Optimization: update labels less frequently
+                const labels = {
+                    '.lbl-life': "LIFETIME",
+                    '.lbl-run': "TOTAL (THIS RUN)",
+                    '.lbl-wasted': "TIME WASTED",
+                    '.lbl-clocks': "CLOCKS",
+                    '.lbl-curr': "CURRENCY",
+                    '.lbl-shop': "SHOP",
+                    '.lbl-bulk': "BULK",
+                    '.lbl-convert': "CONVERT",
+                    '.lbl-clk-sing': "CLOCK",
+                    '.lbl-tax': "-25% TAX",
+                    '.lbl-insufficient': "INSUFFICIENT FUNDS",
+                    '.lbl-machine': "THE CHRONOTON TIME MACHINE",
+                    '.lbl-machine-desc': "The machine hums. Reset run for Chronotons.",
+                    '.lbl-activate': "[ACTIVATE TIME MACHINE]",
+                    '.lbl-tablet-btn': "[OPEN ANCIENT TABLET]",
+                    '.lbl-zone': "BOREDOM ZONE",
+                    '.lbl-settings': "SETTINGS",
+                    '.lbl-music': "[TOGGLE MUSIC]",
+                    '.lbl-shame': "[HALL OF SHAME]",
+                    '.lbl-reset': "[HARD RESET]",
+                    '.lbl-tablet': "ANCIENT TABLET",
+                    '.lbl-frag-buy': "100 CLOCKS -> 1 FRAG",
+                    '.lbl-shame-title': "REGISTRY OF HEROES"
+                };
+
+                for (const [selector, text] of Object.entries(labels)) {
+                    document.querySelectorAll(selector).forEach(el => el.innerText = getText(text));
+                }
+            }
+
+            if (state.prestigeCount > 0) {
+                els.chronoCol.classList.remove('hidden'); els.chronoSpc.classList.add('hidden');
+            }
+            if (state.shopCounts.skill_key > 0) els.skillBtn.classList.remove('hidden');
+            else els.skillBtn.classList.add('hidden');
+
+            const cost = Math.floor(getConversionCost() * boredomDiscount);
+            els.costConv.innerText = formatNum(cost);
+            els.btnConv.disabled = state.seconds < cost;
+
+            if (state.clocks > 0 || state.totalSecondsWasted > 50) {
+                els.zone.classList.remove('opacity-50', 'pointer-events-none');
+            }
+
+            const nextCost = getNextChronoCost();
+            const canPrestige = state.totalSecondsWasted >= nextCost;
+            document.getElementById('nextChronoReq').innerText = formatNum(nextCost);
+            if (canPrestige) {
+                els.prestige.classList.remove('hidden');
+                els.potChrono.innerText = `${getText("REWARD")}: 1 ${getText("CHRONOTON")}`;
+            } else { els.prestige.classList.add('hidden'); }
+
+            renderShopUI();
+            
+            // Settings Theme Selectors
+            const themes = ['matrix', 'blood', 'golden'];
+            themes.forEach(t => {
+                const opt = document.getElementById(`opt-${t}`);
+                if(opt && state.achievements.includes(getThemeUnlock(t))) {
+                    opt.disabled = false;
+                    opt.innerText = opt.innerText.replace(' [LOCKED]', '');
+                }
+            });
+        }
+
+        function getBoredomDiscount() {
+            return els.mini.children.length > 0 ? 0.5 : 1.0;
+        }
+
+        function checkRankUp() {
+            const currentRank = getRankTitle();
+            if (state.lastRank !== currentRank) {
+                state.lastRank = currentRank;
+                triggerJuice('rank');
+                log(`RANK INCREASED TO ${currentRank}!`);
+                const el = document.getElementById('rankUpText');
+                el.classList.remove('hidden');
+                setTimeout(() => el.classList.add('hidden'), 3000);
+            }
+        }
+
+        function hitstop(duration) {
+            const start = performance.now();
+            while (performance.now() - start < duration) {}
+        }
+
+        function calculateEntropyCap() {
+            let cap = 1.5;
+            const goals = [100, 500, 1000, 5000, 10000];
+            goals.forEach(g => {
+                if (state.totalClicks >= g) cap += 0.5;
+            });
+            state.entropyCap = cap;
+        }
+
+        // Sidebars are now persistent on desktop; toggleOverlay removed.
+
+        function triggerJuice(type) {
+            if (state.settings.reduceMotion) return;
+            if (type === 'prestige') {
+                hitstop(50);
+                document.body.classList.add('shake-heavy');
+                setTimeout(() => document.body.classList.remove('shake-heavy'), 1000);
+            } else if (type === 'convert') {
+                document.body.classList.add('shake');
+                setTimeout(() => document.body.classList.remove('shake'), 200);
+            } else if (type === 'goal' || type === 'rank') {
+                hitstop(30);
+                document.body.classList.add('rank-up-flash');
+                setTimeout(() => document.body.classList.remove('rank-up-flash'), 500);
+                document.body.classList.add('shake');
+                setTimeout(() => document.body.classList.remove('shake'), 500);
+            }
+        }
+
+        function createFloatingText(x, y, text, color = "#fff") {
+            if (state.settings.reduceMotion) return;
+            const el = document.createElement('div');
+            el.className = 'floating-text';
+            el.innerText = text;
+            el.style.color = color;
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+
+        function getThemeUnlock(t) {
+            return {
+                'matrix': 'speed_reader',
+                'blood': 'efficient',
+                'golden': 'collector'
+            }[t];
+        }
+
+        function getRankTitle() {
+            const rank = RANKS.findLast(r => state.totalSecondsWasted >= r.t) || RANKS[0];
+            return rank.title;
+        }
+
+        window.changeShopPage = function(delta) {
+            state.shopPage += delta;
+            if (state.shopPage < 0) state.shopPage = 3;
+            if (state.shopPage > 3) state.shopPage = 0;
+            shopGenerated = false;
+            const grid = document.getElementById('shopGrid');
+            grid.style.opacity = '0';
+            setTimeout(() => { grid.style.opacity = '1'; }, 50);
+            updateUI(0, 1 + state.chronotons * 100);
+            SFX.play('click');
+        }
+
+        function renderShopUI() {
+            const grid = document.getElementById('shopGrid');
+            const currentBoredomDiscount = getBoredomDiscount();
+            const cats = ["SECONDS SHOP", "AGITATION SHOP", "CLOCK SHOP", "BOREDOM SHOP"];
+            const catIds = ["seconds", "agitation", "clocks", "boredom"];
+            
+            document.getElementById('shopPageTitle').innerText = getText(cats[state.shopPage]);
+            document.getElementById('shopPageIndicator').innerText = `PAGE ${state.shopPage + 1} / ${cats.length}`;
+
+            if (!shopGenerated) {
+                grid.innerHTML = '';
+                if (state.shopPage < 3) {
+                    const activeCat = catIds[state.shopPage];
+                    SHOP_ITEMS.filter(i => i.category === activeCat).forEach(item => {
+                        const div = document.createElement('div');
+                        div.id = `shop-div-${item.id}`;
+                        div.className = "flex justify-between items-center box p-2 bg-gray-900 mb-1 transition-colors";
+                        div.innerHTML = `
+                            <div class="flex-1">
+                                <div class="font-bold text-[11px] shop-item-name"></div>
+                                <div class="text-[9px] text-gray-500 leading-none shop-item-desc"></div>
+                                <div class="text-[9px] text-blue-400 mt-1 shop-item-owned"></div>
+                            </div>
+                            <button id="btn-${item.id}" onclick="buy('${item.id}')" class="btn text-[9px] py-1 px-2 border-gray-500"></button>
+                        `;
+                        grid.appendChild(div);
+                    });
+                } else {
+                    DISTRACTIONS.forEach(d => {
+                        const div = document.createElement('div');
+                        div.id = `shop-div-${d.id}`;
+                        div.className = "flex justify-between items-center box p-2 bg-gray-900 mb-1 transition-colors";
+                        div.innerHTML = `
+                            <div class="flex-1">
+                                <div class="font-bold text-[11px] dist-item-name"></div>
+                                <div class="text-[9px] text-gray-500 leading-none dist-item-desc"></div>
+                            </div>
+                            <button id="btn-dist-${d.id}" class="btn text-[9px] py-1 px-2"></button>
+                        `;
+                        grid.appendChild(div);
+                    });
+                }
+                shopGenerated = true;
+            }
+
+            // Efficient partial updates per frame
+            if (state.shopPage < 3) {
+                const activeCat = catIds[state.shopPage];
+                SHOP_ITEMS.filter(i => i.category === activeCat).forEach(item => {
+                    const count = state.shopCounts[item.id] || 0;
+                    const div = document.getElementById(`shop-div-${item.id}`);
+                    const btn = document.getElementById(`btn-${item.id}`);
+                    if (!div || !btn) return;
+
+                    div.querySelector('.shop-item-name').innerText = getText(item.name);
+                    div.querySelector('.shop-item-desc').innerText = getText(item.desc);
+                    div.querySelector('.shop-item-owned').innerText = `${getText("OWNED")}: ${count}`;
+
+                    let price = item.cost + (count * item.cost);
+                    if(state.skills.cheap_shop) price = Math.floor(price * 0.95);
+                    if(state.activeTheme === 'blood') price = Math.floor(price * 0.8);
+                    price = Math.floor(price * currentBoredomDiscount);
+
+                    const isOwned = item.special && count > 0;
+                    const canAfford = state.clocks >= price;
+                    
+                    btn.disabled = isOwned || !canAfford;
+                    btn.innerText = isOwned ? getText("OWNED") : formatNum(price);
+                });
+            } else {
+                DISTRACTIONS.forEach(d => {
+                    const unlocked = state.unlocks[d.id];
+                    const div = document.getElementById(`shop-div-${d.id}`);
+                    const btn = document.getElementById(`btn-dist-${d.id}`);
+                    if (!div || !btn) return;
+
+                    div.querySelector('.dist-item-name').innerText = getText(unlocked ? d.name : "LOCKED");
+                    div.querySelector('.dist-item-name').className = `font-bold text-[11px] dist-item-name ${unlocked ? 'text-blue-400' : ''}`;
+                    div.querySelector('.dist-item-desc').innerText = getText(d.desc);
+                    
+                    div.className = `flex justify-between items-center box p-2 bg-gray-900 mb-1 ${unlocked ? 'border-blue-500' : 'border-gray-700'}`;
+                    const canAfford = d.curr === 'k' ? state.chronotons >= d.cost : state.clocks >= d.cost;
+                    
+                    btn.className = `btn text-[9px] py-1 px-2 ${unlocked ? 'border-blue-500' : 'border-gray-500'}`;
+                    btn.disabled = !unlocked && !canAfford;
+                    btn.innerText = unlocked ? getText("LAUNCH") : (d.curr === 'k' ? `${d.cost}K` : `${d.cost}C`);
+                    btn.onclick = () => {
+                        if (unlocked) triggerDist(d.id);
+                        else buyDist(d.id);
+                    };
+                });
+            }
+        }
+
+        // --- Formatting ---
+        function formatNum(num) {
+            if (num < 1000) return Math.floor(num * 10) / 10;
+            const suffixes = ["", "k", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"];
+            const suffixNum = Math.floor(Math.log10(num) / 3);
+            if (suffixNum === 0) return Math.floor(num * 10) / 10; 
+            if (suffixNum >= suffixes.length) return num.toExponential(2);
+            return (num / Math.pow(1000, suffixNum)).toFixed(2) + suffixes[suffixNum];
+        }
+
+        function lolcat(text) {
+            if (!text) return "";
+            return text.toUpperCase()
+                       .replace(/YOU/g, "U").replace(/THE/g, "TEH").replace(/TIME/g, "TIEM")
+                       .replace(/CLOCKS/g, "CLOKS").replace(/SECONDS/g, "SECUNDS")
+                       .replace(/ARE/g, "R").replace(/PLEASE/g, "PLZ").replace(/ZONE/g, "ZOAN")
+                       .replace(/SHOP/g, "SHOPPE").replace(/UNLOCK/g, "UNLOK")
+                       .replace(/WHAT/g, "WUT").replace(/WAIT/g, "WAET")
+                       .replace(/UPDATE/g, "UPDAET").replace(/MYSTERY/g, "MISTERY")
+                       .replace(/GIFT/g, "GIFTZ").replace(/SATISFACTION/g, "HAPPINESS")
+                       .replace(/VOID/g, "VOYD").replace(/JANITOR/g, "CAT")
+                       .replace(/ACHIEVEMENT/g, "CHEEVMENT")
+                       .replace(/NOTHING/g, "NUFFIN")
+                       .replace(/HAPPENED/g, "HAPPND")
+                       .replace(/CHECKING/g, "CHECKN")
+                       .replace(/JUST/g, "JUS")
+                       .replace(/SYSTEM/g, "SISTEM")
+                       .replace(/READY/g, "REDDY");
+        }
+
+        // --- Actions ---
+
+        window.handleEntropyClick = function(e) {
+            state.totalClicks++;
+            
+            const agitationGain = 0.1 + (state.shopCounts.weight_plates || 0) * 0.02 + (state.shopCounts.vibration_core || 0) * 0.05;
+            state.entropyMultiplier = Math.min(state.entropyCap, state.entropyMultiplier + agitationGain);
+            calculateEntropyCap();
+            createFloatingText(e.clientX, e.clientY, `+${agitationGain.toFixed(2)}x`, "#ff4444");
+            SFX.play('click');
+            state.timers.lastInput = Date.now();
+            
+            // Goal Check
+            const goals = [100, 500, 1000, 5000, 10000];
+            goals.forEach(g => {
+                if(state.totalClicks === g) {
+                    calculateEntropyCap();
+                    log(`CLICK GOAL REACHED! CAP INCREASED TO ${state.entropyCap.toFixed(1)}x`);
+                    SFX.play('golden'); // Play a distinct sound for achievement-like events
+                    triggerJuice('goal');
+                }
+            });
+
+            // Floating text juice
+            if (!state.settings.reduceMotion) {
+                const pop = document.createElement('div');
+                pop.className = 'entropy-popup';
+                pop.innerText = `+0.1x`;
+                pop.style.left = e.clientX + 'px';
+                pop.style.top = e.clientY + 'px';
+                document.body.appendChild(pop);
+                setTimeout(() => pop.remove(), 1000);
+            }
+        };
+
+        window.convert = function() {
+            const cost = Math.floor(getConversionCost() * getBoredomDiscount());
+            const center = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+            if (state.seconds >= cost) {
+                state.seconds -= cost;
+                let gain = 1;
+                if(state.skills.compound) gain = 1.01; 
+                state.clocks += gain;
+                state.conversions++;
+                SFX.play('convert');
+                triggerJuice('convert');
+                createFloatingText(center.x, center.y, "+1 CLOCK", "#fbbf24");
+
+                if(!state.settings.reduceMotion) document.body.classList.add('flash-effect');
+                const now = Date.now();
+                convertClicks.push(now);
+                convertClicks = convertClicks.filter(t => now - t < 5000);
+                if(convertClicks.length >= 10) unlockAchievement(ACHIEVEMENTS.find(a => a.id === 'speed_demon'));
+                
+                state.stats.convertSpree = convertClicks.length;
+                updateUI(0, 1 + state.chronotons*100);
+            } else {
+                SFX.play('error');
+                createFloatingText(center.x, center.y, "NOT ENOUGH TIME", "#ef4444");
+                els.msgConv.style.opacity = 1;
+                setTimeout(() => els.msgConv.style.opacity = 0, 1000);
+                if(!state.settings.reduceMotion) document.body.classList.add('flash-effect');
+            }
+        };
+        els.btnConv.onclick = window.convert;
+
+        window.bulkConvert = function() {
+            const discount = getBoredomDiscount();
+            const prestigePenalty = Math.pow(10, state.prestigeCount);
+            let scale = CONFIG.CONVERSION_SCALE;
+            if(state.skills.eff_expert) scale -= 0.005;
+            
+            const currentCost = Math.floor(getConversionCost() * discount);
+            if (state.seconds < currentCost) { SFX.play('error'); return; }
+            
+            const bulkTax = discount < 1.0 ? 0.95 : 0.75;
+            let bought = 0;
+            for(let i=0; i<250; i++) {
+                let c = Math.floor((CONFIG.BASE_CONVERSION * prestigePenalty) * Math.pow(scale, state.conversions + bought));
+                c = Math.floor(c * discount);
+                if (state.seconds >= c) {
+                    state.seconds -= c;
+                    bought++;
+                } else break;
+            }
+
+            if (bought > 0) {
+                const taxedGain = Math.floor(bought * bulkTax);
+                state.conversions = (Number(state.conversions) || 0) + bought;
+                state.clocks += taxedGain;
+                SFX.play('convert');
+                log(`BULK: SPENT FOR ${bought}, GAINED ${taxedGain} (TAXED).`);
+                updateUI(0, 1 + state.chronotons*100);
+            }
+        }
+
+        window.buy = function(id) {
+            const item = SHOP_ITEMS.find(i => i.id === id);
+            const count = state.shopCounts[id] || 0;
+            let price = item.cost + (count * item.cost);
+            if(state.skills.cheap_shop) price = Math.floor(price * 0.95);
+            if(state.activeTheme === 'blood') price = Math.floor(price * 0.8);
+            price = Math.floor(price * getBoredomDiscount());
+
+            if (price - state.clocks === 1) unlockAchievement(ACHIEVEMENTS.find(a => a.id === 'budgeting'));
+            if (state.clocks < price) {
+                state.stats.unaffordableTry = (state.stats.unaffordableTry || 0) + 1;
+                SFX.play('error');
+            }
+
+            if (state.clocks >= price) {
+                state.clocks -= price;
+                state.shopCounts[id] = count + 1;
+                SFX.play('click');
+                const div = document.getElementById(`shop-div-${id}`);
+                if(!state.settings.reduceMotion) div.classList.add('flash-effect-strong'); // Visual feedback on purchase
+                log(`BOUGHT ${item.name}`);
+                saveGame();
+                updateUI(0, 1 + state.chronotons*100);
+            }
+        };
+
+        window.triggerDist = function(id) {
+            const d = DISTRACTIONS.find(x => x.id === id);
+            if (d) { d.action(); SFX.play('click'); }
+        };
+
+        window.buyDist = function(id) {
+            const d = DISTRACTIONS.find(x => x.id === id);
+            let success = false;
+            if (d.curr === 'k') {
+                if (state.chronotons >= d.cost) { state.chronotons -= d.cost; success = true; }
+            } else {
+                if (state.clocks >= d.cost) { state.clocks -= d.cost; success = true; }
+            }
+            if (success) {
+                state.unlocks[id] = true;
+                const div = document.getElementById(`shop-div-${id}`);
+                if(!state.settings.reduceMotion && div) div.classList.add('flash-effect-strong'); // Visual feedback on unlock
+                SFX.play('click');
+                saveGame();
+                renderShopUI(); 
+            } else { SFX.play('error'); }
+        };
+
+        window.triggerReset = function() {
+            if (confirm("HARD RESET? This will wipe EVERYTHING.")) {
+                if (confirm("REALLY? There is no going back.")) {
+                    const rankIdx = RANKS.findIndex(r => state.totalSecondsWasted >= r.t);
+                    if(rankIdx >= RANKS.length - 2) {
+                        alert("ACHIEVEMENT UNLOCKED: INFINITE REGRET. Goodbye.");
+                    }
+                    localStorage.removeItem(CONFIG.SAVE_KEY);
+                    location.reload();
+                }
+            }
+        };
+
+        window.prestige = function() {
+            if (Math.floor(state.seconds) === 0) unlockAchievement(ACHIEVEMENTS.find(a=>a.id==='paradox'));
+
+            const cost = getNextChronoCost();
+            if (state.totalSecondsWasted < cost) return;
+            if (!confirm(`RESET RUN? You will lose all items and time, but keep Achievements and get Chronotons.`)) return;
+            
+            SFX.play('prestige');
+            if (!state.settings.reduceMotion) triggerJuice('prestige');
+            state.chronotons += 1;
+            state.prestigeCount++;
+            state.seconds = 0;
+            state.runSecondsWasted = 0; 
+            state.clocks = 0;
+            state.conversions = 0;
+            state.shopCounts = {};
+            
+            saveGame();
+            location.reload(); 
+        };
+
+        // --- Fake Update ---
+        document.getElementById('fakeUpdate').onclick = function() {
+            this.style.display = 'none';
+            state.seconds = state.seconds / 100;
+            state.stats.fakeClicks = (state.stats.fakeClicks || 0) + 1;
+            SFX.play('error');
+            log("FAKE UPDATE INSTALLED. TIME DIVIDED BY 100.");
+            unlockAchievement(ACHIEVEMENTS.find(a=>a.id==='clickbait'));
+        }
+
+        // --- Pixel Button ---
+        document.getElementById('pixelBtn').onclick = function() {
+            document.body.classList.add('comic-sans');
+            state.settings.comicSans = true;
+            unlockAchievement(ACHIEVEMENTS.find(a => a.id === 'font'));
+            saveGame();
+        }
+
+        // --- Context Menu ---
+        window.oncontextmenu = function(e) {
+            e.preventDefault();
+            const ctx = document.getElementById('customCtx');
+            ctx.style.display = 'block';
+            ctx.style.left = e.clientX + 'px';
+            ctx.style.top = e.clientY + 'px';
+        }
+        window.onclick = function(e) {
+            if (!e.target.closest('.ctx-item')) {
+                document.getElementById('customCtx').style.display = 'none';
+            }
+            state.timers.lastInput = Date.now();
+        }
+        window.ctxAction = function() {
+            alert(getText("This feature will be available in the year 600000."));
+        }
+
+        window.resumeIdle = function() {
+            document.getElementById('idleOverlay').style.display = 'none';
+            state.timers.lastInput = Date.now();
+        }
+
+        // --- Modal & Skill Logic ---
+        
+        window.openModal = function(id) {
+            document.getElementById(id).classList.add('active');
+            if(id === 'skillModal') renderSkills();
+            if(id === 'achieveModal') renderAchievements();
+            if(id === 'settingsModal') {
+                document.getElementById('sfxSlider').value = state.settings.sfxVol;
+                document.getElementById('musicSlider').value = state.settings.musicVol;
+                document.getElementById('hardModeCheck').checked = state.settings.hardMode;
+                document.getElementById('lolcatCheck').checked = state.settings.lolcat;
+                document.getElementById('motionCheck').checked = state.settings.reduceMotion;
+            }
+            SFX.play('click');
+        }
+        window.closeModal = function(id) {
+            document.getElementById(id).classList.remove('active');
+            SFX.play('click');
+        }
+
+        window.updateSettings = function() {
+            state.settings.sfxVol = parseFloat(document.getElementById('sfxSlider').value);
+            state.settings.musicVol = parseFloat(document.getElementById('musicSlider').value);
+            const hard = document.getElementById('hardModeCheck').checked;
+            const lol = document.getElementById('lolcatCheck').checked;
+            state.settings.reduceMotion = document.getElementById('motionCheck').checked;
+            
+            if (hard && !state.settings.hardMode) unlockAchievement(ACHIEVEMENTS.find(a=>a.id==='worse'));
+            state.settings.hardMode = hard;
+            state.settings.lolcat = lol;
+
+            const theme = document.getElementById('themeSelector').value;
+            state.activeTheme = theme;
+            document.body.classList.remove('theme-matrix', 'theme-blood', 'theme-golden');
+            if(theme !== 'default') document.body.classList.add(`theme-${theme}`);
+
+            document.getElementById('sfxVal').innerText = Math.round(state.settings.sfxVol * 100) + "%";
+            document.getElementById('musicVal').innerText = Math.round(state.settings.musicVol * 100) + "%";
+            assets.music.volume = state.settings.musicVol;
+            
+            if (hard) document.body.classList.add('hard-mode-active');
+            else document.body.classList.remove('hard-mode-active');
+            
+            shopGenerated = false; 
+            updateUI(0, 1 + state.chronotons*100);
+        }
+
+        // --- Cards System ---
+        function buyCardPack() {
+            if(state.clocks < 50) { SFX.play('error'); return; }
+            state.clocks -= 50;
+            const pools = [
+                { n: "VOID", r: "common" }, { n: "TIME", r: "common" }, { n: "STAGN", r: "common" }, 
+                { n: "CHRONO", r: "rare" }, { n: "ENTROPY", r: "rare" }, { n: "WASTE", r: "rare" },
+                { n: "IDLE", r: "exotic" }, { n: "CLOCK", r: "exotic" }
+            ];
+            const cardBase = pools[Math.floor(Math.random() * pools.length)];
+            const cardId = cardBase.n + " #" + (Math.floor(Math.random()*10) + 1);
+            
+            if(!state.cards.some(c => c.id === cardId)) {
+                state.cards.push({ id: cardId, rarity: cardBase.r });
+                calculateCardBonus();
+            }
+            
+            log(`OPENED PACK: FOUND [${cardId}] (${cardBase.r.toUpperCase()})`);
+            SFX.play('golden');
+            renderCards();
+            saveGame();
+        }
+        
+        function calculateCardBonus() {
+            // Each unique card gives +0.02x to production
+            state.knowledgeMult = 1.0 + (state.cards.length * 0.02);
+        }
+
+        function renderCards() {
+            els.cardGrid.innerHTML = '';
+            state.cards.forEach(c => {
+                const div = document.createElement('div');
+                div.className = `game-card card-${c.rarity}`;
+                div.innerText = c.id;
+                els.cardGrid.appendChild(div);
+            });
+            document.getElementById('cardStats').innerText = `${state.cards.length} FOUND`;
+        }
+
+        // --- Daily Quests ---
+        function getQuestTemplates() {
+             return [
+                { id: 'q1', text: 'Waste %v%s', target: 5000, reward: 20 },
+                { id: 'q2', text: 'Click %v% times', target: 100, reward: 15 },
+                { id: 'q3', text: 'Convert %v% Clocks', target: 5, reward: 10 },
+                { id: 'q4', text: 'Earn %v% Seconds (Entropy)', target: 2000, reward: 25 },
+                { id: 'q5', text: 'Spend %v% Clocks', target: 10, reward: 10 }
+             ];
+        }
+
+        function checkDailyQuests() {
+            const today = new Date().toDateString();
+            if (state.lastQuestDate !== today) {
+                state.quests = [
+                    { id: 'q1', text: 'Waste 5,000s', target: 5000, current: 0, done: false, reward: 20 },
+                    { id: 'q2', text: 'Click 100 times', target: 100, current: 0, done: false, reward: 15 },
+                    { id: 'q3', text: 'Convert 5 Clocks', target: 5, current: 0, done: false, reward: 10 }
+                ];
+                state.lastQuestDate = today;
+                saveGame();
+            }
+        }
+
+        function updateQuestProgress() {
+            if(!state.quests) return;
+            let changed = false;
+            state.quests.forEach(q => {
+                if(q.done) return;
+                if(q.id === 'q1') q.current = state.runSecondsWasted;
+                if(q.id === 'q2') q.current = state.totalClicks;
+                if(q.id === 'q3') q.current = state.conversions;
+                if(q.id === 'q4') q.current = state.totalSecondsWasted;
+                if(q.id === 'q5') q.current = state.clocks; // Simple proxy
+                changed = true;
+                
+                if(q.current >= q.target) {
+                    q.done = true;
+                    state.clocks += q.reward;
+                    log(`QUEST COMPLETE: ${q.text}. REWARD: ${q.reward} CLOCKS`);
+                    SFX.play('ding');
+                }
+            });
+            if (changed) renderQuests();
+        }
+
+        function renderQuests() {
+            const html = state.quests.map(q => `
+                <div class="text-[10px] ${q.done ? 'text-green-500' : 'text-gray-400'}">
+                    ${q.done ? '[X]' : '[ ]'} ${q.text} (${Math.floor(q.current)}/${q.target})
+                </div>
+            `).join('');
+            els.questCont.innerHTML = html;
+            document.getElementById('questContainerMobile').innerHTML = html;
+        }
+
+        // --- Stock Market ---
+        function renderStockMarket() {
+            const stocksHtml = Object.entries(state.stocks).map(([name, data]) => `
+                <div class="border p-1 bg-black">
+                    <div class="font-bold">${name}</div>
+                    <div class="${data.p >= (data.h[data.h.length-2] || 10) ? 'text-green-500' : 'text-red-500'}">
+                        ${data.p.toFixed(2)}
+                    </div>
+                    <div class="mt-1">OWNED: ${state.ownedStocks[name]}</div>
+                    <button onclick="tradeStock('${name}', 'buy')" class="btn p-0 w-full mt-1 text-[8px]">BUY</button>
+                    <button onclick="tradeStock('${name}', 'sell')" class="btn p-0 w-full mt-1 text-[8px]">SELL</button>
+                </div>
+            `).join('');
+
+            const innerHTML = `
+                <div class="p-2">
+                    <div class="grid grid-cols-3 gap-2 mb-2 text-center text-[10px]">${stocksHtml}</div>
+                    <div class="stock-chart" id="marketChart"></div>
+                </div>
+            `;
+            
+            const existing = document.getElementById('mini-content-market');
+            if (existing) {
+                existing.innerHTML = innerHTML;
+            } else {
+                addMinigameWindow('market', innerHTML);
+                updateMarket(); // Initial start
+            }
+        }
+
+        let marketTimer = null;
+        function updateMarket() {
+            if (marketTimer) clearTimeout(marketTimer);
+            
+            const chart = document.getElementById('marketChart');
+            if(!chart) {
+                marketTimer = null;
+                return;
+            }
+            
+            chart.innerHTML = '';
+            Object.entries(state.stocks).forEach(([name, data]) => {
+                if (!data.h) data.h = [data.p];
+                const prev = data.p;
+                data.p *= (0.85 + Math.random() * 0.35);
+                data.p = Math.max(1, Math.min(100, data.p));
+                data.h.push(data.p);
+                if(data.h.length > 40) data.h.shift();
+                
+                // Draw simplified combined chart
+                const bar = document.createElement('div');
+                bar.className = `stock-bar ${data.p < prev ? 'down' : ''}`;
+                bar.style.height = `${(data.p / 100) * 56}px`;
+                bar.title = `${name}: ${data.p.toFixed(2)}`;
+                chart.appendChild(bar);
+            });
+
+            renderStockMarket(); // Just updates the innerHTML now
+            marketTimer = setTimeout(updateMarket, 3000);
+        }
+
+        window.tradeStock = function(name, side) {
+            const price = Math.floor(state.stocks[name].p);
+            if(side === 'buy' && state.clocks >= price) {
+                state.clocks -= price; state.ownedStocks[name]++;
+            } else if (side === 'sell' && state.ownedStocks[name] > 0) {
+                state.clocks += price; state.ownedStocks[name]--;
+            }
+            renderStockMarket();
+        };
+
+        // --- Blackjack ---
+        function renderBlackjack() {
+            const html = `
+                <div class="p-4 text-center">
+                    <div class="text-xs mb-2">HOUSE: <span id="bjHouse">?</span> | YOU: <span id="bjPlayer">0</span></div>
+                    <div class="flex gap-2 justify-center">
+                        <button onclick="bjAction('hit')" class="btn text-xs">HIT</button>
+                        <button onclick="bjAction('stand')" class="btn text-xs">STAND</button>
+                    </div>
+                    <div class="text-[10px] mt-2 text-gray-500">BET: 10 CLOCKS</div>
+                </div>
+            `;
+            addMinigameWindow('bj', html);
+            state.bjScore = 0; state.bjHouse = Math.floor(Math.random()*10) + 12;
+        }
+
+        window.bjAction = function(act) {
+            if(act === 'hit') {
+                state.bjScore += Math.floor(Math.random()*10) + 1;
+                document.getElementById('bjPlayer').innerText = state.bjScore;
+                if(state.bjScore > 21) { 
+                    log("BJ: BUST! -10 CLOCKS"); 
+                    state.clocks -= 10; 
+                    renderBlackjack(); 
+                }
+            } else {
+                document.getElementById('bjHouse').innerText = state.bjHouse;
+                if(state.bjScore > state.bjHouse || state.bjHouse > 21) {
+                    log("BJ: YOU WIN! +20 CLOCKS"); state.clocks += 20; SFX.play('golden');
+                } else {
+                    const diff = state.bjHouse - state.bjScore;
+                    if (diff <= 2) log(`BJ: NEAR MISS! ONLY ${diff} OFF!`);
+                    log("BJ: HOUSE WINS! -10 CLOCKS"); state.clocks -= 10;
+                }
+                renderBlackjack();
+            }
+        }
+
+        function renderSkills() {
+            const list = document.getElementById('skillList');
+            list.innerHTML = '';
+            SKILLS.forEach(s => {
+                const owned = state.skills[s.id];
+                const div = document.createElement('div');
+                div.className = `skill-node ${owned ? 'unlocked' : ''}`;
+                div.innerHTML = `
+                    <div class="font-bold">${getText(s.name)}</div>
+                    <div class="text-xs text-gray-400 mb-2">${getText(s.desc)}</div>
+                    ${owned ? '<span class="text-green-500 font-bold">UNLOCKED</span>' : 
+                      `<button onclick="unlockSkill('${s.id}')" class="btn text-xs border-green-500 text-green-500 w-full">UNLOCK (${s.cost} FRAG)</button>`}
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        window.buyFragment = function() {
+            if (state.clocks >= 100) {
+                state.clocks -= 100; state.fragments++;
+                SFX.play('convert'); els.frag.innerText = state.fragments;
+            } else { SFX.play('error'); }
+        }
+
+        window.unlockSkill = function(id) {
+            const skill = SKILLS.find(x => x.id === id);
+            if (state.fragments >= skill.cost) {
+                state.fragments -= skill.cost; state.skills[id] = true;
+                SFX.play('golden'); renderSkills(); saveGame();
+            } else { SFX.play('error'); }
+        }
+
+        function renderAchievements() {
+            const list = document.getElementById('achieveList');
+            list.innerHTML = '';
+            let count = 0;
+            ACHIEVEMENTS.forEach(a => {
+                const unlocked = state.achievements.includes(a.id);
+                if(unlocked) count++;
+                const div = document.createElement('div');
+                div.className = `p-2 border ${unlocked ? 'border-yellow-400 text-yellow-400' : 'border-gray-800 text-gray-800'}`;
+                div.innerHTML = `<div class="font-bold text-sm">${getText(a.title)}</div><div class="text-xs">${unlocked ? getText(a.desc) : 'LOCKED'}</div>`;
+                list.appendChild(div);
+            });
+            document.getElementById('achieveCount').innerText = `${count} / ${ACHIEVEMENTS.length}`;
+        }
+
+        function unlockAchievement(a) {
+            if (!a || state.achievements.includes(a.id)) return;
+            state.achievements.push(a.id);
+            const toast = document.getElementById('achieveToast');
+            document.getElementById('achieveName').innerText = getText(a.title);
+            toast.style.bottom = "20px";
+            SFX.play('golden');
+            setTimeout(() => { toast.style.bottom = "-100px"; }, 3000);
+            log(`ACHIEVEMENT: ${a.title}`);
+            saveGame();
+        }
+        
+        function checkAchievements() {
+            ACHIEVEMENTS.forEach(a => {
+                if (!a.manual && !state.achievements.includes(a.id)) {
+                    if (a.check(state)) unlockAchievement(a);
+                }
+            });
+        }
+
+        function log(msg) {
+            const d = document.createElement('div');
+            d.innerText = `> ${getText(msg)}`;
+            els.log.prepend(d);
+            if(els.log.children.length > 50) els.log.lastChild.remove();
+        }
+
+        // --- Boredom Zone ---
+        
+        function addMinigameWindow(id, contentHTML) {
+             const container = document.getElementById('activeMinigame');
+             const winId = `mini-win-${id}`;
+             if(document.getElementById(winId)) {
+                 document.getElementById(winId).remove(); // Restart if already open
+             }
+             const div = document.createElement('div');
+             div.id = winId;
+             div.className = "minigame-window p-2 relative";
+             div.innerHTML = `<div class="minigame-close" onclick="this.parentElement.remove()">X</div><div id="mini-content-${id}">${contentHTML}</div>`;
+             container.prepend(div);
+        }
+
+        // --- Minigame Actions ---
+        function changeBg() {
+            document.body.style.backgroundColor = `hsl(${Math.random()*360}, 50%, 5%)`;
+            const now = Date.now();
+            bgClicks.push(now);
+            bgClicks = bgClicks.filter(t => now - t < 60000);
+            if(bgClicks.length >= 20) unlockAchievement(ACHIEVEMENTS.find(a=>a.id==='indecisive'));
+        }
+        
+        function toggleSubBox() {
+            state.unlocks.sub_box = true; 
+            log("SUBSCRIPTION BOX ACTIVE. WAIT 10 MINS.");
+            addMinigameWindow('sub', `<div class="p-2 text-center text-xs">${getText("SUB BOX RUNNING IN BACKGROUND...")}</div>`);
+        }
+        
+        function activateNetflix() {
+            state.unlocks.netflix = true;
+            log("NETFLIX BLOCKER ACTIVE. NO IDLE TIMEOUT.");
+        }
+
+        function renderRock() {
+            let html = "";
+            if (state.unlocks.mushroom) {
+                 html = `<div class="p-4 text-center"><div class="text-4xl mb-2">🍄</div><div class="text-xs mb-2">${getText("THE MUSHROOM VIBRATES")}</div><button onclick="feedMushroom()" class="btn text-xs">${getText("FEED (1 CLOCK)")}</button></div>`;
+            } else {
+                 html = `<div class="p-4 text-center"><div class="text-4xl mb-2">🪨</div><div class="text-xs mb-2">${getText("THE ROCK STARES")}</div><button onclick="feedRock()" class="btn text-xs">${getText("FEED (1 CLOCK)")}</button></div>`;
+            }
+            addMinigameWindow('rock', html);
+        }
+        window.feedRock = function() {
+            if (state.clocks >= 1) { 
+                state.clocks--; state.stats.rockFed = (state.stats.rockFed||0)+1; 
+                SFX.play('click'); 
+                if (state.stats.rockFed >= 50 && !state.unlocks.mushroom) {
+                    state.unlocks.mushroom = true;
+                    log("THE ROCK HAS EVOLVED INTO A MUSHROOM.");
+                    renderRock();
+                } else {
+                    log("ROCK FED."); 
+                }
+            }
+        }
+        window.feedMushroom = function() {
+            if (state.clocks >= 1) {
+                state.clocks--;
+                state.seconds += 10;
+                SFX.play('click');
+                log("FED MUSHROOM. GAINED 10 SECONDS (BAD DEAL).");
+                unlockAchievement(ACHIEVEMENTS.find(a=>a.id==='bad_trade'));
+            }
+        }
+
+        function renderBubble() {
+            const html = `<div class="p-2 text-center"><div id="bubbleGrid" class="grid grid-cols-8 gap-2 bg-gray-900 p-2"></div><button onclick="renderBubble()" class="btn text-xs mt-2">${getText("RESET")}</button></div>`;
+            addMinigameWindow('bubble', html);
+            
+            const grid = document.getElementById('bubbleGrid');
+            if(grid) {
+                for(let i=0; i<24; i++) {
+                    const b = document.createElement('div'); b.className = 'bubble';
+                    b.onclick = function() {
+                        if(!this.classList.contains('popped')) {
+                            this.classList.add('popped'); SFX.play('click');
+                            state.stats.bubblesPopped=(state.stats.bubblesPopped||0)+1;
+                        }
+                    }
+                    grid.appendChild(b);
+                }
+            }
+        }
+
+        function renderChat() {
+            const html = `<div class="p-2 h-40 flex flex-col"><div id="chatBox" class="flex-1 overflow-y-auto text-xs bg-gray-900 p-1"></div></div>`;
+            addMinigameWindow('chat', html);
+            
+            const msgs = [
+                "POG", "LUL", "F", "Lag", "SECRET_BUTTON", "Hello", "When update?", "Skip", "Is this stream productive?", "No", "Void Janitor confirmed",
+                "kappa", "OMEGALUL", "monkaS", "ResidentSleeper", "Jebaited", "KEKW", "PogChamp", "WeirdChamp", "Pepega", "Sadge",
+                "Anyone else seeing the void?", "My clock stopped", "Is this live?", "First", "Ratio", "Dead game", "Buff gears", "Nerf time",
+                "Where is the mushroom?", "Can I have a clock?", "Type 1 if you are waiting", "1", "1", "1", "2", "lol",
+                "Speedrun when?", "I've been here for 40 years", "Just buy the toaster", "Click click click", "Why are we here?"
+            ];
+            const names = [
+                "User123", "TimeLord99", "VoidCat", "LazyBones", "ProcrastinatorX", "EntropyFan", "ClockWatcher", "NullPointer", 
+                "StreamSniper", "Mod_Dave", "Admin_Alice", "Guest_999", "Echo_419", "ChronoTrigger", "Waster_Of_Time", "AFK_King",
+                "NoLifeGiven", "SecondHand", "MinuteMan", "HourGlass", "DayDreamer", "NightOwl", "MorningGlory", "WeekEnd", "MonthPiece",
+                "YearBook", "DecadeDance", "CenturyFox", "MilleniumFalcon", "EonMusk"
+            ];
+            
+            const addMsg = () => {
+                const box = document.getElementById('chatBox');
+                if(!box) return; // Stop if window closed
+                
+                const m = msgs[Math.floor(Math.random()*msgs.length)];
+                const n = names[Math.floor(Math.random()*names.length)];
+                
+                const div = document.createElement('div');
+                div.innerHTML = `<span style="color: #4ade80">${n}:</span> ${getText(m)}`;
+                
+                if(m === "SECRET_BUTTON" && Math.random() < 0.05) {
+                    div.innerHTML = `<span style="color: #f87171">${n}:</span> <button onclick="unlockAchievement(ACHIEVEMENTS.find(a=>a.id==='wait_what'))" class="text-[9px] border px-1">CLICK ME</button>`;
+                }
+                
+                box.appendChild(div);
+                box.scrollTop = box.scrollHeight;
+                if(box.children.length > 50) box.firstChild.remove();
+                
+                state.stats.chatMsgs=(state.stats.chatMsgs||0)+1;
+                setTimeout(addMsg, 300 + Math.random()*1000);
+            };
+            addMsg();
+        }
+
+        function renderDraw() {
+            const html = `<div class="p-2 text-center"><canvas id="drawCanvas" width="200" height="150" style="border:1px dashed #666;background:#111"></canvas><br><button onclick="clearDraw()" class="btn text-xs">${getText("CLEAR")}</button></div>`;
+            addMinigameWindow('draw', html);
+            initDraw();
+        }
+        function initDraw() {
+            const c = document.getElementById('drawCanvas'); 
+            if(!c) return;
+            const ctx = c.getContext('2d');
+            let p=false;
+            c.onmousedown=()=>{p=true}; c.onmouseup=()=>{p=false;ctx.beginPath()};
+            c.onmousemove=(e)=>{
+                if(!p)return; const r=c.getBoundingClientRect();
+                ctx.lineWidth=2; ctx.strokeStyle='#fff';
+                ctx.lineTo(e.clientX-r.left,e.clientY-r.top); ctx.stroke(); ctx.beginPath(); ctx.moveTo(e.clientX-r.left,e.clientY-r.top);
+            }
+        }
+        window.clearDraw=()=>{
+            const c=document.getElementById('drawCanvas');
+            if(c) c.getContext('2d').clearRect(0,0,c.width,c.height);
+        };
+
+        function renderUnsorter() {
+            const html = `<div class="p-2 text-center"><canvas id="unsorterCanvas" width="250" height="200"></canvas><div class="text-xs">Wind: <span id="windTimer">30</span>s</div></div>`;
+            addMinigameWindow('unsorter', html);
+            
+            const cvs = document.getElementById('unsorterCanvas'); 
+            if(!cvs) return;
+            
+            const ctx = cvs.getContext('2d');
+            let pixels = Array(50).fill().map(()=>({x:Math.random()*250,y:Math.random()*200,c:['red','blue'][Math.floor(Math.random()*2)]}));
+            let wind=30;
+            const t = setInterval(()=>{
+                wind--; 
+                const timer = document.getElementById('windTimer');
+                if(timer) timer.innerText=wind;
+                if(wind<=0) { wind=30; pixels.forEach(p=>{p.x=Math.random()*250;p.y=Math.random()*200}); }
+                if(!document.getElementById('unsorterCanvas')) clearInterval(t);
+            },1000);
+            cvs.onclick=(e)=>{
+                const r=cvs.getBoundingClientRect(); const mx=e.clientX-r.left; const my=e.clientY-r.top;
+                SFX.play('click');
+                pixels.forEach(p=>{if(Math.abs(p.x-mx)<20 && Math.abs(p.y-my)<20) { p.x=mx+(Math.random()*20-10); p.y=my+(Math.random()*20-10); }});
+            };
+            function anim(){
+                if(!document.getElementById('unsorterCanvas')) return;
+                ctx.fillStyle='#000'; ctx.fillRect(0,0,250,200);
+                pixels.forEach(p=>{ctx.fillStyle=p.c;ctx.fillRect(p.x,p.y,4,4)});
+                requestAnimationFrame(anim);
+            }
+            anim();
+        }
+
+        function renderTodo() {
+            const html = `<div class="p-2"><div id="todoList" class="h-32 overflow-y-auto text-xs border border-gray-700 mb-2"></div><button onclick="addTodoItem('New Task')" class="btn text-xs w-full">${getText("ADD TASK")}</button></div>`;
+            addMinigameWindow('todo', html);
+            addTodoItem("Sort Air");
+        }
+        window.addTodoItem = function(t) {
+            const list = document.getElementById('todoList');
+            if(!list) return;
+            const d = document.createElement('div'); d.className='todo-item';
+            d.innerHTML = `<div class="w-3 h-3 border border-gray-500"></div><span>${getText(t)}</span>`;
+            d.onclick = function() { this.remove(); SFX.play('click'); setTimeout(()=>addTodoItem("Regret"),200); setTimeout(()=>addTodoItem("Despair"),200); };
+            list.appendChild(d);
+        }
+
+        function renderWaiting() {
+            const html = `<div class="p-4 text-center"><div class="text-6xl font-mono" id="waitNum">999</div><div class="text-xs">${getText("Waiting...")}</div></div>`;
+            addMinigameWindow('wait', html);
+            
+            let n = 999;
+            const i = setInterval(()=>{
+                if(!document.getElementById('waitNum')) { clearInterval(i); return; }
+                n--; document.getElementById('waitNum').innerText=n;
+                if(n<=0) { 
+                    document.getElementById('waitNum').innerText=getText("MISSED"); 
+                    unlockAchievement(ACHIEVEMENTS.find(a=>a.id==='waiter'));
+                    n=999; 
+                }
+            },100);
+        }
+
+        function renderAlmost() {
+            const html = `<div class="p-4"><div class="w-full h-8 border border-white p-1"><div id="loadBar" class="h-full bg-white w-0"></div></div><div id="loadPct" class="text-right text-xs">0%</div></div>`;
+            addMinigameWindow('almost', html);
+            
+            let p=0;
+            function step() {
+                if(!document.getElementById('loadBar')) return;
+                if(p<99) p++; else if(p<99.9) p+=0.01; else { 
+                    SFX.play('error'); p=0; 
+                    state.stats.almostFail=(state.stats.almostFail||0)+1; 
+                    unlockAchievement(ACHIEVEMENTS.find(a=>a.id==='the_one_percent'));
+                    if(state.stats.almostFail >= 5) unlockAchievement(ACHIEVEMENTS.find(a=>a.id==='anticlimax'));
+                }
+                document.getElementById('loadBar').style.width = p+"%";
+                document.getElementById('loadPct').innerText = p.toFixed(1)+"%";
+                setTimeout(step, p>99?2000:50);
+            }
+            step();
+        }
+        
+        function renderDontClick() {
+             const html = `<div class="p-8 text-center"><button onclick="dontClick()" class="w-32 h-32 rounded-full bg-red-600 font-bold text-white">${getText("DO NOT CLICK")}</button></div>`;
+             addMinigameWindow('dont', html);
+        }
+        window.dontClick = function() {
+            SFX.play('ding'); state.seconds=0; updateUI(0,1);
+            unlockAchievement(ACHIEVEMENTS.find(a=>a.id==='rebel'));
+            log("RESET TO 0.");
+        }
+
+        // --- Visuals (DVD) ---
+        function toggleDVD() {
+            const cvs = els.cvs;
+            if (getComputedStyle(cvs).opacity === '0') {
+                cvs.style.opacity = 0.5; cvs.width = window.innerWidth; cvs.height = window.innerHeight;
+                requestAnimationFrame(animateDVD);
+            } else { cvs.style.opacity = 0; }
+        }
+        let dvd = { x: 50, y: 50, dx: 3, dy: 3, w: 100, h: 50 };
+        function animateDVD() {
+            if (getComputedStyle(els.cvs).opacity === '0') return;
+            const ctx = els.cvs.getContext('2d');
+            ctx.clearRect(0, 0, els.cvs.width, els.cvs.height);
+            dvd.x += dvd.dx; dvd.y += dvd.dy;
+            const w = els.cvs.width; const h = els.cvs.height;
+            if ((dvd.x<=5||dvd.x+dvd.w>=w-5) && (dvd.y<=5||dvd.y+dvd.h>=h-5)) {
+                unlockAchievement(ACHIEVEMENTS.find(a=>a.id==='long_dist'));
+            }
+
+            if (dvd.x + dvd.w > w || dvd.x < 0) dvd.dx *= -1;
+            if (dvd.y + dvd.h > h || dvd.y < 0) dvd.dy *= -1;
+
+            if (assets.dvd.complete && assets.dvd.naturalHeight > 0) ctx.drawImage(assets.dvd, dvd.x, dvd.y, dvd.w, dvd.h);
+            else { 
+                ctx.strokeStyle = 'white'; 
+                ctx.lineWidth = 2;
+                ctx.strokeRect(dvd.x, dvd.y, dvd.w, dvd.h); 
+                ctx.fillStyle = 'white'; 
+                ctx.font = '20px monospace';
+                ctx.fillText("DVD", dvd.x + 30, dvd.y + 30); 
+            }
+            requestAnimationFrame(animateDVD);
+        }
+
+        function toggleMusic() { 
+            if(assets.music.paused) assets.music.play();
+            else assets.music.pause();
+            log(assets.music.paused ? "MUSIC: OFF" : "MUSIC: ON");
+        }
+
+        function spawnGoldenSecond() {
+            const amount = Math.floor(Math.random() * 20) + 1;
+            const el = document.createElement('div'); el.innerText = `+${amount} Clocks`; el.className = "golden-second";
+            el.style.left = Math.random() * 80 + 10 + "%";
+            
+            const capture = () => {
+                if (el.parentNode && !el.classList.contains('captured')) {
+                    const value = state.activeTheme === 'golden' ? amount * 2 : amount;
+                    el.classList.add('captured'); el.innerText = getText("CAPTURED!");
+                    state.clocks += value;
+                    SFX.play('golden'); log(`+${value} Clocks`);
+                    const now = Date.now();
+                    goldenSpree.push(now);
+                    goldenSpree = goldenSpree.filter(t => now - t < 60000);
+                    if(goldenSpree.length >= 5) unlockAchievement(ACHIEVEMENTS.find(a=>a.id==='heist'));
+                    setTimeout(() => el.remove(), 500);
+                }
+            };
+            el.onclick = capture;
+            
+            document.body.appendChild(el);
+            if (state.shopCounts.engine > 0) setTimeout(() => { if (Math.random() < 0.5) capture(); }, 1000);
+            setTimeout(() => {
+                if(el.parentNode && !el.classList.contains('captured')) {
+                    createFloatingText(parseInt(el.style.left) * (window.innerWidth/100), window.innerHeight/2, "MISSED!", "#666");
+                    unlockAchievement(ACHIEVEMENTS.find(a => a.id === 'missed'));
+                    el.remove();
+                }
+            }, 4000);
+        }
+
+        // --- Save/Load ---
+        function saveGame() {
+            state.lastSaveTime = Date.now();
+            localStorage.setItem(CONFIG.SAVE_KEY, JSON.stringify(state));
+        }
+        function loadGame() {
+            const raw = localStorage.getItem(CONFIG.SAVE_KEY);
+            if (raw) {
+                try {
+                    const s = JSON.parse(raw);
+                    // Deep merge and sanitize numeric values to prevent NaN breaks
+                    for (const key in s) {
+                        if (typeof state[key] === 'object' && state[key] !== null && !Array.isArray(state[key])) {
+                            state[key] = { ...state[key], ...s[key] };
+                        } else {
+                            state[key] = s[key];
+                        }
+                    }
+                    state.cards = Array.isArray(state.cards) ? state.cards : [];
+                    // Sanitize critical multipliers
+                    ['seconds', 'clocks', 'fragments', 'chronotons', 'prestigeCount', 'totalSecondsWasted', 'runSecondsWasted', 'conversions', 'totalClicks', 'knowledgeMult'].forEach(k => {
+                        state[k] = Number(state[k]) || (k === 'knowledgeMult' ? 1.0 : 0);
+                    });
+
+                    calculateEntropyCap();
+                    calculateCardBonus();
+                    const now = Date.now();
+                    const diffMins = Math.floor((now - (state.lastSaveTime || now)) / 60000);
+                    if(diffMins > 2880) unlockAchievement(ACHIEVEMENTS.find(a=>a.id==='productive')); // 48h
+                    if (diffMins > 0) {
+                        const ups = Object.values(state.shopCounts).reduce((a,b)=>a+b,0);
+                        let rate = CONFIG.OFFLINE_RATE + (ups * 0.5);
+                        if (state.skills.deep_focus) rate *= 2;
+                        const gain = Math.floor(diffMins * rate);
+                        state.seconds += gain; state.totalSecondsWasted += gain; state.runSecondsWasted += gain;
+                        els.offline.classList.remove('hidden');
+                        document.getElementById('offlineGain').innerText = formatNum(gain);
+                    }
+                    if(state.settings.hardMode) document.body.classList.add('hard-mode-active');
+                    if(state.settings.comicSans) document.body.classList.add('comic-sans');
+                } catch(e) { console.error(e); }
+            }
+            renderShopUI();
+            renderCards();
+            checkDailyQuests();
+            if(state.activeTheme !== 'default') document.body.classList.add(`theme-${state.activeTheme}`);
+        }
+
+        // --- DevTools Actions ---
+        window.devAddSec = function() { state.seconds+=10000; updateUI(0,1); saveGame(); }
+        window.devAddClk = function() { state.clocks+=1000; updateUI(0,1); saveGame(); }
+        window.devAddChr = function() { state.chronotons+=5; updateUI(0,1); saveGame(); }
+        window.devUnlockAll = function() { ACHIEVEMENTS.forEach(a=>unlockAchievement(a)); updateUI(0,1); saveGame(); }
+
+        // --- Keyboard Shortcuts ---
+        window.addEventListener('keydown', (e) => {
+            if (document.activeElement.tagName === 'INPUT') return;
+            if (e.code === 'Space') {
+                e.preventDefault();
+                handleEntropyClick({ clientX: window.innerWidth/2, clientY: window.innerHeight/2 });
+            }
+            if (e.key.toLowerCase() === 'c') convert();
+            if (e.key.toLowerCase() === 'r') {
+                if (!els.prestige.classList.contains('hidden')) prestige();
+            }
+            if (document.getElementById('idleOverlay').style.display === 'flex') resumeIdle();
+        });
+
+        window.onload = function() {
+            loadGame();
+            lastTime = Date.now(); // Reset lastTime to now to ensure first frame 'dt' is clean
+            const quotes = [
+                "SYSTEM_READY...", "LOADING_VOID...", "STAGNATION_INITIATED...", 
+                "PRODUCTIVITY_PURGED...", "NULLA_ACTIO_MAXIMA_SALUS", 
+                "TIME_IS_A_FLAT_CIRCLE...", "FEED_THE_VOID...", "DO_NOT_PANIC..."
+            ];
+            log(quotes[Math.floor(Math.random()*quotes.length)]);
+
+            requestAnimationFrame(gameLoop);
+
+            // Initialize audio on first user interaction to comply with browser autoplay policies
+            window.addEventListener('click', function initAudio() {
+                if(ctxAudio.state === 'suspended') ctxAudio.resume();
+                assets.music.play().catch(e => console.log("Audio initialization deferred:", e));
+                window.removeEventListener('click', initAudio);
+            });
+
+            window.onresize = () => { els.cvs.width = window.innerWidth; els.cvs.height = window.innerHeight; };
+            
+            // Devtools Listener
+            window.addEventListener('keydown', (e) => {
+                keyBuffer += e.key;
+                if (keyBuffer.length > 20) keyBuffer = keyBuffer.slice(-20);
+                if (keyBuffer.endsWith("devtools")) {
+                    keyBuffer = "";
+                    if(prompt("PASSWORD?") === "admin") {
+                        document.getElementById('devtoolsPanel').style.display = 'block';
+                    }
+                }
+            });
+            window.onmousemove = () => { state.timers.lastInput = Date.now(); };
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Macdeath - The Tale of Regicide</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Gothic and Medieval feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=MedievalSharp&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons for aesthetic UI elements -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .gothic-font {
+            font-family: 'Cinzel', serif;
+        }
+        .medieval-font {
+            font-family: 'MedievalSharp', cursive;
+        }
+        .sans-font {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Custom scrollbars for themed panels */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(20, 20, 20, 0.8);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #8b0000;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff0000;
+        }
+
+        /* Ambient glowing pulse for supernatural elements */
+        @keyframes witchGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(147, 51, 234, 0.5); }
+            50% { box-shadow: 0 0 35px rgba(168, 85, 247, 0.8); }
+        }
+        .witch-glow {
+            animation: witchGlow 3s infinite;
+        }
+
+        /* Blood drip animation */
+        @keyframes drip {
+            0% { transform: translateY(-10px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(40px); opacity: 0; }
+        }
+        .blood-drip {
+            animation: drip 2s infinite linear;
+        }
+
+        /* Flashlight pulse for guard awareness */
+        @keyframes alarmPulse {
+            0%, 100% { background-color: rgba(220, 38, 38, 0.1); }
+            50% { background-color: rgba(220, 38, 38, 0.3); }
+        }
+        .alarm-bg {
+            animation: alarmPulse 1.5s infinite;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        parchment: {
+                            100: '#f4ede1',
+                            200: '#e8dcbf',
+                            300: '#d7c49e',
+                            800: '#5c4d37',
+                            900: '#3e321e',
+                        },
+                        crownGold: '#ffd700',
+                        royalCrimson: '#8b0000',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-stone-950 text-stone-100 sans-font select-none overflow-hidden h-screen w-screen flex flex-col justify-between transition-colors duration-500">
+
+    <script>
+        // High-fidelity Procedural Audio System using Web Audio API to prevent external resource load failure
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+            }
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            playTone(freq, type, duration, volume = 0.3) {
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            }
+            playCauldron() {
+                // Bubbling cauldron SFX
+                this.init();
+                if (!this.ctx) return;
+                const bufferSize = this.ctx.sampleRate * 0.15;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(150 + Math.random() * 300, this.ctx.currentTime);
+                filter.Q.setValueAtTime(10, this.ctx.currentTime);
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start();
+            }
+            playAlert() {
+                this.playTone(880, 'sawtooth', 0.25, 0.2);
+                setTimeout(() => this.playTone(550, 'sawtooth', 0.3, 0.2), 100);
+            }
+            playHeartbeat() {
+                this.playTone(70, 'sine', 0.3, 0.6);
+                setTimeout(() => this.playTone(65, 'sine', 0.4, 0.4), 150);
+            }
+            playDaggerClink() {
+                this.playTone(3000, 'triangle', 0.1, 0.3);
+                setTimeout(() => this.playTone(2400, 'sine', 0.2, 0.2), 20);
+            }
+            playSuccess() {
+                const notes = [261.63, 329.63, 392.00, 523.25];
+                notes.forEach((note, index) => {
+                    setTimeout(() => {
+                        this.playTone(note, 'sine', 0.4, 0.15);
+                    }, index * 100);
+                });
+            }
+            playScribble() {
+                this.playTone(220, 'triangle', 0.08, 0.1);
+            }
+            playFootstep() {
+                this.playTone(90, 'triangle', 0.1, 0.1);
+            }
+        }
+        const sfx = new SoundEngine();
+    </script>
+
+    <div class="absolute inset-0 z-0 pointer-events-none opacity-20">
+        <!-- Spooky background smoke layer -->
+        <div class="absolute inset-0 bg-radial-gradient from-transparent to-stone-950"></div>
+        <div class="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black to-transparent"></div>
+    </div>
+
+    <!-- MAIN HUD (Persistent Top bar) -->
+    <header class="relative z-10 w-full px-6 py-4 flex justify-between items-center border-b border-stone-800/80 bg-stone-950/80 backdrop-blur transition-colors duration-500 dark:border-stone-800 dark:bg-stone-950/80 light:border-stone-200 light:bg-stone-100/80">
+        <div class="flex items-center space-x-4">
+            <h1 class="gothic-font font-bold text-2xl tracking-wider text-red-700 uppercase flex items-center gap-2">
+                <i data-lucide="skull" class="text-red-600 animate-pulse"></i>
+                <span>Macdeath</span>
+            </h1>
+            <span class="text-xs bg-stone-800 border border-stone-700 px-2 py-1 rounded text-stone-400 medieval-font hidden md:inline-block">The Tale of Regicide</span>
+        </div>
+
+        <div class="flex items-center space-x-6">
+            <!-- Active Game Mode / Stage indicator -->
+            <div id="hud-stage-container" class="hidden items-center space-x-2 bg-stone-900 border border-stone-800 px-3 py-1.5 rounded-lg">
+                <span class="text-xs text-stone-500 uppercase">Stage:</span>
+                <span id="hud-stage-name" class="text-xs font-semibold text-crownGold">Witches' Hut</span>
+            </div>
+
+            <!-- Suspicion Meter -->
+            <div id="hud-suspicion-container" class="hidden items-center space-x-2">
+                <span class="text-xs text-red-500 font-bold uppercase">Suspicion:</span>
+                <div class="w-24 bg-stone-800 rounded-full h-2.5 overflow-hidden border border-stone-700">
+                    <div id="hud-suspicion-bar" class="bg-red-600 h-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Speedrun Timer Display -->
+            <div id="speedrun-container" class="hidden items-center space-x-2 bg-black/40 border border-stone-800 px-3 py-1 rounded">
+                <i data-lucide="timer" class="w-4 h-4 text-emerald-400 animate-spin" style="animation-duration: 6s;"></i>
+                <span id="speedrun-timer" class="font-mono text-sm text-emerald-400">00:00.00</span>
+            </div>
+
+            <!-- Quick Theme Toggle (Sun/Moon) -->
+            <button onclick="toggleTheme()" class="p-2 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-white transition-colors border border-stone-800" title="Toggle Theme">
+                <i id="theme-icon" data-lucide="moon" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN INTERACTIVE HUB (Central content) -->
+    <main class="relative z-10 flex-grow flex items-center justify-center p-4 overflow-y-auto">
+        
+        <!-- ================= START SCREEN ================= -->
+        <section id="screen-main-menu" class="w-full max-w-xl bg-stone-900/95 border-2 border-stone-800 rounded-2xl p-8 shadow-2xl backdrop-blur relative overflow-hidden transition-all duration-300">
+            <!-- Decorative corner brackets -->
+            <div class="absolute top-2 left-2 border-t-2 border-l-2 border-red-700 w-6 h-6"></div>
+            <div class="absolute top-2 right-2 border-t-2 border-r-2 border-red-700 w-6 h-6"></div>
+            <div class="absolute bottom-2 left-2 border-b-2 border-l-2 border-red-700 w-6 h-6"></div>
+            <div class="absolute bottom-2 right-2 border-b-2 border-r-2 border-red-700 w-6 h-6"></div>
+
+            <div class="text-center mb-8">
+                <div class="inline-block relative">
+                    <span class="text-xs tracking-[0.3em] text-red-500 font-semibold uppercase block mb-1">A Shakespearean Parody</span>
+                    <h1 class="gothic-font font-black text-4xl md:text-5xl text-red-600 tracking-wider filter drop-shadow-[0_2px_10px_rgba(220,38,38,0.3)]">MACDEATH</h1>
+                    <span class="gothic-font font-medium text-lg tracking-widest text-crownGold block mt-2">THE TALE OF REGICIDE</span>
+                </div>
+                <div class="mt-4 flex justify-center items-center gap-2">
+                    <span class="h-[1px] w-12 bg-stone-700"></span>
+                    <p class="text-xs text-stone-400 italic font-serif">"Screw your courage to the sticking-place..."</p>
+                    <span class="h-[1px] w-12 bg-stone-700"></span>
+                </div>
+            </div>
+
+            <!-- Menu Action Buttons -->
+            <div class="space-y-4 max-w-sm mx-auto">
+                <button onclick="startGameSequence()" class="w-full bg-gradient-to-r from-red-950 via-red-800 to-red-950 border-2 border-red-600 hover:border-red-400 py-3 rounded-xl font-bold tracking-wide text-white shadow-lg hover:shadow-red-900/40 transition-all hover:scale-[1.02] flex items-center justify-center gap-2">
+                    <i data-lucide="sword" class="w-5 h-5"></i>
+                    <span>START REGICIDE CAMPAIGN</span>
+                </button>
+
+                <button onclick="showScreen('screen-minigames-hub')" class="w-full bg-stone-950 hover:bg-stone-800 border border-stone-700 py-3 rounded-xl font-semibold text-stone-200 transition-all hover:scale-[1.01] flex items-center justify-center gap-2">
+                    <i data-lucide="gamepad-2" class="w-5 h-5 text-amber-500"></i>
+                    <span>OTHER FUN MINIGAMES</span>
+                </button>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="showScreen('screen-settings')" class="bg-stone-950 hover:bg-stone-800 border border-stone-800 py-2.5 rounded-xl text-sm font-semibold text-stone-300 transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="settings" class="w-4 h-4"></i>
+                        <span>SETTINGS</span>
+                    </button>
+                    <button onclick="showScreen('screen-credits')" class="bg-stone-950 hover:bg-stone-800 border border-stone-800 py-2.5 rounded-xl text-sm font-semibold text-stone-300 transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="award" class="w-4 h-4"></i>
+                        <span>CREDITS</span>
+                    </button>
+                </div>
+
+                <button onclick="triggerExitGame()" class="w-full bg-stone-950/50 hover:bg-stone-900 border border-red-950 hover:border-red-800 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:text-red-400 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <span>EXIT GAME</span>
+                </button>
+            </div>
+
+            <!-- Mini Lore Hook -->
+            <p class="text-[10px] text-center text-stone-500 mt-8 leading-relaxed max-w-xs mx-auto">
+                Macbeth is a coward. Lady Mac has commissioned you, <strong class="text-stone-300">Marb the Henchman</strong>, to assassinate King Duncan. Complete your tasks, evade guards, and wash your hands clean.
+            </p>
+        </section>
+
+
+        <!-- ================= SETTINGS SCREEN ================= -->
+        <section id="screen-settings" class="hidden w-full max-w-md bg-stone-900 border border-stone-800 rounded-2xl p-6 shadow-2xl">
+            <h2 class="gothic-font text-2xl font-bold text-crownGold border-b border-stone-800 pb-3 mb-4 flex items-center gap-2">
+                <i data-lucide="settings" class="text-crownGold"></i>
+                <span>Royal Settings</span>
+            </h2>
+
+            <div class="space-y-6">
+                <!-- Speedrun Toggle -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="block font-semibold text-sm">Speedrun Timer</span>
+                        <span class="text-xs text-stone-400">Display active timing overlay for speedrunning.</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="setting-speedrun" onchange="toggleSpeedrunSetting(this.checked)" class="sr-only peer">
+                        <div class="w-11 h-6 bg-stone-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-stone-400 after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                </div>
+
+                <!-- Theme / Ambient Tint Toggle -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="block font-semibold text-sm">Light Mode (Parchment)</span>
+                        <span class="text-xs text-stone-400">Switch between dark castle vault and scholarly scroll.</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="setting-theme" onchange="toggleThemeSetting(this.checked)" class="sr-only peer">
+                        <div class="w-11 h-6 bg-stone-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-stone-400 after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                    </label>
+                </div>
+
+                <!-- Audio Sound System Test -->
+                <div class="space-y-2">
+                    <span class="block font-semibold text-sm">Interactive Synth Output</span>
+                    <button onclick="sfx.playSuccess()" class="px-4 py-2 bg-stone-950 border border-stone-800 text-xs rounded hover:bg-stone-800 flex items-center gap-2">
+                        <i data-lucide="volume-2" class="w-4 h-4"></i>
+                        <span>Trigger Sound System Test Chime</span>
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="showScreen('screen-main-menu')" class="w-full mt-8 bg-stone-950 hover:bg-stone-800 border border-stone-800 py-2.5 rounded-lg text-sm font-semibold text-stone-300 transition-colors">
+                Back to Main Hall
+            </button>
+        </section>
+
+
+        <!-- ================= CREDITS SCREEN ================= -->
+        <section id="screen-credits" class="hidden w-full max-w-md bg-stone-900 border border-stone-800 rounded-2xl p-6 text-center shadow-2xl relative">
+            <h2 class="gothic-font text-2xl font-bold text-red-600 mb-6">REGICIDE CREDITS</h2>
+
+            <div class="space-y-6 text-stone-300">
+                <div class="p-4 bg-stone-950 rounded-lg border border-stone-800">
+                    <p class="text-xs text-stone-500 uppercase tracking-widest mb-1">Concept, Map Design & Original Lore</p>
+                    <h3 class="font-bold text-lg text-crownGold font-serif">Bram Wiseman</h3>
+                </div>
+
+                <div class="p-4 bg-stone-950 rounded-lg border border-stone-800">
+                    <p class="text-xs text-stone-500 uppercase tracking-widest mb-1">Classic Prototype, Coding & Dynamic Gameplay</p>
+                    <h3 class="font-bold text-lg text-crownGold font-serif">Finlay Currie</h3>
+                </div>
+
+                <div class="p-4 bg-stone-950/40 rounded-lg border border-stone-800/50">
+                    <p class="text-[10px] text-stone-500">Upgraded to Modern Web Standards & Responsive Engine in 2026</p>
+                </div>
+            </div>
+
+            <button onclick="showScreen('screen-main-menu')" class="w-full mt-6 bg-stone-950 hover:bg-stone-800 border border-stone-800 py-2.5 rounded-lg text-sm font-semibold text-stone-300 transition-colors">
+                Back to Main Hall
+            </button>
+        </section>
+
+
+        <!-- ================= OTHER FUN MINIGAMES (ARCADE) ================= -->
+        <section id="screen-minigames-hub" class="hidden w-full max-w-2xl bg-stone-900 border border-stone-800 rounded-2xl p-6 shadow-2xl">
+            <h2 class="gothic-font text-2xl font-bold text-crownGold border-b border-stone-800 pb-3 mb-6 flex items-center justify-between">
+                <span class="flex items-center gap-2">
+                    <i data-lucide="gamepad-2" class="text-amber-500"></i>
+                    <span>Castle Arcade Vault</span>
+                </span>
+                <span class="text-xs text-stone-400 font-normal">Replay and practice any regicide challenge</span>
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto pr-2">
+                <!-- Game 0 -->
+                <button onclick="startSingleArcadeGame(0)" class="p-4 bg-stone-950 hover:bg-stone-800 rounded-xl border border-stone-800 text-left transition-colors flex items-start gap-3">
+                    <span class="bg-purple-900/40 text-purple-400 border border-purple-800/60 p-2 rounded">0</span>
+                    <div>
+                        <h3 class="font-semibold text-sm text-stone-200">The Witches' Hut</h3>
+                        <p class="text-xs text-stone-400 mt-1">Collect scattered scroll fragments to read the prophecy.</p>
+                    </div>
+                </button>
+                <!-- Game 1 -->
+                <button onclick="startSingleArcadeGame(1)" class="p-4 bg-stone-950 hover:bg-stone-800 rounded-xl border border-stone-800 text-left transition-colors flex items-start gap-3">
+                    <span class="bg-red-900/40 text-red-400 border border-red-800/60 p-2 rounded">I</span>
+                    <div>
+                        <h3 class="font-semibold text-sm text-stone-200">Castle Yard (Banquo)</h3>
+                        <p class="text-xs text-stone-400 mt-1">Sneak toward the castle gate. Freeze when Banquo looks back!</p>
+                    </div>
+                </button>
+                <!-- Game 2 -->
+                <button onclick="startSingleArcadeGame(2)" class="p-4 bg-stone-950 hover:bg-stone-800 rounded-xl border border-stone-800 text-left transition-colors flex items-start gap-3">
+                    <span class="bg-blue-900/40 text-blue-400 border border-blue-800/60 p-2 rounded">II</span>
+                    <div>
+                        <h3 class="font-semibold text-sm text-stone-200">Wine Spiking</h3>
+                        <p class="text-xs text-stone-400 mt-1">Slip sleeping powder into guard drinks when they are distracted.</p>
+                    </div>
+                </button>
+                <!-- Game 3 -->
+                <button onclick="startSingleArcadeGame(3)" class="p-4 bg-stone-950 hover:bg-stone-800 rounded-xl border border-stone-800 text-left transition-colors flex items-start gap-3">
+                    <span class="bg-amber-900/40 text-amber-400 border border-amber-800/60 p-2 rounded">III</span>
+                    <div>
+                        <h3 class="font-semibold text-sm text-stone-200">The Armoury</h3>
+                        <p class="text-xs text-stone-400 mt-1">Identify and grab the real gold dagger from the decoy items.</p>
+                    </div>
+                </button>
+                <!-- Game 4 -->
+                <button onclick="startSingleArcadeGame(4)" class="p-4 bg-stone-950 hover:bg-stone-800 rounded-xl border border-stone-800 text-left transition-colors flex items-start gap-3">
+                    <span class="bg-emerald-900/40 text-emerald-400 border border-emerald-800/60 p-2 rounded">IV</span>
+                    <div>
+                        <h3 class="font-semibold text-sm text-stone-200">Hallway Patrol</h3>
+                        <p class="text-xs text-stone-400 mt-1">Stealthily bypass guards moving with flashlight cones.</p>
+                    </div>
+                </button>
+                <!-- Game 5 -->
+                <button onclick="startSingleArcadeGame(5)" class="p-4 bg-stone-950 hover:bg-stone-800 rounded-xl border border-stone-800 text-left transition-colors flex items-start gap-3">
+                    <span class="bg-rose-900/40 text-rose-400 border border-rose-800/60 p-2 rounded">V</span>
+                    <div>
+                        <h3 class="font-semibold text-sm text-stone-200">Duncan's Chamber</h3>
+                        <p class="text-xs text-stone-400 mt-1">Tap/strike precisely at low noise points to perform regicide.</p>
+                    </div>
+                </button>
+                <!-- Post Game -->
+                <button onclick="startSingleArcadeGame(6)" class="p-4 bg-stone-950 hover:bg-stone-800 rounded-xl border border-stone-800 text-left transition-colors flex items-start gap-3 md:col-span-2">
+                    <span class="bg-zinc-800 text-white p-2 rounded">POST</span>
+                    <div>
+                        <h3 class="font-semibold text-sm text-stone-200">Royal Escape & Frame Guard</h3>
+                        <p class="text-xs text-stone-400 mt-1">Wash bloody evidence and plant the daggers onto the sleeping guards under a 30s limit!</p>
+                    </div>
+                </button>
+            </div>
+
+            <button onclick="showScreen('screen-main-menu')" class="w-full mt-6 bg-stone-950 hover:bg-stone-800 border border-stone-800 py-2.5 rounded-lg text-sm font-semibold text-stone-300 transition-colors">
+                Back to Main Hall
+            </button>
+        </section>
+
+
+        <!-- ================= STORY SEQUENCE TRANSITION PANEL ================= -->
+        <section id="screen-story-intro" class="hidden w-full max-w-xl bg-stone-900 border-2 border-red-950 rounded-2xl p-6 shadow-2xl relative">
+            <div class="absolute top-4 right-4 text-xs font-mono text-stone-500 uppercase">Act I, Scene I</div>
+            <h3 class="gothic-font text-red-700 font-bold text-2xl tracking-wide mb-2" id="story-title">Task Commenced</h3>
+            <h4 class="medieval-font text-crownGold text-sm mb-4" id="story-subtitle">Castle Yard</h4>
+            
+            <div class="bg-black/40 border border-stone-800 p-4 rounded-xl min-h-[140px] flex items-center justify-center text-center">
+                <p class="font-serif italic text-stone-300 leading-relaxed text-sm md:text-base whitespace-pre-line" id="story-text">
+                    ...
+                </p>
+            </div>
+
+            <div class="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex items-center space-x-2 text-stone-400">
+                    <i data-lucide="info" class="w-4 h-4 text-amber-500"></i>
+                    <span class="text-xs text-stone-400" id="story-controls-tip">Controls: Arrow keys or tap interface</span>
+                </div>
+                <button onclick="proceedToActiveGame()" class="w-full sm:w-auto bg-red-700 hover:bg-red-600 px-6 py-2.5 rounded-lg font-semibold text-sm text-white flex items-center justify-center gap-2 shadow-lg transition-all">
+                    <span>Enter Task</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ================= STAGE 0: WITCHES' HUT (PROPHECY SEARCH) ================= -->
+        <section id="screen-game0" class="hidden w-full max-w-2xl bg-stone-900 border border-purple-950 rounded-2xl p-6 shadow-2xl flex flex-col">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-stone-800">
+                <div>
+                    <h3 class="gothic-font font-bold text-lg text-purple-400">The Witches' Hut</h3>
+                    <p class="text-xs text-stone-400">Wander the swampy floor to gather notes of destiny.</p>
+                </div>
+                <div class="text-xs bg-purple-950 border border-purple-800 px-3 py-1 rounded text-purple-300 font-mono">
+                    Notes Collected: <span id="g0-note-count" class="font-bold">0/3</span>
+                </div>
+            </div>
+
+            <div class="relative w-full aspect-[4/3] bg-stone-950 rounded-xl overflow-hidden border border-purple-900/50">
+                <canvas id="canvas-game0" class="w-full h-full block"></canvas>
+                <!-- Virtual Joystick (Mobile) -->
+                <div class="absolute bottom-4 right-4 flex flex-col items-center gap-1 opacity-60 md:opacity-30 hover:opacity-100 transition-opacity">
+                    <button id="joy0-up" class="w-10 h-10 bg-stone-800 rounded-full flex items-center justify-center border border-stone-600 text-stone-300 active:bg-purple-900"><i data-lucide="chevron-up"></i></button>
+                    <div class="flex gap-4">
+                        <button id="joy0-left" class="w-10 h-10 bg-stone-800 rounded-full flex items-center justify-center border border-stone-600 text-stone-300 active:bg-purple-900"><i data-lucide="chevron-left"></i></button>
+                        <button id="joy0-right" class="w-10 h-10 bg-stone-800 rounded-full flex items-center justify-center border border-stone-600 text-stone-300 active:bg-purple-900"><i data-lucide="chevron-right"></i></button>
+                    </div>
+                    <button id="joy0-down" class="w-10 h-10 bg-stone-800 rounded-full flex items-center justify-center border border-stone-600 text-stone-300 active:bg-purple-900"><i data-lucide="chevron-down"></i></button>
+                </div>
+            </div>
+
+            <!-- Puzzle Modal Overlay (Shown when all 3 gathered) -->
+            <div id="g0-puzzle-overlay" class="hidden absolute inset-0 bg-stone-950/95 flex flex-col items-center justify-center p-6 z-20">
+                <div class="text-center max-w-md w-full">
+                    <span class="text-purple-400 text-xs font-bold uppercase tracking-widest block mb-1">Decipher the Scroll</span>
+                    <h4 class="medieval-font text-xl text-stone-100 mb-4">Assemble the Fatal Prophecy</h4>
+                    <p class="text-xs text-stone-400 mb-6">Drag and drop or click the phrases in the correct order to complete Lady Macbeth's instructions.</p>
+
+                    <!-- Phrases to Arrange -->
+                    <div id="g0-phrase-pool" class="space-y-2 mb-6">
+                        <!-- Instantiated dynamically -->
+                    </div>
+
+                    <!-- Target Areas / Assembly Slot -->
+                    <div id="g0-assembly-zone" class="p-3 bg-stone-900 rounded-xl border border-stone-800 text-sm font-serif italic text-stone-300 min-h-[48px] flex items-center justify-center mb-6">
+                        Assemble below...
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <button onclick="resetProphecyPuzzle()" class="px-4 py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs rounded transition-colors">
+                            Reset Board
+                        </button>
+                        <button id="g0-puzzle-submit" onclick="submitProphecyPuzzle()" class="px-6 py-2 bg-purple-700 hover:bg-purple-600 text-white text-xs font-bold rounded shadow-lg transition-colors">
+                            Complete Prophecy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= STAGE 1: CASTLE YARD (BANQUO RED LIGHT GREEN LIGHT) ================= -->
+        <section id="screen-game1" class="hidden w-full max-w-2xl bg-stone-900 border border-stone-800 rounded-2xl p-6 shadow-2xl flex flex-col">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-stone-800">
+                <div>
+                    <h3 class="gothic-font font-bold text-lg text-emerald-400">Castle Yard Gate</h3>
+                    <p class="text-xs text-stone-400">Sneak when Banquo looks away. Halt when his eye turns to search!</p>
+                </div>
+                <div class="text-xs bg-emerald-950 border border-emerald-900 px-3 py-1 rounded text-emerald-300 font-mono">
+                    Banquo Mood: <span id="g1-banquo-status" class="font-bold">LOOKING AWAY</span>
+                </div>
+            </div>
+
+            <div class="relative w-full aspect-[16/9] bg-stone-950 rounded-xl overflow-hidden border border-stone-800" id="g1-game-area">
+                <canvas id="canvas-game1" class="w-full h-full block"></canvas>
+                <!-- Visual Warning Overlay -->
+                <div id="g1-warning-flash" class="absolute inset-0 border-4 border-red-600 bg-red-600/10 pointer-events-none opacity-0 transition-opacity duration-150"></div>
+            </div>
+
+            <!-- Large Action Button for Mobile or Mouse Players -->
+            <div class="mt-4 flex gap-4">
+                <button id="g1-sneak-btn" class="flex-grow bg-emerald-700 active:bg-emerald-900 hover:bg-emerald-600 text-white py-4 rounded-xl font-bold text-center select-none shadow-lg transition-colors" style="-webkit-tap-highlight-color: transparent;">
+                    HOLD TO SNEAK FORWARD (Or press SPACE / RIGHT ARROW)
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ================= STAGE 2: INSIDE CASTLE (WINE SPIKING) ================= -->
+        <section id="screen-game2" class="hidden w-full max-w-md bg-stone-900 border border-indigo-950 rounded-2xl p-6 shadow-2xl">
+            <div class="text-center mb-4">
+                <h3 class="gothic-font font-bold text-lg text-indigo-400">Castle Feast Kitchen</h3>
+                <p class="text-xs text-stone-400">Slip sleeping potion into the guards' pitcher. Tap and hold when they sleep/talk, release when they open their eyes!</p>
+            </div>
+
+            <!-- Graphical Guards Indicator Area -->
+            <div class="relative w-full h-44 bg-stone-950 border border-stone-800 rounded-xl mb-6 overflow-hidden flex flex-col items-center justify-center">
+                <!-- Spooky feast table artwork represented using SVG elements -->
+                <div class="absolute inset-0 opacity-10 flex justify-around items-end pb-2">
+                    <i data-lucide="beer" class="w-12 h-12"></i>
+                    <i data-lucide="chef-hat" class="w-12 h-12"></i>
+                </div>
+                
+                <div class="text-center z-10 space-y-3">
+                    <span id="g2-status-pill" class="inline-block px-3 py-1 bg-stone-800 border border-stone-700 rounded-full text-xs font-bold text-stone-300">
+                        SLEEPY ... (SAFE TO POUR)
+                    </span>
+                    <div class="flex justify-center gap-4">
+                        <div id="g2-guard-1" class="w-12 h-12 rounded-full border-2 border-emerald-600 flex items-center justify-center bg-stone-900 transition-colors">
+                            <i data-lucide="user-check" class="w-6 h-6 text-emerald-500"></i>
+                        </div>
+                        <div id="g2-guard-2" class="w-12 h-12 rounded-full border-2 border-emerald-600 flex items-center justify-center bg-stone-900 transition-colors">
+                            <i data-lucide="user-check" class="w-6 h-6 text-emerald-500"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dosage progress bar -->
+            <div class="mb-6 space-y-1">
+                <div class="flex justify-between text-xs font-mono">
+                    <span class="text-stone-400">Sleep Potion dosage:</span>
+                    <span id="g2-dosage-text" class="text-indigo-400 font-bold">0%</span>
+                </div>
+                <div class="w-full bg-stone-950 h-3 rounded-full border border-stone-800 overflow-hidden">
+                    <div id="g2-dosage-bar" class="bg-indigo-600 h-full transition-all duration-100" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <button id="g2-pour-btn" class="w-full bg-indigo-700 active:bg-indigo-900 hover:bg-indigo-600 text-white py-4 rounded-xl font-bold tracking-wider shadow-lg transition-colors select-none" style="-webkit-tap-highlight-color: transparent;">
+                TAP & HOLD TO POUR SLEEPING POWDER
+            </button>
+        </section>
+
+
+        <!-- ================= STAGE 3: THE ARMOURY (DAGGER SEARCH) ================= -->
+        <section id="screen-game3" class="hidden w-full max-w-2xl bg-stone-900 border border-amber-950 rounded-2xl p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-stone-800">
+                <div>
+                    <h3 class="gothic-font font-bold text-lg text-amber-500">The Royal Armoury</h3>
+                    <p class="text-xs text-stone-400">Find the *real* royal dagger. Fake weapons raise suspicion!</p>
+                </div>
+                <div class="text-xs bg-amber-950/50 border border-amber-900 px-3 py-1 rounded text-amber-300" id="g3-clue">
+                    Clue: <span class="font-bold">"The royal dagger glints with a faint golden rune."</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4" id="g3-dagger-grid">
+                <!-- Dagger Item cards are dynamically injected here to ensure variation and logic control -->
+            </div>
+
+            <div class="mt-4 p-3 bg-stone-950 border border-stone-800 rounded-lg text-center">
+                <p id="g3-status-msg" class="text-xs text-stone-400 font-serif">Carefully inspect each hilt before grabbing. Hover or tap to observe details.</p>
+            </div>
+        </section>
+
+
+        <!-- ================= STAGE 4: HALLWAY PATROL (FLASHLIGHT STEALTH) ================= -->
+        <section id="screen-game4" class="hidden w-full max-w-2xl bg-stone-900 border border-teal-950 rounded-2xl p-6 shadow-2xl flex flex-col">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-stone-800">
+                <div>
+                    <h3 class="gothic-font font-bold text-lg text-teal-400">Hallway to Chamber</h3>
+                    <p class="text-xs text-stone-400">Avoid guard lanterns. Hide in shadows. Reach the chamber doorway.</p>
+                </div>
+                <div class="text-xs bg-teal-950 border border-teal-800 px-3 py-1 rounded text-teal-300 font-mono">
+                    Chamber Goal: <span class="font-bold">RIGHT DOORWAY</span>
+                </div>
+            </div>
+
+            <div class="relative w-full aspect-[16/9] bg-stone-950 rounded-xl overflow-hidden border border-teal-900/40">
+                <canvas id="canvas-game4" class="w-full h-full block"></canvas>
+                <!-- On screen arrow pad for mobile play -->
+                <div class="absolute bottom-4 left-4 flex flex-col items-center gap-1 opacity-70 md:hidden">
+                    <button id="joy4-up" class="w-10 h-10 bg-stone-800 rounded-full flex items-center justify-center border border-stone-600 text-stone-300 active:bg-teal-900"><i data-lucide="chevron-up"></i></button>
+                    <div class="flex gap-4">
+                        <button id="joy4-left" class="w-10 h-10 bg-stone-800 rounded-full flex items-center justify-center border border-stone-600 text-stone-300 active:bg-teal-900"><i data-lucide="chevron-left"></i></button>
+                        <button id="joy4-right" class="w-10 h-10 bg-stone-800 rounded-full flex items-center justify-center border border-stone-600 text-stone-300 active:bg-teal-900"><i data-lucide="chevron-right"></i></button>
+                    </div>
+                    <button id="joy4-down" class="w-10 h-10 bg-stone-800 rounded-full flex items-center justify-center border border-stone-600 text-stone-300 active:bg-teal-900"><i data-lucide="chevron-down"></i></button>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-stone-950/50 rounded-lg border border-stone-800 text-center text-xs text-stone-400">
+                <span>Hold keys <kbd class="px-1.5 py-0.5 bg-stone-800 rounded border border-stone-700 font-mono text-stone-300 text-[10px]">W</kbd> <kbd class="px-1.5 py-0.5 bg-stone-800 rounded border border-stone-700 font-mono text-stone-300 text-[10px]">A</kbd> <kbd class="px-1.5 py-0.5 bg-stone-800 rounded border border-stone-700 font-mono text-stone-300 text-[10px]">S</kbd> <kbd class="px-1.5 py-0.5 bg-stone-800 rounded border border-stone-700 font-mono text-stone-300 text-[10px]">D</kbd> or click canvas/use joystick to sneak.</span>
+            </div>
+        </section>
+
+
+        <!-- ================= STAGE 5: DUNCAN'S CHAMBER (REGICIDE BALLISTIC SLIDER) ================= -->
+        <section id="screen-game5" class="hidden w-full max-w-md bg-stone-900 border border-red-950 rounded-2xl p-6 shadow-2xl">
+            <div class="text-center mb-4">
+                <span class="text-xs text-red-500 font-bold tracking-widest uppercase block mb-1">Act II, Scene II</span>
+                <h3 class="gothic-font font-bold text-lg text-crownGold">King Duncan's Chamber</h3>
+                <p class="text-xs text-stone-400">Perform the final blow. Only strike when the swinging heart rate pendulum aligns with the tranquil deep breath!</p>
+            </div>
+
+            <!-- Sleeping Duncan Indicator graphic using SVG elements and progress meters -->
+            <div class="w-full p-4 bg-stone-950 border border-stone-800 rounded-xl mb-6 flex flex-col items-center justify-center relative overflow-hidden">
+                <!-- Red aura pulse aligned with sleeping heart rate -->
+                <div id="g5-pulse-aura" class="absolute inset-0 bg-red-900/10 pointer-events-none transition-opacity duration-300 opacity-0"></div>
+
+                <div class="text-center z-10 space-y-2">
+                    <i data-lucide="crown" class="w-12 h-12 text-crownGold mx-auto animate-bounce" style="animation-duration: 4s;"></i>
+                    <p class="text-xs font-serif italic text-stone-300" id="g5-whisper-text">"He breathes soft and slow..."</p>
+                </div>
+
+                <div class="w-full mt-4 flex items-center justify-between px-2">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-stone-500 uppercase">Regicide Progress</span>
+                        <span id="g5-murder-percent" class="font-mono text-sm font-bold text-red-500">0%</span>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <span class="text-[10px] text-stone-500 uppercase">Duncan Stir / Noise Level</span>
+                        <span id="g5-noise-percent" class="font-mono text-sm font-bold text-amber-500">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slider / Precison area -->
+            <div class="space-y-4 mb-6">
+                <!-- Track / Visual Marker -->
+                <div class="relative w-full h-8 bg-stone-950 rounded-lg border border-stone-800 overflow-hidden">
+                    <!-- Perfect hit zone (center) -->
+                    <div class="absolute top-0 bottom-0 left-[40%] right-[40%] bg-emerald-950/70 border-l border-r border-emerald-500/30 flex items-center justify-center">
+                        <span class="text-[9px] text-emerald-400/80 uppercase font-mono tracking-widest font-bold">Perfect Zone</span>
+                    </div>
+                    <!-- Good hit zone -->
+                    <div class="absolute top-0 bottom-0 left-[25%] w-[15%] bg-amber-950/30 border-l border-amber-500/20"></div>
+                    <div class="absolute top-0 bottom-0 right-[25%] w-[15%] bg-amber-950/30 border-r border-amber-500/20"></div>
+
+                    <!-- Marker / Pendulum -->
+                    <div id="g5-pendulum-marker" class="absolute top-0 bottom-0 w-1.5 bg-red-600 shadow-[0_0_8px_#ff0000] transition-all duration-[16ms]" style="left: 0%"></div>
+                </div>
+
+                <button onclick="triggerDuncanStrike()" class="w-full bg-red-700 active:bg-red-900 hover:bg-red-600 text-white py-4 rounded-xl font-bold tracking-widest shadow-lg flex items-center justify-center gap-2 select-none" style="-webkit-tap-highlight-color: transparent;">
+                    <i data-lucide="crosshair" class="w-5 h-5"></i>
+                    <span>STRIKE !</span>
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ================= POST GAME: WASH BLOOD & PLANT DAGGERS ================= -->
+        <section id="screen-postgame" class="hidden w-full max-w-2xl bg-stone-900 border border-red-950 rounded-2xl p-6 shadow-2xl flex flex-col">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-stone-800">
+                <div>
+                    <h3 class="gothic-font font-bold text-lg text-red-500">Act II, Scene III: The Clean Up</h3>
+                    <p class="text-xs text-stone-400">Wash hands and frame the guards before time runs out!</p>
+                </div>
+                <div class="text-lg font-mono font-black text-red-500 animate-pulse bg-red-950 px-3 py-1 rounded border border-red-900">
+                    <span id="postgame-timer">30.00</span>s
+                </div>
+            </div>
+
+            <!-- Double Goal Interface -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-2">
+                
+                <!-- Column A: Wash Hands -->
+                <div class="p-4 bg-stone-950 border border-stone-800 rounded-xl flex flex-col items-center">
+                    <span class="text-xs text-stone-400 font-bold uppercase tracking-wider mb-2">Scrub Hands Clean</span>
+                    <div class="relative w-full aspect-square max-w-[160px] bg-stone-900 rounded-full border border-stone-800/80 flex items-center justify-center overflow-hidden cursor-pointer" id="post-scrub-target" onclick="triggerHandScrub()">
+                        <!-- Blood layer on hands (fades out as you click) -->
+                        <div id="post-blood-layer" class="absolute inset-0 bg-red-900/60 pointer-events-none transition-opacity duration-100 flex items-center justify-center">
+                            <i data-lucide="droplet" class="w-16 h-16 text-red-600 blood-drip"></i>
+                        </div>
+                        <i data-lucide="hand" class="w-16 h-16 text-stone-400 z-10 pointer-events-none"></i>
+                    </div>
+                    <div class="w-full mt-4 space-y-1">
+                        <div class="flex justify-between text-xs font-mono">
+                            <span class="text-stone-500">Cleanness:</span>
+                            <span id="post-clean-percent" class="text-emerald-400 font-bold">0%</span>
+                        </div>
+                        <div class="w-full bg-stone-900 h-2 rounded-full overflow-hidden border border-stone-800">
+                            <div id="post-clean-bar" class="bg-emerald-500 h-full transition-all" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-stone-500 mt-2 text-center">Click or tap rapidly inside the hand ring to wash the blood away!</p>
+                </div>
+
+                <!-- Column B: Plant Daggers -->
+                <div class="p-4 bg-stone-950 border border-stone-800 rounded-xl flex flex-col items-center justify-between">
+                    <span class="text-xs text-stone-400 font-bold uppercase tracking-wider mb-2">Frame Sleeping Guard</span>
+                    
+                    <!-- Drag/Drop target grid -->
+                    <div class="w-full flex justify-around items-center py-4 bg-stone-900/40 rounded-lg border border-stone-800">
+                        <!-- Guard Belt Area (Drop target) -->
+                        <div id="post-drop-zone-1" class="w-20 h-24 bg-stone-900 rounded-lg border-2 border-dashed border-stone-700 flex flex-col items-center justify-center gap-1 text-center transition-colors">
+                            <i data-lucide="shield-alert" class="w-6 h-6 text-stone-600"></i>
+                            <span class="text-[9px] text-stone-500">Guard 1 Belt</span>
+                        </div>
+                        <!-- Guard 2 Belt Area (Drop target) -->
+                        <div id="post-drop-zone-2" class="w-20 h-24 bg-stone-900 rounded-lg border-2 border-dashed border-stone-700 flex flex-col items-center justify-center gap-1 text-center transition-colors">
+                            <i data-lucide="shield-alert" class="w-6 h-6 text-stone-600"></i>
+                            <span class="text-[9px] text-stone-500">Guard 2 Belt</span>
+                        </div>
+                    </div>
+
+                    <!-- Knife items to grab / click -->
+                    <div class="w-full flex justify-center gap-6 mt-4">
+                        <div id="post-drag-dagger-1" onclick="selectPostDagger(1)" class="w-14 h-14 bg-stone-900 border border-red-900 hover:border-red-500 rounded-lg flex items-center justify-center cursor-pointer transition-all hover:scale-105 active:bg-stone-850">
+                            <i data-lucide="sword" class="w-6 h-6 text-red-600 rotate-45"></i>
+                        </div>
+                        <div id="post-drag-dagger-2" onclick="selectPostDagger(2)" class="w-14 h-14 bg-stone-900 border border-red-900 hover:border-red-500 rounded-lg flex items-center justify-center cursor-pointer transition-all hover:scale-105 active:bg-stone-850">
+                            <i data-lucide="sword" class="w-6 h-6 text-red-600 rotate-45"></i>
+                        </div>
+                    </div>
+
+                    <p class="text-[10px] text-stone-500 mt-2 text-center" id="post-plant-clue">Click a dagger, then click a Guard Belt slot to frame them!</p>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- ================= GAME OVER VIEW ================= -->
+        <section id="screen-game-over" class="hidden w-full max-w-md bg-stone-900 border-2 border-red-600 rounded-2xl p-8 text-center shadow-2xl">
+            <i data-lucide="skull" class="w-16 h-16 text-red-600 mx-auto animate-bounce"></i>
+            <h2 class="gothic-font text-3xl font-black text-red-600 mt-4">REGICIDE THWARTED</h2>
+            <p class="medieval-font text-stone-400 text-sm mt-2">Suspicion peaked and your fate was sealed on the scaffolds.</p>
+
+            <div class="my-6 p-4 bg-stone-950 rounded-xl border border-stone-800">
+                <p id="game-over-reason" class="font-serif italic text-stone-300 text-sm">"Alas, the guards caught you creeping in the royal hallway."</p>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="restartCurrentStage()" class="w-full bg-red-800 hover:bg-red-700 text-white py-3 rounded-xl font-bold transition-all">
+                    Restart Current Stage
+                </button>
+                <button onclick="showScreen('screen-main-menu')" class="w-full bg-stone-950 hover:bg-stone-800 border border-stone-800 py-2.5 rounded-xl text-stone-300 font-semibold transition-all">
+                    Return to Main Hall
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ================= VICTORY SCREEN ================= -->
+        <section id="screen-victory" class="hidden w-full max-w-md bg-stone-900 border-2 border-crownGold rounded-2xl p-8 text-center shadow-2xl relative">
+            <div class="absolute inset-x-0 -top-6 flex justify-center">
+                <span class="bg-crownGold text-stone-950 px-4 py-1 rounded-full font-bold text-xs uppercase tracking-widest border-2 border-stone-950">Success</span>
+            </div>
+
+            <i data-lucide="crown" class="w-16 h-16 text-crownGold mx-auto animate-pulse"></i>
+            <h2 class="gothic-font text-3xl font-black text-crownGold mt-4">REGICIDE COMPLETED</h2>
+            <p class="medieval-font text-stone-400 text-sm mt-2">The Crown falls to Macbeth. Lady Mac's gold is yours.</p>
+
+            <div class="my-6 p-4 bg-stone-950 rounded-xl border border-stone-800 space-y-2">
+                <p class="text-xs text-stone-500 uppercase tracking-widest">Final Campaign Record</p>
+                <div class="flex justify-between items-center text-sm px-4">
+                    <span class="text-stone-400">Time Taken:</span>
+                    <span id="victory-time" class="font-mono text-emerald-400 font-bold">--:--.--</span>
+                </div>
+                <div class="flex justify-between items-center text-sm px-4 border-t border-stone-900 pt-2">
+                    <span class="text-stone-400">Total Retries:</span>
+                    <span id="victory-retries" class="font-mono text-stone-300 font-bold">0</span>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="showScreen('screen-minigames-hub')" class="w-full bg-crownGold text-stone-950 hover:bg-yellow-500 py-3 rounded-xl font-bold transition-all">
+                    Replay Minigames (Arcade)
+                </button>
+                <button onclick="showScreen('screen-main-menu')" class="w-full bg-stone-950 hover:bg-stone-800 border border-stone-800 py-2.5 rounded-xl text-stone-300 font-semibold transition-all">
+                    Return to Main Hall
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- CUSTOM IN-GAME TOAST / FEEDBACK MODAL (Instead of illegal window.alert) -->
+    <div id="toast-message" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 max-w-sm bg-stone-900 border-2 border-red-600 rounded-xl p-4 shadow-2xl flex items-start gap-3">
+        <div class="p-2 bg-red-950 rounded-lg text-red-500">
+            <i data-lucide="alert-circle" id="toast-icon"></i>
+        </div>
+        <div>
+            <h4 class="font-bold text-sm text-stone-100" id="toast-title">Suspicion Warning</h4>
+            <p class="text-xs text-stone-400 mt-1" id="toast-body">The guards heard something rustling in the courtyard...</p>
+        </div>
+    </div>
+
+    <!-- Exit confirmation custom modal -->
+    <div id="exit-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur hidden items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-stone-900 border border-stone-800 rounded-xl p-6 text-center">
+            <h3 class="gothic-font font-bold text-xl text-red-500 mb-2">Depart Castle Grounds?</h3>
+            <p class="text-xs text-stone-400 mb-6">Are you ready to retreat from Macbeth's domain and return to your headquarters?</p>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="confirmExitGame()" class="py-2.5 bg-red-800 hover:bg-red-700 text-white rounded-lg font-bold text-sm">
+                    Yes, Exit Game
+                </button>
+                <button onclick="closeExitModal()" class="py-2.5 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded-lg text-sm">
+                    Stay and Plot
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER NAV -->
+    <footer class="relative z-10 w-full px-6 py-3 border-t border-stone-900 bg-stone-950/40 text-center text-[11px] text-stone-600 flex justify-between items-center transition-colors">
+        <span>Marb the Henchman: The Chronicles</span>
+        <span>Target: King Duncan</span>
+    </footer>
+
+
+    <!-- ========================================== GAME ENGINE SCRIPT ========================================== -->
+    <script>
+        // Core Game System State Variables
+        let currentScreen = 'screen-main-menu';
+        let campaignMode = true; // false means single arcade stage selection
+        let currentCampaignStageIndex = 0;
+        let suspicionLevel = 0; // 0 to 100 max
+        let speedrunTimerEnabled = false;
+        let globalStartTime = 0;
+        let speedrunInterval = null;
+        let retriesCount = 0;
+
+        // Stage Narrative Definition Lists
+        const stageConfigs = [
+            {
+                name: "The Witches' Hut",
+                title: "Whispers of the Weaving Three",
+                subtitle: "Getting the Prophecy Pieces",
+                text: "The path of high treason begins in darkness. You meet the eerie sisters inside a sulfurous cavern. Lady Macbeth demands confirmation of the crown prophecy.\n\nSearch the soil for the scattered, torn notes and piece together the grand mandate of regicide.",
+                controls: "Use WASD/Arrows to walk and bump into scroll sheets. Complete the arrangement layout puzzle."
+            },
+            {
+                name: "Castle Yard (Banquo)",
+                title: "Under Iron Skies",
+                subtitle: "Sneaking Past Lord Banquo",
+                text: "Banquo, true general of Scotland, is guarding the fortress drawbridge. His senses are legendary.\n\nYou must travel from the moat to the dungeon gate. Sneak when his gaze is averted. If he spins around to scan the bridge, freeze! If you make a sound when he looks, his steel will taste your blood.",
+                controls: "Tap and Hold 'Sneak' button to step forward. Stop pressing instantly when Banquo spins around."
+            },
+            {
+                name: "Kitchen & Brew",
+                title: "A Sleepy Draft",
+                subtitle: "Spiking the Drink Vaults",
+                text: "Inside the stone kitchens, King Duncan's royal personal guards are having a final goblet. Lady Mac has supplied you with powdered sleep nightshade.\n\nHover your vial and pour it gently into their jug when they laugh and gossip. If they look directly toward the hearth, pull back!",
+                controls: "Tap and hold 'Pour Powder' to empty your vial. Release the hold if guards become alert."
+            },
+            {
+                name: "The Armoury",
+                title: "Steel and Illusion",
+                subtitle: "Finding the Real Dagger",
+                text: "Every weapon in Duncan's hall has been recorded. To slide by investigation, you must use the exact Golden Rune ceremonial dagger to strike. \n\nSelect the true royal dagger. Grabbing decoy fakes triggers automated security runes, spiking the castle alarm level.",
+                controls: "Analyze the glints or design patterns of the armaments and tap to grab."
+            },
+            {
+                name: "The Hallway",
+                title: "Phantoms of the Corridor",
+                subtitle: "Lantern Stealth Evasion",
+                text: "The path to Duncan's bedchamber is dark but patrolled by lantern-wielding night guards. Their light cones slice the shadows.\n\nCreep past their cyclic paths. If detected, run to a pillar! Remaining in the light will lead to full-blown pursuit and capture.",
+                controls: "Use WASD/Arrow keys or the D-Pad. Stay clear of yellow vision lights."
+            },
+            {
+                name: "Duncan's Chamber",
+                title: "The Act of Regicide",
+                subtitle: "Striking the Sleeping Sovereign",
+                text: "Here lies Duncan. His breathing is a deep, slow rhythm. You hold the gold dagger.\n\nTo ensure silent execution, you must hit his chest perfectly when the swinging pulse reaches the calm resting breath. Striking off-balance makes him yell, waking the guards.",
+                controls: "Tap the STRIKE button when the red indicator rests perfectly within the center green target."
+            },
+            {
+                name: "Escape and Frame",
+                title: "Washing the Regicide Away",
+                subtitle: "Post-Game Escape Task",
+                text: "The King is dead! But you are dripping with royal blood. \n\nYou have exactly 30 seconds to scrub your bloody hands clean under the cold tap water and plant the murder weapons inside the guard's inventory to frame them before Macbeth sounds the alarm!",
+                controls: "Quickly click/tap the hand ring to scrub blood, then tap a dagger and click a guard to slide it into his pocket."
+            }
+        ];
+
+        window.onload = function() {
+            // Setup Lucide icons immediately
+            lucide.createIcons();
+            
+            // Check stored theme preference
+            if (localStorage.getItem('macdeath-lightmode') === 'true') {
+                document.getElementById('setting-theme').checked = true;
+                toggleThemeSetting(true);
+            }
+            
+            // Initiate standard menu listeners
+            showScreen('screen-main-menu');
+        }
+
+        // Custom notification system instead of alert()
+        function triggerToast(title, body, variant = 'red') {
+            const toast = document.getElementById('toast-message');
+            const tTitle = document.getElementById('toast-title');
+            const tBody = document.getElementById('toast-body');
+            const tIcon = document.getElementById('toast-icon');
+
+            tTitle.innerText = title;
+            tBody.innerText = body;
+            
+            // Adjust icon
+            if (variant === 'green') {
+                toast.style.borderColor = '#10b981';
+                tIcon.style.color = '#10b981';
+            } else if (variant === 'amber') {
+                toast.style.borderColor = '#f59e0b';
+                tIcon.style.color = '#f59e0b';
+            } else {
+                toast.style.borderColor = '#dc2626';
+                tIcon.style.color = '#dc2626';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            sfx.playAlert();
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        function toggleTheme() {
+            const settingCheckbox = document.getElementById('setting-theme');
+            settingCheckbox.checked = !settingCheckbox.checked;
+            toggleThemeSetting(settingCheckbox.checked);
+        }
+
+        function toggleThemeSetting(isLight) {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            if (isLight) {
+                body.classList.remove('bg-stone-950', 'text-stone-100');
+                body.classList.add('bg-parchment-100', 'text-stone-900', 'light');
+                themeIcon.setAttribute('data-lucide', 'sun');
+                localStorage.setItem('macdeath-lightmode', 'true');
+            } else {
+                body.classList.remove('bg-parchment-100', 'text-stone-900', 'light');
+                body.classList.add('bg-stone-950', 'text-stone-100');
+                themeIcon.setAttribute('data-lucide', 'moon');
+                localStorage.setItem('macdeath-lightmode', 'false');
+            }
+            lucide.createIcons();
+        }
+
+        function toggleSpeedrunSetting(isEnabled) {
+            speedrunTimerEnabled = isEnabled;
+            const sContainer = document.getElementById('speedrun-container');
+            if (isEnabled) {
+                sContainer.classList.remove('hidden');
+                sContainer.classList.add('flex');
+                resetSpeedrunTimer();
+            } else {
+                sContainer.classList.add('hidden');
+                sContainer.classList.remove('flex');
+                if (speedrunInterval) clearInterval(speedrunInterval);
+            }
+        }
+
+        function resetSpeedrunTimer() {
+            if (speedrunInterval) clearInterval(speedrunInterval);
+            globalStartTime = Date.now();
+            speedrunInterval = setInterval(updateSpeedrunTimer, 33);
+        }
+
+        function updateSpeedrunTimer() {
+            const delta = Date.now() - globalStartTime;
+            const mins = Math.floor(delta / 60000);
+            const secs = Math.floor((delta % 60000) / 1000);
+            const ms = Math.floor((delta % 1000) / 10);
+            
+            const displayStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+            document.getElementById('speedrun-timer').innerText = displayStr;
+            return displayStr;
+        }
+
+        // Standard screen switcher
+        function showScreen(screenId) {
+            // Hide all screen container sections
+            const screens = [
+                'screen-main-menu', 'screen-settings', 'screen-credits', 
+                'screen-minigames-hub', 'screen-story-intro', 'screen-game0', 
+                'screen-game1', 'screen-game2', 'screen-game3', 'screen-game4', 
+                'screen-game5', 'screen-postgame', 'screen-game-over', 'screen-victory'
+            ];
+            screens.forEach(s => {
+                const el = document.getElementById(s);
+                if (el) el.classList.add('hidden');
+            });
+
+            // Show active screen
+            const targetScreen = document.getElementById(screenId);
+            if (targetScreen) targetScreen.classList.remove('hidden');
+            currentScreen = screenId;
+
+            // Manage global top bar HUD layout
+            const hudStage = document.getElementById('hud-stage-container');
+            const hudSuspicion = document.getElementById('hud-suspicion-container');
+            
+            if (screenId.startsWith('screen-game') || screenId === 'screen-postgame') {
+                hudStage.classList.remove('hidden');
+                hudStage.classList.add('flex');
+                hudSuspicion.classList.remove('hidden');
+                hudSuspicion.classList.add('flex');
+                updateHudBar();
+            } else {
+                hudStage.classList.add('hidden');
+                hudSuspicion.classList.add('hidden');
+            }
+        }
+
+        function updateHudBar() {
+            let activeStageName = "Macdeath Quest";
+            if (currentScreen === 'screen-game0') activeStageName = "The Witches' Hut";
+            if (currentScreen === 'screen-game1') activeStageName = "Castle Yard Gate";
+            if (currentScreen === 'screen-game2') activeStageName = "Kitchen Brew";
+            if (currentScreen === 'screen-game3') activeStageName = "The Armoury";
+            if (currentScreen === 'screen-game4') activeStageName = "Hallway Patrol";
+            if (currentScreen === 'screen-game5') activeStageName = "Duncan's Bed";
+            if (currentScreen === 'screen-postgame') activeStageName = "The Clean Up";
+
+            document.getElementById('hud-stage-name').innerText = activeStageName;
+            document.getElementById('hud-suspicion-bar').style.width = suspicionLevel + '%';
+        }
+
+        function increaseSuspicion(amount) {
+            suspicionLevel += amount;
+            if (suspicionLevel > 100) suspicionLevel = 100;
+            updateHudBar();
+            
+            // Check fail trigger
+            if (suspicionLevel >= 100) {
+                triggerGameOver("Your high suspicion level gave away your presence! The Royal Guards trapped you.");
+            } else if (amount > 5) {
+                triggerToast("Spotted!", "Suspicion level jumped up by " + amount + "!", "amber");
+            }
+        }
+
+        // Story intro sequences
+        function startGameSequence() {
+            campaignMode = true;
+            currentCampaignStageIndex = 0;
+            suspicionLevel = 0;
+            retriesCount = 0;
+            if (speedrunTimerEnabled) resetSpeedrunTimer();
+            loadStoryPanel(0);
+        }
+
+        function startSingleArcadeGame(stageIdx) {
+            campaignMode = false;
+            currentCampaignStageIndex = stageIdx;
+            suspicionLevel = 0;
+            loadStoryPanel(stageIdx);
+        }
+
+        function loadStoryPanel(stageIdx) {
+            const config = stageConfigs[stageIdx];
+            document.getElementById('story-title').innerText = config.name;
+            document.getElementById('story-subtitle').innerText = config.subtitle;
+            document.getElementById('story-text').innerText = config.text;
+            document.getElementById('story-controls-tip').innerText = config.controls;
+            showScreen('screen-story-intro');
+        }
+
+        function proceedToActiveGame() {
+            // Initiate the appropriate mini stage script
+            const idx = currentCampaignStageIndex;
+            if (idx === 0) startStage0();
+            else if (idx === 1) startStage1();
+            else if (idx === 2) startStage2();
+            else if (idx === 3) startStage3();
+            else if (idx === 4) startStage4();
+            else if (idx === 5) startStage5();
+            else if (idx === 6) startStage6();
+        }
+
+        function proceedToNextCampaignStage() {
+            currentCampaignStageIndex++;
+            if (currentCampaignStageIndex < stageConfigs.length) {
+                loadStoryPanel(currentCampaignStageIndex);
+            } else {
+                // Campaign Finished!
+                triggerVictory();
+            }
+        }
+
+        function triggerGameOver(reasonText) {
+            // Stop any active game loops
+            stopActiveGameLoops();
+            
+            document.getElementById('game-over-reason').innerText = `"${reasonText}"`;
+            showScreen('screen-game-over');
+            retriesCount++;
+        }
+
+        function restartCurrentStage() {
+            suspicionLevel = Math.max(0, suspicionLevel - 30); // Generous retry allowance
+            proceedToActiveGame();
+        }
+
+        function triggerVictory() {
+            let recordStr = "00:00.00";
+            if (speedrunTimerEnabled && speedrunInterval) {
+                clearInterval(speedrunInterval);
+                recordStr = updateSpeedrunTimer();
+            } else {
+                recordStr = "Not Speedrun Timed";
+            }
+
+            document.getElementById('victory-time').innerText = recordStr;
+            document.getElementById('victory-retries').innerText = retriesCount;
+            showScreen('screen-victory');
+            sfx.playSuccess();
+        }
+
+        function triggerExitGame() {
+            document.getElementById('exit-modal').classList.remove('hidden');
+            document.getElementById('exit-modal').classList.add('flex');
+        }
+        function closeExitModal() {
+            document.getElementById('exit-modal').classList.add('hidden');
+            document.getElementById('exit-modal').classList.remove('flex');
+        }
+        function confirmExitGame() {
+            window.location.href = "https://warwick.bm";
+        }
+
+        function stopActiveGameLoops() {
+            if (g0Interval) clearInterval(g0Interval);
+            if (g1Interval) clearInterval(g1Interval);
+            if (g2Interval) clearInterval(g2Interval);
+            if (g4Interval) clearInterval(g4Interval);
+            if (g5Interval) clearInterval(g5Interval);
+            if (postGameInterval) clearInterval(postGameInterval);
+        }
+    </script>
+
+
+    <!-- ========================================== STAGE 0 ENGINE ========================================== -->
+    <script>
+        let g0Canvas, g0Ctx;
+        let g0Interval = null;
+        let g0Player = { x: 50, y: 50, speed: 4, r: 10 };
+        let g0Notes = [];
+        let g0CollectedCount = 0;
+        
+        // Puzzle state
+        let g0PuzzlePhrases = [
+            { id: 1, text: "All hail Macbeth,", correctOrder: 0 },
+            { id: 2, text: "that shalt be", correctOrder: 1 },
+            { id: 3, text: "king hereafter.", correctOrder: 2 }
+        ];
+        let g0SelectedSequence = [];
+
+        function startStage0() {
+            showScreen('screen-game0');
+            g0Canvas = document.getElementById('canvas-game0');
+            g0Ctx = g0Canvas.getContext('2d');
+            
+            // Adjust canvas sizing
+            g0Canvas.width = 640;
+            g0Canvas.height = 480;
+
+            g0Player.x = 320;
+            g0Player.y = 400;
+            g0CollectedCount = 0;
+            document.getElementById('g0-note-count').innerText = "0/3";
+            document.getElementById('g0-puzzle-overlay').classList.add('hidden');
+
+            // Set up 3 scattered notes
+            g0Notes = [
+                { x: 100, y: 120, gathered: false, id: 1 },
+                { x: 520, y: 150, gathered: false, id: 2 },
+                { x: 320, y: 100, gathered: false, id: 3 }
+            ];
+
+            // Keyboard controller hooks
+            setupG0Input();
+
+            if (g0Interval) clearInterval(g0Interval);
+            g0Interval = setInterval(updateG0, 1000 / 30);
+        }
+
+        let g0Keys = {};
+        function setupG0Input() {
+            window.onkeydown = function(e) {
+                g0Keys[e.key.toLowerCase()] = true;
+                // Hook stage 1 keys too
+                if (e.key === " " || e.key === "ArrowRight") {
+                    g1KeyDown = true;
+                }
+            };
+            window.onkeyup = function(e) {
+                g0Keys[e.key.toLowerCase()] = false;
+                if (e.key === " " || e.key === "ArrowRight") {
+                    g1KeyDown = false;
+                }
+            };
+
+            // Touch Joystick elements Stage 0
+            const bindTouchBtn = (id, key) => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    btn.ontouchstart = () => { g0Keys[key] = true; sfx.playFootstep(); };
+                    btn.ontouchend = () => g0Keys[key] = false;
+                    btn.onmousedown = () => { g0Keys[key] = true; sfx.playFootstep(); };
+                    btn.onmouseup = () => g0Keys[key] = false;
+                }
+            }
+            bindTouchBtn('joy0-up', 'w');
+            bindTouchBtn('joy0-down', 's');
+            bindTouchBtn('joy0-left', 'a');
+            bindTouchBtn('joy0-right', 'd');
+        }
+
+        function updateG0() {
+            // Movement mechanics
+            let dx = 0;
+            let dy = 0;
+            if (g0Keys['w'] || g0Keys['arrowup']) dy = -g0Player.speed;
+            if (g0Keys['s'] || g0Keys['arrowdown']) dy = g0Player.speed;
+            if (g0Keys['a'] || g0Keys['arrowleft']) dx = -g0Player.speed;
+            if (g0Keys['d'] || g0Keys['arrowright']) dx = g0Player.speed;
+
+            g0Player.x += dx;
+            g0Player.y += dy;
+
+            // Simple ambient sound
+            if ((dx !== 0 || dy !== 0) && Math.random() < 0.1) {
+                sfx.playFootstep();
+            }
+
+            // Screen boundary clamping
+            g0Player.x = Math.max(g0Player.r, Math.min(g0Canvas.width - g0Player.r, g0Player.x));
+            g0Player.y = Math.max(g0Player.r, Math.min(g0Canvas.height - g0Player.r, g0Player.y));
+
+            // Collision checks with scroll notes
+            g0Notes.forEach(note => {
+                if (!note.gathered) {
+                    const dist = Math.hypot(g0Player.x - note.x, g0Player.y - note.y);
+                    if (dist < g0Player.r + 15) {
+                        note.gathered = true;
+                        g0CollectedCount++;
+                        document.getElementById('g0-note-count').innerText = `${g0CollectedCount}/3`;
+                        sfx.playDaggerClink();
+                        triggerToast("Fragment Picked Up", "A prophecy note fragment was added to your inventory.", "green");
+                        
+                        if (g0CollectedCount >= 3) {
+                            clearInterval(g0Interval);
+                            launchProphecyPuzzle();
+                        }
+                    }
+                }
+            });
+
+            // Draw current scene
+            g0Ctx.clearRect(0, 0, g0Canvas.width, g0Canvas.height);
+            
+            // Draw mysterious swamp marsh background
+            g0Ctx.fillStyle = '#110c14';
+            g0Ctx.fillRect(0, 0, g0Canvas.width, g0Canvas.height);
+
+            // Cauldron in center of swamp
+            g0Ctx.beginPath();
+            g0Ctx.arc(320, 240, 45, 0, Math.PI * 2);
+            g0Ctx.fillStyle = '#2e1047';
+            g0Ctx.fill();
+            g0Ctx.lineWidth = 4;
+            g0Ctx.strokeStyle = '#4c1d95';
+            g0Ctx.stroke();
+            
+            // Cauldron green fire bubbling animation
+            const rad = 35 + Math.sin(Date.now() / 150) * 5;
+            g0Ctx.beginPath();
+            g0Ctx.arc(320, 240, rad, 0, Math.PI * 2);
+            g0Ctx.fillStyle = 'rgba(168, 85, 247, 0.2)';
+            g0Ctx.fill();
+
+            // Periodic cauldron bubble tone
+            if (Math.random() < 0.05) {
+                sfx.playCauldron();
+            }
+
+            // Draw scattered paper notes
+            g0Notes.forEach(note => {
+                if (!note.gathered) {
+                    g0Ctx.fillStyle = '#f5f5dc';
+                    g0Ctx.strokeStyle = '#d4af37';
+                    g0Ctx.lineWidth = 2;
+                    g0Ctx.fillRect(note.x - 10, note.y - 12, 20, 24);
+                    g0Ctx.strokeRect(note.x - 10, note.y - 12, 20, 24);
+
+                    // Tiny detail lines representing letters
+                    g0Ctx.strokeStyle = '#6e5e40';
+                    g0Ctx.lineWidth = 1;
+                    g0Ctx.beginPath();
+                    g0Ctx.moveTo(note.x - 6, note.y - 4);
+                    g0Ctx.lineTo(note.x + 6, note.y - 4);
+                    g0Ctx.moveTo(note.x - 6, note.y + 2);
+                    g0Ctx.lineTo(note.x + 4, note.y + 2);
+                    g0Ctx.stroke();
+                }
+            });
+
+            // Draw player (Marb the henchman with hood outline)
+            g0Ctx.beginPath();
+            g0Ctx.arc(g0Player.x, g0Player.y, g0Player.r, 0, Math.PI * 2);
+            g0Ctx.fillStyle = '#b91c1c';
+            g0Ctx.fill();
+            g0Ctx.lineWidth = 2;
+            g0Ctx.strokeStyle = '#ffd700';
+            g0Ctx.stroke();
+
+            // Player hood center point
+            g0Ctx.beginPath();
+            g0Ctx.arc(g0Player.x, g0Player.y - 2, 4, 0, Math.PI * 2);
+            g0Ctx.fillStyle = '#3e1111';
+            g0Ctx.fill();
+        }
+
+        // --- Prophecy text puzzle overlay ---
+        function launchProphecyPuzzle() {
+            document.getElementById('g0-puzzle-overlay').classList.remove('hidden');
+            resetProphecyPuzzle();
+        }
+
+        function resetProphecyPuzzle() {
+            g0SelectedSequence = [];
+            document.getElementById('g0-assembly-zone').innerText = "(Arrange fragments to reconstruct the parchment)";
+            
+            // Randomly shuffle initial positions of the options array
+            const shuffled = [...g0PuzzlePhrases].sort(() => Math.random() - 0.5);
+            const pool = document.getElementById('g0-phrase-pool');
+            pool.innerHTML = '';
+            
+            shuffled.forEach(phrase => {
+                const btn = document.createElement('button');
+                btn.className = "w-full bg-stone-950 hover:bg-stone-850 border border-stone-800 p-3 rounded-lg text-sm text-center text-stone-200 font-serif hover:border-purple-800 transition-colors";
+                btn.innerText = phrase.text;
+                btn.onclick = () => selectPhrase(phrase, btn);
+                pool.appendChild(btn);
+            });
+        }
+
+        function selectPhrase(phrase, element) {
+            if (g0SelectedSequence.some(p => p.id === phrase.id)) return;
+            g0SelectedSequence.push(phrase);
+            element.classList.add('opacity-40', 'pointer-events-none');
+            sfx.playScribble();
+
+            // Update assembly layout string
+            const fullString = g0SelectedSequence.map(p => p.text).join(' ');
+            document.getElementById('g0-assembly-zone').innerText = `"${fullString}"`;
+        }
+
+        function submitProphecyPuzzle() {
+            // Verify if sequence order matches the correct array order
+            let isValid = g0SelectedSequence.length === g0PuzzlePhrases.length;
+            for (let i = 0; i < g0SelectedSequence.length; i++) {
+                if (g0SelectedSequence[i].correctOrder !== i) {
+                    isValid = false;
+                }
+            }
+
+            if (isValid) {
+                sfx.playSuccess();
+                triggerToast("Prophecy Resolved!", "You solved the weird sisters' scroll piece.", "green");
+                setTimeout(() => {
+                    if (campaignMode) proceedToNextCampaignStage();
+                    else showScreen('screen-minigames-hub');
+                }, 1500);
+            } else {
+                triggerToast("Decipher Failed", "The prediction lines are out of structural rhythm.", "red");
+                increaseSuspicion(15);
+                resetProphecyPuzzle();
+            }
+        }
+    </script>
+
+
+    <!-- ========================================== STAGE 1 ENGINE ========================================== -->
+    <script>
+        let g1Canvas, g1Ctx;
+        let g1Interval = null;
+        let g1Progress = 0; // 0 to 100
+        let g1BanquoState = 'away'; // 'away' or 'alert'
+        let g1Timer = 0;
+        let g1KeyDown = false;
+
+        function startStage1() {
+            showScreen('screen-game1');
+            g1Canvas = document.getElementById('canvas-game1');
+            g1Ctx = g1Canvas.getContext('2d');
+            g1Canvas.width = 640;
+            g1Canvas.height = 360;
+
+            g1Progress = 0;
+            g1BanquoState = 'away';
+            g1Timer = 0;
+            g1KeyDown = false;
+
+            document.getElementById('g1-banquo-status').innerText = "LOOKING AWAY";
+            document.getElementById('g1-banquo-status').className = "text-emerald-400 font-bold animate-pulse";
+
+            setupG1Controls();
+
+            if (g1Interval) clearInterval(g1Interval);
+            g1Interval = setInterval(updateG1, 1000 / 30);
+        }
+
+        function setupG1Controls() {
+            const btn = document.getElementById('g1-sneak-btn');
+            
+            // Mouse & Touch bindings
+            btn.ontouchstart = (e) => { e.preventDefault(); g1KeyDown = true; };
+            btn.ontouchend = () => g1KeyDown = false;
+            btn.onmousedown = () => g1KeyDown = true;
+            btn.onmouseup = () => g1KeyDown = false;
+            btn.onmouseleave = () => g1KeyDown = false;
+        }
+
+        function updateG1() {
+            g1Timer++;
+
+            // Banquo behavior state transitions
+            const loopDuration = 120; // total cycles of state checks
+            const cycle = g1Timer % loopDuration;
+
+            if (cycle === 0) {
+                // Change to random look frequency
+                g1BanquoState = Math.random() < 0.5 ? 'away' : 'alert';
+                if (g1BanquoState === 'alert') {
+                    sfx.playAlert();
+                    document.getElementById('g1-banquo-status').innerText = "SCANNING COURTYARD!";
+                    document.getElementById('g1-banquo-status').className = "text-red-500 font-bold animate-ping";
+                } else {
+                    document.getElementById('g1-banquo-status').innerText = "LOOKING AWAY";
+                    document.getElementById('g1-banquo-status').className = "text-emerald-400 font-bold";
+                }
+            }
+
+            // Player sneaking movement processing
+            if (g1KeyDown) {
+                if (g1BanquoState === 'alert') {
+                    // Instantly trigger caution
+                    increaseSuspicion(15);
+                    g1KeyDown = false; // Release hold immediately
+                    
+                    // Flash red caution border layout
+                    const flash = document.getElementById('g1-warning-flash');
+                    flash.style.opacity = '1';
+                    setTimeout(() => flash.style.opacity = '0', 200);
+
+                    // Reset progress penalty
+                    g1Progress = Math.max(0, g1Progress - 15);
+                } else {
+                    g1Progress += 0.8;
+                    if (Math.random() < 0.2) sfx.playFootstep();
+                    if (g1Progress >= 100) {
+                        g1Progress = 100;
+                        clearInterval(g1Interval);
+                        sfx.playSuccess();
+                        triggerToast("Inside Castle Gate!", "You successfully sneaked past Lord Banquo.", "green");
+                        setTimeout(() => {
+                            if (campaignMode) proceedToNextCampaignStage();
+                            else showScreen('screen-minigames-hub');
+                        }, 1500);
+                    }
+                }
+            }
+
+            // Draw yard environment
+            g1Ctx.clearRect(0, 0, g1Canvas.width, g1Canvas.height);
+            
+            // Sky & castle silhouette
+            g1Ctx.fillStyle = '#0f172a';
+            g1Ctx.fillRect(0, 0, g1Canvas.width, g1Canvas.height);
+
+            // Ground pathway
+            g1Ctx.fillStyle = '#1e293b';
+            g1Ctx.fillRect(0, 240, g1Canvas.width, 120);
+
+            // Castle Gateway
+            g1Ctx.fillStyle = '#475569';
+            g1Ctx.fillRect(520, 80, 80, 160);
+            g1Ctx.fillStyle = '#020617';
+            g1Ctx.fillRect(540, 120, 40, 120);
+
+            // Draw Lord Banquo
+            let banquoX = 480;
+            let banquoY = 190;
+            
+            // Guard/Banquo circular shadow layout
+            g1Ctx.beginPath();
+            g1Ctx.ellipse(banquoX + 10, banquoY + 45, 15, 6, 0, 0, Math.PI * 2);
+            g1Ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            g1Ctx.fill();
+
+            // Draw body armored plate
+            g1Ctx.fillStyle = '#4b5563';
+            g1Ctx.fillRect(banquoX, banquoY + 10, 20, 35);
+            
+            // Banquo state helmet coloring
+            g1Ctx.beginPath();
+            g1Ctx.arc(banquoX + 10, banquoY, 12, 0, Math.PI * 2);
+            g1Ctx.fillStyle = g1BanquoState === 'alert' ? '#b91c1c' : '#ffd700'; // Red visor if looking
+            g1Ctx.fill();
+
+            // Draw Marb (The player) on pathway
+            let playerX = 60 + (g1Progress * 4); // maps 0-100 to progress line
+            let playerY = 250;
+
+            g1Ctx.beginPath();
+            g1Ctx.ellipse(playerX, playerY + 30, 12, 5, 0, 0, Math.PI * 2);
+            g1Ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            g1Ctx.fill();
+
+            g1Ctx.beginPath();
+            g1Ctx.arc(playerX, playerY, 12, 0, Math.PI * 2);
+            g1Ctx.fillStyle = '#991b1b'; // Crimson cloak
+            g1Ctx.fill();
+            g1Ctx.lineWidth = 1;
+            g1Ctx.strokeStyle = '#ffd700';
+            g1Ctx.stroke();
+        }
+    </script>
+
+
+    <!-- ========================================== STAGE 2 ENGINE ========================================== -->
+    <script>
+        let g2Interval = null;
+        let g2Dosage = 0; // 0 to 100
+        let g2IsPouring = false;
+        let g2AlertTimer = 0;
+        let g2GuardsAlerted = false; // are they awake/looking
+
+        function startStage2() {
+            showScreen('screen-game2');
+            g2Dosage = 0;
+            g2IsPouring = false;
+            g2AlertTimer = 0;
+            g2GuardsAlerted = false;
+
+            document.getElementById('g2-dosage-text').innerText = "0%";
+            document.getElementById('g2-dosage-bar').style.width = "0%";
+            setG2GuardUIVisuals(false);
+
+            setupG2Input();
+
+            if (g2Interval) clearInterval(g2Interval);
+            g2Interval = setInterval(updateG2, 100);
+        }
+
+        function setupG2Input() {
+            const btn = document.getElementById('g2-pour-btn');
+            
+            // Touch handlers
+            btn.ontouchstart = (e) => { e.preventDefault(); g2IsPouring = true; };
+            btn.ontouchend = () => g2IsPouring = false;
+            btn.onmousedown = () => g2IsPouring = true;
+            btn.onmouseup = () => g2IsPouring = false;
+            btn.onmouseleave = () => g2IsPouring = false;
+        }
+
+        function setG2GuardUIVisuals(alerted) {
+            const statusPill = document.getElementById('g2-status-pill');
+            const g1 = document.getElementById('g2-guard-1');
+            const g2 = document.getElementById('g2-guard-2');
+
+            if (alerted) {
+                statusPill.innerText = "ALARMED! NOT SAFE!";
+                statusPill.className = "inline-block px-3 py-1 bg-red-950 border border-red-700 rounded-full text-xs font-bold text-red-400 animate-pulse";
+                g1.className = "w-12 h-12 rounded-full border-2 border-red-600 flex items-center justify-center bg-stone-900";
+                g2.className = "w-12 h-12 rounded-full border-2 border-red-600 flex items-center justify-center bg-stone-900";
+                g1.innerHTML = `<i data-lucide="bell-ring" class="w-6 h-6 text-red-500 animate-bounce"></i>`;
+                g2.innerHTML = `<i data-lucide="bell-ring" class="w-6 h-6 text-red-500 animate-bounce"></i>`;
+            } else {
+                statusPill.innerText = "SLEEPY ... (SAFE TO POUR)";
+                statusPill.className = "inline-block px-3 py-1 bg-emerald-950 border border-emerald-800 rounded-full text-xs font-bold text-emerald-400";
+                g1.className = "w-12 h-12 rounded-full border-2 border-emerald-600 flex items-center justify-center bg-stone-900";
+                g2.className = "w-12 h-12 rounded-full border-2 border-emerald-600 flex items-center justify-center bg-stone-900";
+                g1.innerHTML = `<i data-lucide="user-check" class="w-6 h-6 text-emerald-500"></i>`;
+                g2.innerHTML = `<i data-lucide="user-check" class="w-6 h-6 text-emerald-500"></i>`;
+            }
+            lucide.createIcons();
+        }
+
+        function updateG2() {
+            g2AlertTimer++;
+
+            // Toggle guard alertness state dynamically
+            if (g2AlertTimer % 45 === 0) {
+                g2GuardsAlerted = !g2GuardsAlerted;
+                setG2GuardUIVisuals(g2GuardsAlerted);
+                
+                if (g2GuardsAlerted) {
+                    sfx.playAlert();
+                }
+            }
+
+            // Dosage increment processing
+            if (g2IsPouring) {
+                if (g2GuardsAlerted) {
+                    increaseSuspicion(10);
+                    g2IsPouring = false; // cancel current pouring
+                } else {
+                    g2Dosage += 4;
+                    if (g2Dosage > 100) g2Dosage = 100;
+
+                    document.getElementById('g2-dosage-text').innerText = `${g2Dosage}%`;
+                    document.getElementById('g2-dosage-bar').style.width = `${g2Dosage}%`;
+
+                    if (Math.random() < 0.4) {
+                        sfx.playTone(400 + Math.random() * 200, 'triangle', 0.1, 0.05);
+                    }
+
+                    if (g2Dosage >= 100) {
+                        clearInterval(g2Interval);
+                        sfx.playSuccess();
+                        triggerToast("Guards Asleep!", "The sleeping nightshade worked completely.", "green");
+                        setTimeout(() => {
+                            if (campaignMode) proceedToNextCampaignStage();
+                            else showScreen('screen-minigames-hub');
+                        }, 1500);
+                    }
+                }
+            }
+        }
+    </script>
+
+
+    <!-- ========================================== STAGE 3 ENGINE ========================================== -->
+    <script>
+        // Set of styled visual representations of daggers
+        const mockDaggers = [
+            { id: 1, name: "Gothic Dirk", icon: "sword", real: false, desc: "A common guard sword." },
+            { id: 2, name: "The Gold Sovereign", icon: "sword", real: true, desc: "Glints with the royal family seal." },
+            { id: 3, name: "Rusty Slasher", icon: "skull", real: false, desc: "Coated in ancient copper oxidation." },
+            { id: 4, name: "Silver Estoc", icon: "shield", real: false, desc: "Shiny polished steel, too long to hide." }
+        ];
+
+        function startStage3() {
+            showScreen('screen-game3');
+            document.getElementById('g3-status-msg').innerText = "Carefully inspect each hilt. Grab the one with the golden crest.";
+            
+            // Render dagger option layout dynamically
+            const grid = document.getElementById('g3-dagger-grid');
+            grid.innerHTML = '';
+
+            // Shuffle option list
+            const randomized = [...mockDaggers].sort(() => Math.random() - 0.5);
+
+            randomized.forEach((dag, idx) => {
+                const card = document.createElement('div');
+                card.className = "bg-stone-950 border border-stone-800 hover:border-amber-700 p-4 rounded-xl flex flex-col items-center justify-between text-center transition-all cursor-pointer hover:scale-105";
+                
+                // Card contents
+                card.innerHTML = `
+                    <div class="w-14 h-14 rounded-full bg-stone-900 flex items-center justify-center border border-stone-800 relative mb-3">
+                        <i data-lucide="${dag.icon}" class="w-7 h-7 ${dag.real ? 'text-amber-400 animate-pulse' : 'text-stone-500'}"></i>
+                        ${dag.real ? '<div class="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full animate-ping"></div>' : ''}
+                    </div>
+                    <span class="font-bold text-xs text-stone-200 block">${dag.name}</span>
+                    <span class="text-[10px] text-stone-500 mt-1 block">${dag.desc}</span>
+                    <button class="mt-3 px-3 py-1.5 bg-amber-950 border border-amber-800 hover:bg-amber-900 text-amber-400 font-bold text-[10px] rounded uppercase">Grab Weapon</button>
+                `;
+
+                card.onclick = () => selectArmouryDagger(dag);
+                grid.appendChild(card);
+            });
+
+            lucide.createIcons();
+        }
+
+        function selectArmouryDagger(dagger) {
+            sfx.playDaggerClink();
+            if (dagger.real) {
+                sfx.playSuccess();
+                document.getElementById('g3-status-msg').innerText = "The Golden Sovereign fits perfectly in your boot sleeve!";
+                triggerToast("Weapon Acquired", "The correct ceremonial dagger is in hand.", "green");
+                setTimeout(() => {
+                    if (campaignMode) proceedToNextCampaignStage();
+                    else showScreen('screen-minigames-hub');
+                }, 1500);
+            } else {
+                increaseSuspicion(25);
+                document.getElementById('g3-status-msg').innerText = `You pulled the ${dagger.name}. It sets off local bells!`;
+                triggerToast("Trap Sprung!", `The ${dagger.name} was a decoy alarm trigger!`, "red");
+            }
+        }
+    </script>
+
+
+    <!-- ========================================== STAGE 4 ENGINE ========================================== -->
+    <script>
+        let g4Canvas, g4Ctx;
+        let g4Interval = null;
+        let g4Player = { x: 30, y: 180, r: 8, speed: 3.5 };
+        let g4Goal = { x: 600, y: 180, w: 20, h: 40 };
+        let g4Guards = [];
+        let g4Pillars = [];
+
+        function startStage4() {
+            showScreen('screen-game4');
+            g4Canvas = document.getElementById('canvas-game4');
+            g4Ctx = g4Canvas.getContext('2d');
+            g4Canvas.width = 640;
+            g4Canvas.height = 360;
+
+            g4Player.x = 40;
+            g4Player.y = 180;
+
+            // Setup pillars (shadow barriers)
+            g4Pillars = [
+                { x: 180, y: 100, r: 15 },
+                { x: 180, y: 260, r: 15 },
+                { x: 340, y: 180, r: 18 },
+                { x: 480, y: 100, r: 15 },
+                { x: 480, y: 260, r: 15 }
+            ];
+
+            // Setup patrolling guards with flashlight focus directions
+            g4Guards = [
+                { 
+                    x: 240, 
+                    y: 60, 
+                    startY: 60, 
+                    endY: 300, 
+                    dir: 1, 
+                    speed: 2, 
+                    coneAngle: Math.PI / 2, // looking down
+                    chasing: false 
+                },
+                { 
+                    x: 420, 
+                    y: 300, 
+                    startY: 60, 
+                    endY: 300, 
+                    dir: -1, 
+                    speed: 2.5, 
+                    coneAngle: -Math.PI / 2, // looking up
+                    chasing: false 
+                }
+            ];
+
+            setupG4Controls();
+
+            if (g4Interval) clearInterval(g4Interval);
+            g4Interval = setInterval(updateG4, 1000 / 30);
+        }
+
+        function setupG4Controls() {
+            // Touch handlers for mobile joystick/pad layout
+            const bindTouchBtn = (id, key) => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    btn.ontouchstart = () => g0Keys[key] = true;
+                    btn.ontouchend = () => g0Keys[key] = false;
+                    btn.onmousedown = () => g0Keys[key] = true;
+                    btn.onmouseup = () => g0Keys[key] = false;
+                }
+            }
+            bindTouchBtn('joy4-up', 'w');
+            bindTouchBtn('joy4-down', 's');
+            bindTouchBtn('joy4-left', 'a');
+            bindTouchBtn('joy4-right', 'd');
+        }
+
+        function updateG4() {
+            // Player movement logic
+            let dx = 0;
+            let dy = 0;
+            if (g0Keys['w'] || g0Keys['arrowup']) dy = -g4Player.speed;
+            if (g0Keys['s'] || g0Keys['arrowdown']) dy = g4Player.speed;
+            if (g0Keys['a'] || g0Keys['arrowleft']) dx = -g4Player.speed;
+            if (g0Keys['d'] || g0Keys['arrowright']) dx = g4Player.speed;
+
+            g4Player.x += dx;
+            g4Player.y += dy;
+
+            if ((dx !== 0 || dy !== 0) && Math.random() < 0.1) {
+                sfx.playFootstep();
+            }
+
+            // Pillar collision detection
+            g4Pillars.forEach(p => {
+                const dist = Math.hypot(g4Player.x - p.x, g4Player.y - p.y);
+                if (dist < g4Player.r + p.r) {
+                    // Push out of pillar boundary
+                    const angle = Math.atan2(g4Player.y - p.y, g4Player.x - p.x);
+                    g4Player.x = p.x + Math.cos(angle) * (g4Player.r + p.r);
+                    g4Player.y = p.y + Math.sin(angle) * (g4Player.r + p.r);
+                }
+            });
+
+            // Boundary clamping
+            g4Player.x = Math.max(g4Player.r, Math.min(g4Canvas.width - g4Player.r, g4Player.x));
+            g4Player.y = Math.max(g4Player.r, Math.min(g4Canvas.height - g4Player.r, g4Player.y));
+
+            // Guard patrol cycle update
+            g4Guards.forEach(g => {
+                g.y += g.speed * g.dir;
+                if (g.y > g.endY) {
+                    g.y = g.endY;
+                    g.dir = -1;
+                    g.coneAngle = -Math.PI / 2; // Look up
+                } else if (g.y < g.startY) {
+                    g.y = g.startY;
+                    g.dir = 1;
+                    g.coneAngle = Math.PI / 2; // Look down
+                }
+
+                // Check player presence inside lantern cone
+                const distToPlayer = Math.hypot(g4Player.x - g.x, g4Player.y - g.y);
+                let insideCone = false;
+
+                if (distToPlayer < 140) { // flashlight maximum reach
+                    const angleToPlayer = Math.atan2(g4Player.y - g.y, g4Player.x - g.x);
+                    let relativeAngle = Math.abs(angleToPlayer - g.coneAngle);
+                    
+                    // Normalize relative angle
+                    while (relativeAngle > Math.PI) relativeAngle -= Math.PI * 2;
+                    relativeAngle = Math.abs(relativeAngle);
+
+                    if (relativeAngle < Math.PI / 4) { // 45 degree spread
+                        // Line-of-sight ray tracing against pillars
+                        let blocked = false;
+                        g4Pillars.forEach(p => {
+                            // Find closest point on ray to pillar center
+                            const vX = g4Player.x - g.x;
+                            const vY = g4Player.y - g.y;
+                            const pX = p.x - g.x;
+                            const pY = p.y - g.y;
+                            const projection = (pX * vX + pY * vY) / (distToPlayer * distToPlayer);
+                            
+                            if (projection > 0 && projection < 1) {
+                                const projX = g.x + projection * vX;
+                                const projY = g.y + projection * vY;
+                                const distToPillarCenter = Math.hypot(p.x - projX, p.y - projY);
+                                if (distToPillarCenter < p.r) {
+                                    blocked = true;
+                                }
+                            }
+                        });
+
+                        if (!blocked) insideCone = true;
+                    }
+                }
+
+                if (insideCone) {
+                    g.chasing = true;
+                    increaseSuspicion(1.5); // Rapidly accumulates suspicion inside illumination
+                } else {
+                    g.chasing = false;
+                }
+            });
+
+            // Goal detection
+            if (g4Player.x > g4Goal.x - 10 && Math.abs(g4Player.y - g4Goal.y) < 25) {
+                clearInterval(g4Interval);
+                sfx.playSuccess();
+                triggerToast("Chamber Door Reached!", "You slipped behind the corridor guards.", "green");
+                setTimeout(() => {
+                    if (campaignMode) proceedToNextCampaignStage();
+                    else showScreen('screen-minigames-hub');
+                }, 1500);
+            }
+
+            // Draw Corridor scene
+            g4Ctx.clearRect(0, 0, g4Canvas.width, g4Canvas.height);
+            
+            // Slate/stone flooring
+            g4Ctx.fillStyle = '#0f172a';
+            g4Ctx.fillRect(0, 0, g4Canvas.width, g4Canvas.height);
+
+            // Left entry, Right goal arch
+            g4Ctx.fillStyle = '#020617';
+            g4Ctx.fillRect(0, 150, 15, 60);
+            g4Ctx.fillStyle = '#10b981'; // Green door glow
+            g4Ctx.fillRect(g4Goal.x, g4Goal.y - 30, g4Goal.w, g4Goal.h + 20);
+
+            // Draw pillars
+            g4Pillars.forEach(p => {
+                g4Ctx.beginPath();
+                g4Ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                g4Ctx.fillStyle = '#334155';
+                g4Ctx.fill();
+                g4Ctx.lineWidth = 3;
+                g4Ctx.strokeStyle = '#1e293b';
+                g4Ctx.stroke();
+            });
+
+            // Draw Guard cones and bodies
+            g4Guards.forEach(g => {
+                // Flashlight beam representation
+                g4Ctx.beginPath();
+                g4Ctx.moveTo(g.x, g.y);
+                g4Ctx.arc(g.x, g.y, 140, g.coneAngle - Math.PI / 4, g.coneAngle + Math.PI / 4);
+                g4Ctx.closePath();
+                g4Ctx.fillStyle = g.chasing ? 'rgba(239, 68, 68, 0.25)' : 'rgba(251, 191, 36, 0.15)';
+                g4Ctx.fill();
+
+                // Guard marker
+                g4Ctx.beginPath();
+                g4Ctx.arc(g.x, g.y, 10, 0, Math.PI * 2);
+                g4Ctx.fillStyle = '#1e293b';
+                g4Ctx.fill();
+                g4Ctx.lineWidth = 2;
+                g4Ctx.strokeStyle = g.chasing ? '#ef4444' : '#fbbf24';
+                g4Ctx.stroke();
+            });
+
+            // Draw Marb (Crimson dot)
+            g4Ctx.beginPath();
+            g4Ctx.arc(g4Player.x, g4Player.y, g4Player.r, 0, Math.PI * 2);
+            g4Ctx.fillStyle = '#dc2626';
+            g4Ctx.fill();
+            g4Ctx.lineWidth = 1;
+            g4Ctx.strokeStyle = '#ffd700';
+            g4Ctx.stroke();
+        }
+    </script>
+
+
+    <!-- ========================================== STAGE 5 ENGINE ========================================== -->
+    <script>
+        let g5Interval = null;
+        let g5SliderVal = 0; // 0 to 100
+        let g5SliderDir = 1;
+        let g5SliderSpeed = 4;
+        let g5RegicideProgress = 0;
+        let g5NoiseLevel = 0;
+
+        function startStage5() {
+            showScreen('screen-game5');
+            g5SliderVal = 0;
+            g5SliderDir = 1;
+            g5RegicideProgress = 0;
+            g5NoiseLevel = 0;
+
+            document.getElementById('g5-murder-percent').innerText = "0%";
+            document.getElementById('g5-noise-percent').innerText = "0%";
+            document.getElementById('g5-whisper-text').innerText = "Duncan is deep in sleep...";
+
+            if (g5Interval) clearInterval(g5Interval);
+            g5Interval = setInterval(updateG5, 1000 / 60); // fast sync swing
+        }
+
+        function updateG5() {
+            // Swing marker back and forth
+            g5SliderVal += g5SliderSpeed * g5SliderDir;
+            if (g5SliderVal >= 100) {
+                g5SliderVal = 100;
+                g5SliderDir = -1;
+            } else if (g5SliderVal <= 0) {
+                g5SliderVal = 0;
+                g5SliderDir = 1;
+            }
+
+            // Adjust marker coordinate in DOM
+            document.getElementById('g5-pendulum-marker').style.left = `${g5SliderVal}%`;
+
+            // Decay noise level over time
+            if (g5NoiseLevel > 0 && Math.random() < 0.1) {
+                g5NoiseLevel = Math.max(0, g5NoiseLevel - 1);
+                document.getElementById('g5-noise-percent').innerText = `${g5NoiseLevel}%`;
+            }
+        }
+
+        function triggerDuncanStrike() {
+            // Heartbeat audio thump
+            sfx.playHeartbeat();
+
+            // Evaluate placement
+            const val = g5SliderVal;
+            let accuracy = 'miss'; // miss, good, perfect
+
+            if (val >= 40 && val <= 60) accuracy = 'perfect';
+            else if (val >= 25 && val <= 75) accuracy = 'good';
+
+            const aura = document.getElementById('g5-pulse-aura');
+            aura.style.opacity = '1';
+            setTimeout(() => aura.style.opacity = '0', 300);
+
+            if (accuracy === 'perfect') {
+                g5RegicideProgress += 35;
+                if (g5RegicideProgress > 100) g5RegicideProgress = 100;
+                
+                document.getElementById('g5-whisper-text').innerText = "Perfect deep blow! Silence reigns.";
+                document.getElementById('g5-murder-percent').innerText = `${g5RegicideProgress}%`;
+                sfx.playTone(300, 'sine', 0.15, 0.4);
+
+            } else if (accuracy === 'good') {
+                g5RegicideProgress += 15;
+                g5NoiseLevel += 15;
+                if (g5RegicideProgress > 100) g5RegicideProgress = 100;
+
+                document.getElementById('g5-whisper-text').innerText = "Duncan groaned in pain! Work faster!";
+                document.getElementById('g5-murder-percent').innerText = `${g5RegicideProgress}%`;
+                document.getElementById('g5-noise-percent').innerText = `${g5NoiseLevel}%`;
+
+            } else {
+                // Complete miss/fumble
+                g5NoiseLevel += 35;
+                increaseSuspicion(15);
+                document.getElementById('g5-whisper-text').innerText = "Dagger hit the bedpost! Duncan stumbles!";
+                document.getElementById('g5-noise-percent').innerText = `${g5NoiseLevel}%`;
+            }
+
+            // Verify fail condition
+            if (g5NoiseLevel >= 100) {
+                clearInterval(g5Interval);
+                triggerGameOver("King Duncan woke up fully screamin' treason! The entire palace layout fell into alarm.");
+            }
+
+            // Verify victory condition
+            if (g5RegicideProgress >= 100) {
+                clearInterval(g5Interval);
+                sfx.playSuccess();
+                triggerToast("Duncan Slain!", "Regicide performed successfully.", "green");
+                setTimeout(() => {
+                    if (campaignMode) proceedToNextCampaignStage();
+                    else showScreen('screen-minigames-hub');
+                }, 1500);
+            }
+        }
+    </script>
+
+
+    <!-- ========================================== POST-GAME ENGINE ========================================== -->
+    <script>
+        let postGameInterval = null;
+        let postCleanLevel = 0; // 0 to 100
+        let postSecondsLeft = 30.00;
+        
+        let postDaggersPlanted = [false, false]; // Guard 1 and 2 framed
+        let postActiveDaggerSelection = null; // 1 or 2
+
+        function startStage6() {
+            showScreen('screen-postgame');
+            postCleanLevel = 0;
+            postSecondsLeft = 30.00;
+            postDaggersPlanted = [false, false];
+            postActiveDaggerSelection = null;
+
+            document.getElementById('postgame-timer').innerText = "30.00";
+            document.getElementById('post-clean-percent').innerText = "0%";
+            document.getElementById('post-clean-bar').style.width = "0%";
+            document.getElementById('post-blood-layer').style.opacity = "1";
+
+            // Reset framed buttons
+            resetFramedGuardVisuals(1, false);
+            resetFramedGuardVisuals(2, false);
+
+            document.getElementById('post-drag-dagger-1').className = "w-14 h-14 bg-stone-900 border border-red-900 hover:border-red-500 rounded-lg flex items-center justify-center cursor-pointer transition-all hover:scale-105";
+            document.getElementById('post-drag-dagger-2').className = "w-14 h-14 bg-stone-900 border border-red-900 hover:border-red-500 rounded-lg flex items-center justify-center cursor-pointer transition-all hover:scale-105";
+
+            // Set up Click and Frame target listeners
+            document.getElementById('post-drop-zone-1').onclick = () => dropActiveDagger(1);
+            document.getElementById('post-drop-zone-2').onclick = () => dropActiveDagger(2);
+
+            if (postGameInterval) clearInterval(postGameInterval);
+            postGameInterval = setInterval(updatePostGame, 50);
+        }
+
+        function triggerHandScrub() {
+            if (postCleanLevel < 100) {
+                postCleanLevel += 8;
+                if (postCleanLevel > 100) postCleanLevel = 100;
+
+                sfx.playCauldron(); // Splash sound
+
+                document.getElementById('post-clean-percent').innerText = `${postCleanLevel}%`;
+                document.getElementById('post-clean-bar').style.width = `${postCleanLevel}%`;
+
+                // Fade away blood layer opacity
+                const bloodOpacity = (100 - postCleanLevel) / 100;
+                document.getElementById('post-blood-layer').style.opacity = bloodOpacity;
+
+                if (postCleanLevel >= 100) {
+                    triggerToast("Hands Restored!", "All blood trace is washed clean.", "green");
+                    checkPostGameVictory();
+                }
+            }
+        }
+
+        function selectPostDagger(daggerId) {
+            if (postDaggersPlanted[daggerId - 1]) return; // already placed
+
+            postActiveDaggerSelection = daggerId;
+            sfx.playDaggerClink();
+
+            // Clear visual outline status and highlight selected
+            document.getElementById('post-drag-dagger-1').classList.remove('border-yellow-500', 'scale-110');
+            document.getElementById('post-drag-dagger-2').classList.remove('border-yellow-500', 'scale-110');
+
+            document.getElementById(`post-drag-dagger-${daggerId}`).classList.add('border-yellow-500', 'scale-110');
+            document.getElementById('post-plant-clue').innerText = `Placing Dagger ${daggerId}. Tap on Guard Belt to frame!`;
+        }
+
+        function dropActiveDagger(guardId) {
+            if (postActiveDaggerSelection === null) return;
+            
+            const daggerIdx = postActiveDaggerSelection - 1;
+            if (postDaggersPlanted[daggerIdx]) return;
+
+            // Mark planted
+            postDaggersPlanted[daggerIdx] = true;
+            resetFramedGuardVisuals(guardId, true);
+
+            // Hide the inventory dagger slot
+            document.getElementById(`post-drag-dagger-${postActiveDaggerSelection}`).className = "w-14 h-14 bg-stone-950 opacity-10 border border-stone-800 rounded-lg flex items-center justify-center cursor-not-allowed";
+            
+            sfx.playDaggerClink();
+            triggerToast("Dagger Slipped", `Weapon framed on guard number ${guardId}!`, "green");
+
+            postActiveDaggerSelection = null;
+            document.getElementById('post-plant-clue').innerText = "Weapon tucked in belt.";
+
+            checkPostGameVictory();
+        }
+
+        function resetFramedGuardVisuals(guardId, isFramed) {
+            const el = document.getElementById(`post-drop-zone-${guardId}`);
+            if (isFramed) {
+                el.className = "w-20 h-24 bg-red-950/40 rounded-lg border-2 border-solid border-red-600 flex flex-col items-center justify-center gap-1 text-center transition-all animate-pulse";
+                el.innerHTML = `<i data-lucide="skull" class="w-6 h-6 text-red-500"></i><span class="text-[9px] text-red-400 font-bold">FRAMED</span>`;
+            } else {
+                el.className = "w-20 h-24 bg-stone-900 rounded-lg border-2 border-dashed border-stone-700 flex flex-col items-center justify-center gap-1 text-center transition-colors";
+                el.innerHTML = `<i data-lucide="shield-alert" class="w-6 h-6 text-stone-600"></i><span class="text-[9px] text-stone-500">Guard ${guardId} Belt</span>`;
+            }
+            lucide.createIcons();
+        }
+
+        function updatePostGame() {
+            postSecondsLeft -= 0.05;
+            if (postSecondsLeft <= 0) {
+                postSecondsLeft = 0;
+                clearInterval(postGameInterval);
+                triggerGameOver("Time ran out! Lady Macbeth's castle horns blew before you could plant the daggers.");
+            }
+
+            document.getElementById('postgame-timer').innerText = postSecondsLeft.toFixed(2);
+        }
+
+        function checkPostGameVictory() {
+            const bothPlanted = postDaggersPlanted[0] && postDaggersPlanted[1];
+            const handsClean = postCleanLevel >= 100;
+
+            if (bothPlanted && handsClean) {
+                clearInterval(postGameInterval);
+                sfx.playSuccess();
+                triggerToast("Perfect Clean-Up!", "You successfully fled to Lady Mac's quarters.", "green");
+                setTimeout(() => {
+                    if (campaignMode) proceedToNextCampaignStage();
+                    else showScreen('screen-minigames-hub');
+                }, 1500);
+            }
+        }
+    </script>
+</body>
+</html>
