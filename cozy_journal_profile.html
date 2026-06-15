@@ -426,21 +426,21 @@
       </aside>
 
       <!-- CENTER PORTION: THE MAIN WRITING CANVAS -->
-      <section class="flex-1 flex flex-col h-full">
-        
-        <!-- Document Action Panel -->
-        <div class="p-4 md:p-6 cozy-border border-b flex flex-wrap justify-between items-center gap-4">
-          <div class="flex items-center gap-3">
-            <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-xl cozy-panel cozy-border hover:cozy-panel-interactive transition-all">
-              <i data-lucide="align-left" class="w-4 h-4"></i>
-            </button>
-            <div>
-              <input type="text" id="entryTitleInput" placeholder="A quiet moment..." class="font-serif text-lg md:text-xl font-bold bg-transparent border-b border-transparent hover:border-dashed hover:border-neutral-500 focus:border-solid focus:border-amber-500 focus:outline-none py-1 transition-all max-w-sm md:w-80">
-              <p class="text-xs cozy-text-muted" id="entryDateString">Auto-saved to your browser</p>
-            </div>
+    <section class="flex-1 flex flex-col h-full">
+      
+      <!-- Document Action Panel -->
+      <div class="p-4 md:p-6 cozy-border border-b flex flex-wrap justify-between items-center gap-4">
+        <div class="flex items-center gap-3">
+          <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-xl cozy-panel cozy-border hover:cozy-panel-interactive transition-all">
+            <i data-lucide="align-left" class="w-4 h-4"></i>
+          </button>
+          <div>
+            <input type="text" id="entryTitleInput" oninput="updateWordCount()" placeholder="A quiet moment..." class="font-serif text-lg md:text-xl font-bold bg-transparent border-b border-transparent hover:border-dashed hover:border-neutral-500 focus:border-solid focus:border-amber-500 focus:outline-none py-1 transition-all max-w-sm md:w-80">
+            <p class="text-xs cozy-text-muted" id="entryDateString">Auto-saved to your browser</p>
           </div>
+        </div>
 
-          <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2">
             <button onclick="createNewEntry()" class="px-3.5 py-1.5 rounded-xl border cozy-border text-xs font-semibold flex items-center gap-1.5 hover:cozy-panel-interactive transition-colors">
               <i data-lucide="file-plus" class="w-3.5 h-3.5"></i> Clear Sheet
             </button>
@@ -478,13 +478,27 @@
         </div>
 
         <!-- Text area layout with tactile design guides -->
-        <div class="flex-1 p-4 md:p-8 overflow-hidden flex flex-col relative">
-          
-          <div id="writingPlaceholderGuide" class="absolute pointer-events-none inset-0 flex flex-col items-center justify-center opacity-15 p-6 text-center select-none z-0">
-            <i data-lucide="feather" class="w-12 h-12 mb-3 text-amber-500"></i>
-            <h3 class="font-serif text-lg font-bold">No rules. Just dump your brain here.</h3>
-            <p class="text-xs max-w-sm mt-1">Write about your morning, a weird dream, or click a prompt on the left side to get going.</p>
-          </div>
+      <div class="flex-1 p-4 md:p-8 overflow-hidden flex flex-col relative">
+        
+        <div id="writingPlaceholderGuide" class="absolute pointer-events-none inset-0 flex flex-col items-center justify-center opacity-15 p-6 text-center select-none z-0">
+          <i data-lucide="feather" class="w-12 h-12 mb-3 text-amber-500"></i>
+          <h3 class="font-serif text-lg font-bold">No rules. Just dump your brain here.</h3>
+          <p class="text-xs max-w-sm mt-1">Write about your morning, a weird dream, or click a prompt on the left side to get going.</p>
+        </div>
+
+        <textarea id="journalContent" oninput="updateWordCount()" placeholder="Click here and spill whatever is on your mind..." class="flex-1 w-full bg-transparent resize-none focus:outline-none text-base md:text-lg leading-relaxed z-10 placeholder-neutral-500 font-sans"></textarea>
+
+        <div class="z-10 flex justify-between items-center cozy-text-muted text-xs border-t cozy-border pt-4 mt-2">
+          <span id="wordCounter">0 words</span>
+          <span class="flex items-center gap-1" id="autosaveStatus">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-500"></i>
+            <span>All changes saved</span>
+          </span>
+        </div>
+      </div>
+
+    </section>
+  </div>
 
           <textarea id="journalContent" oninput="updateWordCount()" placeholder="Click here and spill whatever is on your mind..." class="flex-1 w-full bg-transparent resize-none focus:outline-none text-base md:text-lg leading-relaxed z-10 placeholder-neutral-500 font-sans"></textarea>
 
@@ -1124,6 +1138,36 @@
       }
     }
 
+    let autosaveTimer = null;
+    function triggerAutosave() {
+      setAutosaveStatus('saving');
+      if (autosaveTimer) clearTimeout(autosaveTimer);
+      autosaveTimer = setTimeout(() => {
+        const titleInput = document.getElementById('entryTitleInput') ? document.getElementById('entryTitleInput').value.trim() : '';
+        const content = document.getElementById('journalContent') ? document.getElementById('journalContent').value : '';
+        
+        // If there's an active journal entry draft, update and save it
+        if (content.trim() || titleInput) {
+          saveCurrentEntry(true);
+        } else {
+          // Otherwise, just update theme, profile and settings to cookies & local storage
+          saveToLocalStorage();
+        }
+        setAutosaveStatus('saved');
+      }, 1200); // 1.2s delay keeps the typing responsive and saves on your pause
+    }
+
+    function setAutosaveStatus(status) {
+      const statusEl = document.getElementById('autosaveStatus');
+      if (!statusEl) return;
+      if (status === 'saving') {
+        statusEl.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-amber-500 animate-spin"></i> <span>Saving changes...</span>`;
+      } else if (status === 'saved') {
+        statusEl.innerHTML = `<i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-500"></i> <span>All changes saved</span>`;
+      }
+      lucide.createIcons();
+    }
+
     // PROMPTS RENDERING & FILTERS
     function filterPrompts(category) {
       state.activePromptCategory = category;
@@ -1280,6 +1324,7 @@
       if (label) {
         label.textContent = `${emoji} ${MOOD_DESCRIPTIONS[emoji] || ''}`;
       }
+      triggerAutosave();
     }
 
     function setEnergy(value) {
@@ -1292,6 +1337,7 @@
           btn.className = "energy-btn w-7 h-7 text-[10px] font-bold flex items-center justify-center rounded transition-all hover:bg-neutral-800/40";
         }
       });
+      triggerAutosave();
     }
 
     function syncActiveEntryToUI() {
@@ -1320,6 +1366,7 @@
       } else {
         guide.classList.add('hidden');
       }
+      triggerAutosave();
     }
 
     function saveCurrentEntry(silent = false) {
@@ -1664,6 +1711,7 @@
           cardAnswersList.innerHTML = `<p class="text-neutral-400 italic font-serif">Fill out the questionnaire on the left to pin answers onto your Portrait Card...</p>`;
         }
       }
+      triggerAutosave();
     }
 
     function saveProfileData() {
