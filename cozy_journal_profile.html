@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cozy Query - Private Self-Discovery & Journal</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Playfair Display for headers, Inter & Nunito for comfortable reading -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Nunito', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+            mono: ['Space Grotesk', 'monospace'],
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.2s ease-out forwards',
+            'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            'pulse-gentle': 'pulseGentle 3s ease-in-out infinite',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(12px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' },
+            },
+            pulseGentle: {
+              '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+              '50%': { opacity: '0.9', transform: 'scale(1.015)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style type="text/css">
+    /* Theme definitions - Cozy Palette Variables */
+    :root {
+      /* Theme 1: Midnight Brew (Default Darkmode) */
+      --bg-main: #12161a;
+      --bg-panel: #1a2126;
+      --bg-panel-hover: #222c33;
+      --border-cozy: #2d3942;
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent: #f59e0b; /* Amber warm light */
+      --accent-hover: #d97706;
+      --accent-soft: rgba(245, 158, 11, 0.12);
+      --input-bg: #151b1f;
+      --scroll-thumb: #334155;
+    }
+
+    /* Forest Cabin */
+    [data-theme="forest-cabin"] {
+      --bg-main: #131c15;
+      --bg-panel: #1a291f;
+      --bg-panel-hover: #243a2c;
+      --border-cozy: #2c4433;
+      --text-main: #ecf3ee;
+      --text-muted: #a3b899;
+      --accent: #86efac; /* Minty sage */
+      --accent-hover: #4ade80;
+      --accent-soft: rgba(134, 239, 172, 0.12);
+      --input-bg: #101712;
+      --scroll-thumb: #3d5a45;
+    }
+
+    /* Pumpkin Spice */
+    [data-theme="pumpkin-spice"] {
+      --bg-main: #1c1412;
+      --bg-panel: #291d19;
+      --bg-panel-hover: #3a2923;
+      --border-cozy: #44322b;
+      --text-main: #fcf6f4;
+      --text-muted: #c8b1a6;
+      --accent: #ff8a65; /* Terracotta orange */
+      --accent-hover: #ff7043;
+      --accent-soft: rgba(255, 138, 101, 0.12);
+      --input-bg: #17100e;
+      --scroll-thumb: #563f36;
+    }
+
+    /* Chai Latte (Cozy Light Warmth) */
+    [data-theme="chai-latte"] {
+      --bg-main: #fcf9f5;
+      --bg-panel: #f3ece3;
+      --bg-panel-hover: #e9decb;
+      --border-cozy: #ded0b6;
+      --text-main: #3e322b;
+      --text-muted: #7d6b5e;
+      --accent: #b08968; /* Cocoa warm brown */
+      --accent-hover: #9c6644;
+      --accent-soft: rgba(176, 137, 104, 0.12);
+      --input-bg: #faf7f2;
+      --scroll-thumb: #cdbaa8;
+    }
+
+    /* Lavender Mist */
+    [data-theme="lavender-mist"] {
+      --bg-main: #13111c;
+      --bg-panel: #1c1929;
+      --bg-panel-hover: #27223a;
+      --border-cozy: #322b4a;
+      --text-main: #f1eff7;
+      --text-muted: #b4acc5;
+      --accent: #c084fc; /* Lavender bloom */
+      --accent-hover: #a855f7;
+      --accent-soft: rgba(192, 132, 252, 0.12);
+      --input-bg: #100e17;
+      --scroll-thumb: #453c66;
+    }
+
+    /* Ocean Breeze */
+    [data-theme="ocean-breeze"] {
+      --bg-main: #0f171e;
+      --bg-panel: #16222d;
+      --bg-panel-hover: #1e2f3e;
+      --border-cozy: #293d4f;
+      --text-main: #ecf3f8;
+      --text-muted: #9ab4cb;
+      --accent: #38bdf8; /* Deep-water blue */
+      --accent-hover: #0ea5e9;
+      --accent-soft: rgba(56, 189, 248, 0.12);
+      --input-bg: #0c1218;
+      --scroll-thumb: #37536d;
+    }
+
+    /* Peppermint Tea */
+    [data-theme="peppermint-tea"] {
+      --bg-main: #f0f7f4;
+      --bg-panel: #e2ede8;
+      --bg-panel-hover: #d2e2db;
+      --border-cozy: #c0d8cd;
+      --text-main: #233b31;
+      --text-muted: #5e7d70;
+      --accent: #2d8a6b; /* Warm botanical sage */
+      --accent-hover: #1f644d;
+      --accent-soft: rgba(45, 138, 107, 0.12);
+      --input-bg: #ebf3ef;
+      --scroll-thumb: #afd0c1;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      transition: background-color 0.3s ease, color 0.3s ease;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .cozy-panel {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-cozy);
+    }
+
+    .cozy-panel-interactive:hover {
+      background-color: var(--bg-panel-hover);
+    }
+
+    .cozy-border {
+      border-color: var(--border-cozy);
+    }
+
+    .cozy-text-muted {
+      color: var(--text-muted);
+    }
+
+    .cozy-accent {
+      color: var(--accent);
+    }
+
+    .cozy-accent-bg {
+      background-color: var(--accent);
+    }
+
+    .cozy-accent-bg-soft {
+      background-color: var(--accent-soft);
+    }
+
+    .cozy-accent-hover:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .cozy-input {
+      background-color: var(--input-bg);
+      border: 1px solid var(--border-cozy);
+      color: var(--text-main);
+    }
+    .cozy-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-soft);
+    }
+
+    /* Style Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--scroll-thumb);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent);
+    }
+
+    /* Hide default scrollbars for beautiful aesthetics */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col antialiased">
+
+  <!-- TOP HEADER -->
+  <header class="cozy-panel cozy-border border-b px-6 py-4 flex flex-wrap justify-between items-center gap-4 z-10 shrink-0">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl cozy-accent-bg-soft flex items-center justify-center text-amber-500 cozy-accent">
+        <i data-lucide="coffee" class="w-5 h-5 animate-pulse-gentle"></i>
+      </div>
+      <div>
+        <h1 class="font-serif text-2xl font-bold tracking-tight">Cozy Query</h1>
+        <p class="text-xs cozy-text-muted tracking-wide flex items-center gap-1">
+          <i data-lucide="lock" class="w-3 h-3"></i> Fully Encrypted local-only headspace
+        </p>
+      </div>
+    </div>
+
+    <!-- Active Theme + Tabs Controls -->
+    <div class="flex items-center gap-3 flex-wrap">
+      
+      <!-- Theme Switcher dropdown -->
+      <div class="relative inline-block text-left" id="themeContainer">
+        <button id="themeButton" class="cozy-input rounded-xl px-3 py-2 text-sm flex items-center gap-2 hover:cozy-panel-interactive transition-colors">
+          <i data-lucide="palette" class="w-4 h-4 cozy-accent"></i>
+          <span id="activeThemeName">Midnight Brew</span>
+          <i data-lucide="chevron-down" class="w-3 h-3"></i>
+        </button>
+        <div id="themeDropdown" class="hidden absolute right-0 mt-2 w-56 rounded-xl cozy-panel cozy-border shadow-2xl z-50 p-2 space-y-1">
+          <button onclick="setTheme('midnight-brew')" class="w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between hover:cozy-panel-interactive">
+            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#1a2126] border border-amber-500"></span> Midnight Brew</span>
+            <span class="text-xs px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">Default Dark</span>
+          </button>
+          <button onclick="setTheme('forest-cabin')" class="w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 hover:cozy-panel-interactive">
+            <span class="w-3 h-3 rounded-full bg-[#1a291f] border border-green-400"></span> Forest Cabin
+          </button>
+          <button onclick="setTheme('pumpkin-spice')" class="w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 hover:cozy-panel-interactive">
+            <span class="w-3 h-3 rounded-full bg-[#291d19] border border-orange-400"></span> Pumpkin Spice
+          </button>
+          <button onclick="setTheme('chai-latte')" class="w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 hover:cozy-panel-interactive">
+            <span class="w-3 h-3 rounded-full bg-[#f3ece3] border border-[#b08968]"></span> Chai Latte (Light)
+          </button>
+          <button onclick="setTheme('lavender-mist')" class="w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 hover:cozy-panel-interactive">
+            <span class="w-3 h-3 rounded-full bg-[#1c1929] border border-purple-400"></span> Lavender Mist
+          </button>
+          <button onclick="setTheme('ocean-breeze')" class="w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 hover:cozy-panel-interactive">
+            <span class="w-3 h-3 rounded-full bg-[#16222d] border border-sky-400"></span> Ocean Breeze
+          </button>
+          <button onclick="setTheme('peppermint-tea')" class="w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 hover:cozy-panel-interactive">
+            <span class="w-3 h-3 rounded-full bg-[#e2ede8] border border-emerald-700"></span> Peppermint Tea (Light)
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Navigation Buttons -->
+      <div class="flex bg-neutral-900/40 p-1.5 rounded-xl border cozy-border">
+        <button id="tabBtnJournal" onclick="switchTab('journal')" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 bg-amber-500 text-neutral-950 shadow-md">
+          <i data-lucide="book-open" class="w-4 h-4"></i> Journal & Inflow
+        </button>
+        <button id="tabBtnProfile" onclick="switchTab('profile')" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 text-inherit hover:cozy-text-muted">
+          <i data-lucide="user" class="w-4 h-4"></i> Personal Codex Profile
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- APP LAYOUT -->
+  <main class="flex-1 overflow-hidden flex flex-row relative">
+    
+    <!-- NOTIFICATION POPUP -->
+    <div id="toastNotification" class="hidden fixed bottom-6 right-6 px-4 py-3 rounded-xl cozy-panel cozy-border shadow-2xl flex items-center gap-2 text-sm max-w-sm border-l-4 border-l-amber-500 animate-slide-up z-50">
+      <i data-lucide="check-circle-2" class="w-5 h-5 text-amber-500"></i>
+      <span id="toastMessage">Changes Auto-saved locally!</span>
+    </div>
+
+    <!-- MAIN TAB: JOURNALING -->
+    <div id="tabJournal" class="flex-1 flex flex-row overflow-hidden w-full">
+      
+      <!-- LEFT COLUMN: SIDEBAR (Question Bank & Past Entries list) -->
+      <aside class="w-80 border-r cozy-border flex flex-col shrink-0 h-full hidden lg:flex">
+        <!-- Sub navigation for sidebar tabs -->
+        <div class="flex cozy-border border-b">
+          <button id="sideTabBtnPrompts" onclick="switchSideTab('prompts')" class="flex-1 py-3 text-xs uppercase tracking-wider font-bold border-b-2 border-amber-500 cozy-accent text-center">
+            Prompts Bank
+          </button>
+          <button id="sideTabBtnHistory" onclick="switchSideTab('history')" class="flex-1 py-3 text-xs uppercase tracking-wider font-bold border-b-2 border-transparent text-center cozy-text-muted hover:text-inherit">
+            Saved Entries (<span id="historyCount">0</span>)
+          </button>
+        </div>
+
+        <!-- SIDEBAR CONTENT CONTAINER -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+          
+          <!-- SUBTAB: PROMPTS BANK -->
+          <div id="sideContentPrompts" class="space-y-4 block">
+            <div class="space-y-2">
+              <label class="text-xs uppercase tracking-widest font-bold cozy-text-muted">Prompt Category</label>
+              <div class="grid grid-cols-2 gap-1.5">
+                <button onclick="filterPrompts('All')" class="category-btn px-2.5 py-1.5 rounded-lg text-xs text-center border cozy-border transition-colors active bg-amber-500/20 text-inherit font-semibold">
+                  All Prompts
+                </button>
+                <button onclick="filterPrompts('Identity')" class="category-btn px-2.5 py-1.5 rounded-lg text-xs text-center border cozy-border transition-colors text-inherit">
+                  Identity
+                </button>
+                <button onclick="filterPrompts('Values')" class="category-btn px-2.5 py-1.5 rounded-lg text-xs text-center border cozy-border transition-colors text-inherit">
+                  Core Values
+                </button>
+                <button onclick="filterPrompts('Career')" class="category-btn px-2.5 py-1.5 rounded-lg text-xs text-center border cozy-border transition-colors text-inherit">
+                  Career
+                </button>
+                <button onclick="filterPrompts('Relationships')" class="category-btn px-2.5 py-1.5 rounded-lg text-xs text-center border cozy-border transition-colors text-inherit">
+                  Relationships
+                </button>
+                <button onclick="filterPrompts('Inner Child')" class="category-btn px-2.5 py-1.5 rounded-lg text-xs text-center border cozy-border transition-colors text-inherit">
+                  Inner Child
+                </button>
+              </div>
+            </div>
+
+            <!-- Search box for Prompts -->
+            <div class="relative">
+              <input type="text" id="promptSearchInput" oninput="searchPrompts()" placeholder="Search through prompts..." class="w-full cozy-input rounded-xl px-3 py-2 pl-9 text-xs">
+              <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-3 cozy-text-muted"></i>
+            </div>
+
+            <div class="space-y-2.5" id="promptsList">
+              <!-- Prompt cards will be dynamically rendered here -->
+            </div>
+          </div>
+
+          <!-- SUBTAB: HISTORY -->
+          <div id="sideContentHistory" class="space-y-4 hidden">
+            <!-- Search past entries -->
+            <div class="relative">
+              <input type="text" id="historySearchInput" oninput="searchHistory()" placeholder="Search entries..." class="w-full cozy-input rounded-xl px-3 py-2 pl-9 text-xs">
+              <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-3 cozy-text-muted"></i>
+            </div>
+
+            <div class="space-y-2.5" id="historyList">
+              <!-- Past journal cards will dynamically list here -->
+            </div>
+          </div>
+
+        </div>
+      </aside>
+
+      <!-- CENTER COLUMN: WRITING STATION -->
+      <section class="flex-1 flex flex-col h-full bg-neutral-900/10">
+        
+        <!-- Writing Area Header & Control Panel -->
+        <div class="p-4 md:p-6 cozy-border border-b flex flex-wrap justify-between items-center gap-4">
+          <div class="flex items-center gap-3">
+            <!-- Mobile sidebar toggle trigger -->
+            <button onclick="toggleMobileSidebar()" class="lg:hidden p-2.5 rounded-xl cozy-panel cozy-border hover:cozy-panel-interactive transition-colors">
+              <i data-lucide="menu" class="w-5 h-5"></i>
+            </button>
+            <div>
+              <input type="text" id="entryTitleInput" placeholder="Untitled Self-Reflection..." class="font-serif text-lg md:text-xl font-bold bg-transparent border-b border-transparent hover:border-dashed hover:border-neutral-500 focus:border-solid focus:border-amber-500 focus:outline-none py-1 transition-all max-w-sm md:w-80">
+              <p class="text-xs cozy-text-muted" id="entryDateString">Auto-saving to Local Storage</p>
+            </div>
+          </div>
+
+          <!-- Action and Tools row -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="createNewEntry()" class="px-3.5 py-2 rounded-xl border cozy-border text-xs font-semibold flex items-center gap-1.5 hover:cozy-panel-interactive transition-colors">
+              <i data-lucide="plus" class="w-4 h-4"></i> New Entry
+            </button>
+            <button onclick="saveCurrentEntry()" class="px-4 py-2 rounded-xl cozy-accent-bg text-neutral-950 text-xs font-bold flex items-center gap-1.5 cozy-accent-hover transition-colors shadow-sm">
+              <i data-lucide="save" class="w-4 h-4"></i> Save Journal
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Mood & Energy selection strip -->
+        <div class="px-4 md:px-6 py-3 cozy-border border-b flex flex-wrap items-center gap-6 text-sm">
+          <!-- Mood -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold tracking-wide uppercase cozy-text-muted">Mood:</span>
+            <div class="flex items-center gap-1 bg-neutral-950/20 p-1 rounded-lg border cozy-border">
+              <button onclick="setMood('😊')" class="mood-btn w-7 h-7 flex items-center justify-center rounded transition-colors hover:bg-neutral-800/60" title="Joyful">😊</button>
+              <button onclick="setMood('🥺')" class="mood-btn w-7 h-7 flex items-center justify-center rounded transition-colors hover:bg-neutral-800/60" title="Vulnerable">🥺</button>
+              <button onclick="setMood('☕')" class="mood-btn w-7 h-7 flex items-center justify-center rounded transition-colors hover:bg-neutral-800/60" title="Reflective">☕</button>
+              <button onclick="setMood('🍂')" class="mood-btn w-7 h-7 flex items-center justify-center rounded transition-colors hover:bg-neutral-800/60" title="Pensive/Grounded">🍂</button>
+              <button onclick="setMood('💤')" class="mood-btn w-7 h-7 flex items-center justify-center rounded transition-colors hover:bg-neutral-800/60" title="Tired">💤</button>
+              <button onclick="setMood('🌩️')" class="mood-btn w-7 h-7 flex items-center justify-center rounded transition-colors hover:bg-neutral-800/60" title="Overwhelmed">🌩️</button>
+            </div>
+            <span id="activeMoodLabel" class="text-xs font-semibold">☕ Reflective</span>
+          </div>
+
+          <!-- Energy level -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold tracking-wide uppercase cozy-text-muted">Energy:</span>
+            <div class="flex items-center gap-1 bg-neutral-950/20 p-1 rounded-lg border cozy-border">
+              <button onclick="setEnergy(1)" class="energy-btn w-7 h-7 text-xs font-bold flex items-center justify-center rounded transition-colors hover:bg-neutral-800/60" title="Low Energy">1</button>
+              <button onclick="setEnergy(2)" class="energy-btn w-7 h-7 text-xs font-bold flex items-center justify-center rounded transition-colors hover:bg-neutral-800/60" title="Calm">2</button>
+              <button onclick="setEnergy(3)" class="energy-btn w-7 h-7 text-xs font-bold flex items-center justify-center rounded transition-colors hover:bg-neutral-800/60" title="Balanced">3</button>
+              <button onclick="setEnergy(4)" class="energy-btn w-7 h-7 text-xs font-bold flex items-center justify-center rounded transition-colors hover:bg-neutral-800/60" title="Engaged">4</button>
+              <button onclick="setEnergy(5)" class="energy-btn w-7 h-7 text-xs font-bold flex items-center justify-center rounded transition-colors hover:bg-neutral-800/60" title="Highly Vibrant">5</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Journal Info-Dump Area -->
+        <div class="flex-1 p-4 md:p-6 overflow-hidden flex flex-col relative">
+          <!-- Overlay guide on how to paste prompts or write freely -->
+          <div id="writingPlaceholderGuide" class="absolute pointer-events-none inset-0 flex flex-col items-center justify-center opacity-10 p-6 text-center select-none">
+            <i data-lucide="feather" class="w-16 h-16 mb-4"></i>
+            <h3 class="font-serif text-xl font-semibold">This is your safe mental space.</h3>
+            <p class="text-xs max-w-sm mt-1">Let your raw thoughts flow completely unrestricted. No judgement, just you exploring your inner world.</p>
+          </div>
+
+          <textarea id="journalContent" oninput="updateWordCount()" placeholder="Begin your raw info-dump here... Feel free to paste discovery questions from the sidebar or click any button to inject prompts directly." class="flex-1 w-full bg-transparent resize-none focus:outline-none text-base md:text-lg leading-relaxed z-10 placeholder-neutral-500 font-sans"></textarea>
+
+          <!-- Interactive word counter and visual helper -->
+          <div class="z-10 flex justify-between items-center cozy-text-muted text-xs border-t cozy-border pt-4 mt-2">
+            <span id="wordCounter">0 words</span>
+            <span class="flex items-center gap-1"><i data-lucide="eye" class="w-3.5 h-3.5 text-emerald-500"></i> No cloud data - 100% private to you</span>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+    <!-- MAIN TAB: PERSONAL CODEX PROFILE CARD (CHARACTER SHEET FOR REAL LIFE) -->
+    <div id="tabProfile" class="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 hidden">
+      
+      <!-- Profile Header / Banner -->
+      <div class="cozy-panel cozy-border rounded-2xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-neutral-950 font-serif text-2xl font-bold" id="profileInitials">
+            ME
+          </div>
+          <div>
+            <h2 class="font-serif text-2xl md:text-3xl font-bold" id="profileDisplayName">Your Self-Discovery Codex</h2>
+            <p class="text-sm cozy-text-muted">A living character-sheet mapping your unique human footprint.</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <button onclick="resetProfileForm()" class="px-4 py-2 rounded-xl border cozy-border hover:cozy-panel-interactive text-xs font-semibold flex items-center gap-1.5 transition-all">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset Codex
+          </button>
+          <button onclick="saveProfileData()" class="px-5 py-2 rounded-xl cozy-accent-bg text-neutral-950 text-xs font-bold hover:cozy-accent-hover flex items-center gap-1.5 transition-all shadow">
+            <i data-lucide="save" class="w-4 h-4"></i> Save Codex Updates
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Profile Formulation Grid -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        
+        <!-- Two Columns of Questionnaire inputs -->
+        <div class="xl:col-span-2 space-y-6">
+          
+          <!-- Category A: Identity Pillars -->
+          <div class="cozy-panel cozy-border rounded-2xl p-6 space-y-4">
+            <h3 class="font-serif text-lg font-bold cozy-accent flex items-center gap-2 border-b cozy-border pb-2">
+              <i data-lucide="sparkles" class="w-5 h-5"></i> 1. Core Identity Pillars
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-1.5">
+                <label class="text-xs uppercase font-bold tracking-wider cozy-text-muted">Full True Name</label>
+                <input type="text" id="profName" oninput="updateProfileRealtime()" placeholder="What do you call yourself?" class="w-full cozy-input rounded-xl px-3 py-2 text-sm">
+              </div>
+              
+              <div class="grid grid-cols-2 gap-2">
+                <div class="space-y-1.5">
+                  <label class="text-xs uppercase font-bold tracking-wider cozy-text-muted">Current Age</label>
+                  <input type="number" id="profAge" oninput="updateProfileRealtime()" placeholder="Age" class="w-full cozy-input rounded-xl px-3 py-2 text-sm">
+                </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs uppercase font-bold tracking-wider cozy-text-muted">Pronouns</label>
+                  <input type="text" id="profPronouns" oninput="updateProfileRealtime()" placeholder="They/Them" class="w-full cozy-input rounded-xl px-3 py-2 text-sm">
+                </div>
+              </div>
+
+              <div class="space-y-1.5">
+                <label class="text-xs uppercase font-bold tracking-wider cozy-text-muted">Romantic / Sexuality Spectrum</label>
+                <input type="text" id="profSexuality" oninput="updateProfileRealtime()" placeholder="e.g., Queer, Pansexual, Cozy Neutral" class="w-full cozy-input rounded-xl px-3 py-2 text-sm">
+              </div>
+
+              <div class="space-y-1.5">
+                <label class="text-xs uppercase font-bold tracking-wider cozy-text-muted">Astrology & Element</label>
+                <input type="text" id="profZodiac" oninput="updateProfileRealtime()" placeholder="e.g., Scorpio (Water)" class="w-full cozy-input rounded-xl px-3 py-2 text-sm">
+              </div>
+
+              <div class="space-y-1.5 md:col-span-2">
+                <label class="text-xs uppercase font-bold tracking-wider cozy-text-muted">A One-Sentence Personal Doctrine</label>
+                <input type="text" id="profDoctrine" oninput="updateProfileRealtime()" placeholder="A thesis statement for who you currently are..." class="w-full cozy-input rounded-xl px-3 py-2 text-sm">
+              </div>
+            </div>
+          </div>
+
+          <!-- Category B: Simple Pleasures & Senses -->
+          <div class="cozy-panel cozy-border rounded-2xl p-6 space-y-4">
+            <h3 class="font-serif text-lg font-bold cozy-accent flex items-center gap-2 border-b cozy-border pb-2">
+              <i data-lucide="cookie" class="w-5 h-5"></i> 2. Comforts & Simple Pleasures
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-1.5">
+                <label class="text-xs uppercase font-bold tracking-wider cozy-text-muted">Holy Grail Food & Meal</label>
+                <input type="text" id="profFavFood" oninput="updateProfileRealtime()" placeholder="Your ultimate comfort dish" class="w-full cozy-input rounded-xl px-3 py-2 text-sm">
+              </div>
+
+              <div class="space-y-1.5">
+                <label class="text-xs uppercase font-bold tracking-wider cozy-text-muted">Holy Grail Beverage</label>
+                <input type="text" id="profFavDrink" oninput="updateProfileRealtime()" placeholder="Warm tea, iced coffee, fresh water?" class="w-full cozy-input rounded-xl px-3 py-2 text-sm">
+              </div>
+
+              <div class="space-y-1.5">
+                <label class="text-xs uppercase font-bold tracking-wider cozy-text-muted">Ideal Micro-Environment</label>
+                <input type="text" id="profEnvironment" oninput="updateProfileRealtime()" placeholder="e.g., Rain against window pane, cabin woods" class="w-full cozy-input rounded-xl px-3 py-2 text-sm">
+              </div>
+
+              <div class="space-y-1.5">
+                <label class="text-xs uppercase font-bold tracking-wider cozy-text-muted">Comfort Media</label>
+                <input type="text" id="profMedia" oninput="updateProfileRealtime()" placeholder="Show, game, book or album you return to" class="w-full cozy-input rounded-xl px-3 py-2 text-sm">
+              </div>
+            </div>
+          </div>
+
+          <!-- Category C: Inside the Mind -->
+          <div class="cozy-panel cozy-border rounded-2xl p-6 space-y-4">
+            <h3 class="font-serif text-lg font-bold cozy-accent flex items-center gap-2 border-b cozy-border pb-2">
+              <i data-lucide="brain" class="w-5 h-5"></i> 3. Landscape of Mind & Spirit
+            </h3>
+            
+            <div class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                  <label class="text-xs uppercase font-bold tracking-wider cozy-text-muted">Superpower / Greatest Gift</label>
+                  <input type="text" id="profSuperpower" oninput="updateProfileRealtime()" placeholder="What comes inexplicably easily to you?" class="w-full cozy-input rounded-xl px-3 py-2 text-sm">
+                </div>
+
+                <div class="space-y-1.5">
+                  <label class="text-xs uppercase font-bold tracking-wider cozy-text-muted">An Unresolved Mystery of Yours</label>
+                  <input type="text" id="profMystery" oninput="updateProfileRealtime()" placeholder="An inner paradox or pattern you study" class="w-full cozy-input rounded-xl px-3 py-2 text-sm">
+                </div>
+              </div>
+
+              <div class="space-y-1.5">
+                <label class="text-xs uppercase font-bold tracking-wider cozy-text-muted">What does a "Perfect Rest Day" look like for you?</label>
+                <textarea id="profPerfectDay" oninput="updateProfileRealtime()" placeholder="Describe it step by step, keeping it grounded..." class="w-full cozy-input rounded-xl px-3 py-2 text-sm h-24 resize-none"></textarea>
+              </div>
+
+              <div class="space-y-1.5">
+                <label class="text-xs uppercase font-bold tracking-wider cozy-text-muted">Your Core Core Value</label>
+                <input type="text" id="profCoreValue" oninput="updateProfileRealtime()" placeholder="e.g., Absolute Autonomy, Connection, Truth, Play" class="w-full cozy-input rounded-xl px-3 py-2 text-sm">
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Dynamic Output Column: Personal Codex Card Preview -->
+        <div class="space-y-6">
+          <div class="sticky top-6">
+            <div class="cozy-panel cozy-border rounded-2xl p-6 shadow-2xl relative overflow-hidden bg-neutral-900/40 border-2 border-dashed">
+              
+              <!-- Subtle atmospheric decorative graphics -->
+              <div class="absolute -right-12 -top-12 w-32 h-32 rounded-full cozy-accent-bg-soft blur-2xl"></div>
+              <div class="absolute -left-12 -bottom-12 w-32 h-32 rounded-full cozy-accent-bg-soft blur-2xl"></div>
+
+              <div class="relative z-10 space-y-6">
+                <!-- Card Header -->
+                <div class="flex items-center justify-between border-b cozy-border pb-4">
+                  <div>
+                    <span class="text-[10px] tracking-widest uppercase cozy-accent bg-amber-500/10 px-2 py-0.5 rounded font-bold font-mono">Personal Codex Card</span>
+                    <h3 class="font-serif text-2xl font-bold mt-1" id="cardName">Me</h3>
+                    <p class="text-xs font-mono cozy-text-muted" id="cardPronouns">They/Them</p>
+                  </div>
+                  <div class="w-12 h-12 rounded-xl cozy-accent-bg-soft flex items-center justify-center text-xl" id="cardEmoji">
+                    👤
+                  </div>
+                </div>
+
+                <!-- Doctrine block quote -->
+                <div class="italic text-sm text-center font-serif px-4 py-2 bg-neutral-950/20 rounded-xl border cozy-border quote-text">
+                  "<span id="cardDoctrine">A work in progress, documenting the mysteries of self.</span>"
+                </div>
+
+                <!-- Core Stats grid -->
+                <div class="grid grid-cols-2 gap-4 text-xs">
+                  <div class="p-2.5 bg-neutral-950/20 rounded-xl border cozy-border space-y-0.5">
+                    <span class="cozy-text-muted font-bold uppercase tracking-wider block text-[10px]">Age</span>
+                    <span id="cardAge" class="font-bold">-</span>
+                  </div>
+                  <div class="p-2.5 bg-neutral-950/20 rounded-xl border cozy-border space-y-0.5">
+                    <span class="cozy-text-muted font-bold uppercase tracking-wider block text-[10px]">Sign & Element</span>
+                    <span id="cardZodiac" class="font-bold">-</span>
+                  </div>
+                  <div class="p-2.5 bg-neutral-950/20 rounded-xl border cozy-border space-y-0.5">
+                    <span class="cozy-text-muted font-bold uppercase tracking-wider block text-[10px]">Sexuality / Spectrum</span>
+                    <span id="cardSexuality" class="font-bold">-</span>
+                  </div>
+                  <div class="p-2.5 bg-neutral-950/20 rounded-xl border cozy-border space-y-0.5">
+                    <span class="cozy-text-muted font-bold uppercase tracking-wider block text-[10px]">Superpower</span>
+                    <span id="cardSuperpower" class="font-bold">-</span>
+                  </div>
+                </div>
+
+                <!-- Simple pleasures lists -->
+                <div class="space-y-3.5 border-t cozy-border pt-4 text-xs">
+                  <div>
+                    <h4 class="font-bold uppercase tracking-wider text-[10px] cozy-text-muted flex items-center gap-1.5 mb-1.5">
+                      <i data-lucide="heart" class="w-3 h-3 text-red-500"></i> Simple Comforts
+                    </h4>
+                    <ul class="space-y-1 list-disc list-inside text-neutral-300">
+                      <li>Fav Food: <span id="cardFavFood" class="font-semibold text-inherit">-</span></li>
+                      <li>Fav Drink: <span id="cardFavDrink" class="font-semibold text-inherit">-</span></li>
+                      <li>Ideal Micro-Environment: <span id="cardEnvironment" class="font-semibold text-inherit">-</span></li>
+                      <li>Comfort Media: <span id="cardMedia" class="font-semibold text-inherit">-</span></li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 class="font-bold uppercase tracking-wider text-[10px] cozy-text-muted flex items-center gap-1.5 mb-1.5">
+                      <i data-lucide="compass" class="w-3 h-3 text-cyan-500"></i> Core Directive
+                    </h4>
+                    <p class="text-neutral-300 leading-relaxed">
+                      Guided by <strong id="cardCoreValue" class="cozy-accent font-semibold">-</strong>, looking closely at: <span id="cardMystery" class="font-serif italic">-</span>
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 class="font-bold uppercase tracking-wider text-[10px] cozy-text-muted flex items-center gap-1.5 mb-1.5">
+                      <i data-lucide="sun" class="w-3 h-3 text-amber-500"></i> Perfect Rest Concept
+                    </h4>
+                    <p id="cardPerfectDay" class="text-neutral-300 italic max-h-24 overflow-y-auto pr-1">
+                      No description written yet. Describe how you recover energy...
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Export utility for profile -->
+            <div class="mt-4 p-4 rounded-xl cozy-panel cozy-border flex items-center justify-between text-xs">
+              <span class="cozy-text-muted">Want to copy this profile as text?</span>
+              <button onclick="copyProfileToClipboard()" class="px-3 py-1.5 rounded-lg bg-neutral-950/40 border cozy-border hover:cozy-panel-interactive font-semibold flex items-center gap-1.5 transition-all">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Profile Raw Text
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- MOBILE SIDEBAR DRAWER OVERLAY -->
+  <div id="mobileSidebarDrawer" class="hidden fixed inset-0 bg-neutral-950/80 z-40 transition-opacity lg:hidden">
+    <div class="w-80 h-full cozy-panel border-r cozy-border flex flex-col p-4 space-y-4 animate-fade-in relative">
+      <button onclick="toggleMobileSidebar()" class="absolute top-4 right-4 p-2 rounded-lg hover:cozy-panel-interactive cozy-text-muted">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="font-serif text-lg font-bold border-b cozy-border pb-2 mt-2">Prompts & History</div>
+
+      <!-- Duplicate navigation for Mobile sidebar -->
+      <div class="flex cozy-border border-b text-xs">
+        <button id="mobileSideBtnPrompts" onclick="switchSideTabMobile('prompts')" class="flex-1 py-2 text-center border-b-2 border-amber-500 cozy-accent font-semibold">
+          Prompts
+        </button>
+        <button id="mobileSideBtnHistory" onclick="switchSideTabMobile('history')" class="flex-1 py-2 text-center border-b-2 border-transparent cozy-text-muted">
+          History (<span id="mobileHistoryCount">0</span>)
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto space-y-4 pt-2">
+        <!-- Prompts Block -->
+        <div id="mobileSideContentPrompts" class="space-y-4">
+          <div class="relative">
+            <input type="text" id="mobilePromptSearch" oninput="searchPromptsMobile()" placeholder="Search..." class="w-full cozy-input rounded-xl px-3 py-2 pl-9 text-xs">
+            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-3 cozy-text-muted"></i>
+          </div>
+          <div class="space-y-2" id="mobilePromptsList"></div>
+        </div>
+        
+        <!-- History Block -->
+        <div id="mobileSideContentHistory" class="space-y-4 hidden">
+          <div class="relative">
+            <input type="text" id="mobileHistorySearch" oninput="searchHistoryMobile()" placeholder="Search past entries..." class="w-full cozy-input rounded-xl px-3 py-2 pl-9 text-xs">
+            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-3 cozy-text-muted"></i>
+          </div>
+          <div class="space-y-2" id="mobileHistoryList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // SELF-DISCOVERY QUESTIONS POOL
+    const PROMPTS_BANK = [
+      // Identity
+      { id: 1, category: "Identity", text: "What parts of my personality am I currently over-emphasizing to feel accepted by others?" },
+      { id: 2, category: "Identity", text: "If I could strip away my profession, roles, and relational ties, who is actually looking out from inside these eyes?" },
+      { id: 3, category: "Identity", text: "Describe yourself as if you were a character in a book, emphasizing your flaws and charms equally." },
+      { id: 4, category: "Identity", text: "What is a major belief or opinion you held five years ago that makes you laugh or sigh now? How did it break?" },
+      { id: 5, category: "Identity", text: "How do I behave when I am completely alone versus in a crowded room? What does that bridge tell me?" },
+      
+      // Core Values
+      { id: 6, category: "Values", text: "If you had to pick one word to anchor your integrity for the next twelve months, what is it, and why does it matter?" },
+      { id: 7, category: "Values", text: "Think of someone you deeply admire or envy. What values do they radiate that you feel you lack?" },
+      { id: 8, category: "Values", text: "Recall a time you said 'no' when it felt terribly difficult. What value were you defending in that single moment?" },
+      { id: 9, category: "Values", text: "How does my daily schedule reflect my actual priorities? Is there a gap between what I say is important and what I actually do?" },
+      
+      // Career
+      { id: 10, category: "Career", text: "If money were no longer a survival metric, what problems in the world would I still actively want to solve?" },
+      { id: 11, category: "Career", text: "What is my absolute relationship with failure? Does it paralyze me, or am I able to treat it like data?" },
+      { id: 12, category: "Career", text: "Am I working to live, or am I building a specific identity out of my work? When does that boundaries blur?" },
+      { id: 13, category: "Career", text: "What tasks or activities do I do that trigger complete, effortless Flow State where I lose all sense of time?" },
+
+      // Relationships
+      { id: 14, category: "Relationships", text: "What is a boundary I want to enforce but fear setting because of potential reactions?" },
+      { id: 15, category: "Relationships", text: "Describe the pattern of friend or partner you historically attract. What are they mirroring for you?" },
+      { id: 16, category: "Relationships", text: "Am I currently expecting anyone in my life to save me or complete a missing piece of my puzzle?" },
+      { id: 17, category: "Relationships", text: "Who in my immediate circle makes me feel the most calm, energized, and clear, and who leaves me feeling drained?" },
+
+      // Inner Child
+      { id: 18, category: "Inner Child", text: "What was your favorite imaginative game as a child? When was the last time you let yourself play with that specific feeling?" },
+      { id: 19, category: "Inner Child", text: "If eight-year-old you were looking at your life today, what would they be thrilled about, and what would they find confusing?" },
+      { id: 20, category: "Inner Child", text: "What was a major unmet emotional need of yours growing up? How do you seek or provide that to yourself today?" },
+      { id: 21, category: "Inner Child", text: "Write down three things you were deeply afraid of as a child. Are any of those ghosts still active?" }
+    ];
+
+    // APPLICATION STATE
+    let state = {
+      theme: 'midnight-brew',
+      activeTab: 'journal', // 'journal' or 'profile'
+      activeSideTab: 'prompts', // 'prompts' or 'history'
+      activePromptCategory: 'All',
+      searchPromptTerm: '',
+      searchHistoryTerm: '',
+      
+      // Active Journal Entry data
+      currentEntryId: null, // If null, this is an unsaved draft
+      currentEntryTitle: '',
+      currentEntryContent: '',
+      currentEntryMood: '☕',
+      currentEntryEnergy: 3,
+      currentEntryDate: '',
+
+      // All saved entries
+      entries: [],
+
+      // Character sheet profile data
+      profile: {
+        name: '',
+        age: '',
+        pronouns: '',
+        sexuality: '',
+        zodiac: '',
+        doctrine: '',
+        favFood: '',
+        favDrink: '',
+        environment: '',
+        media: '',
+        superpower: '',
+        mystery: '',
+        perfectDay: '',
+        coreValue: ''
+      }
+    };
+
+    // SYSTEM THEME LIST FOR NAMES
+    const THEME_NAMES = {
+      'midnight-brew': 'Midnight Brew',
+      'forest-cabin': 'Forest Cabin',
+      'pumpkin-spice': 'Pumpkin Spice',
+      'chai-latte': 'Chai Latte',
+      'lavender-mist': 'Lavender Mist',
+      'ocean-breeze': 'Ocean Breeze',
+      'peppermint-tea': 'Peppermint Tea'
+    };
+
+    const MOOD_DESCRIPTIONS = {
+      '😊': 'Joyful',
+      '🥺': 'Vulnerable',
+      '☕': 'Reflective',
+      '🍂': 'Pensive/Grounded',
+      '💤': 'Tired',
+      '🌩️': 'Overwhelmed'
+    };
+
+    // INITIALIZATION
+    window.onload = function() {
+      // Load saved state from Local Storage
+      loadFromLocalStorage();
+      
+      // Render components
+      applyThemeToHTML();
+      renderPrompts();
+      renderHistory();
+      renderProfileForm();
+      syncActiveEntryToUI();
+      
+      // Lucide initialize
+      lucide.createIcons();
+
+      // Setup drop-down listener
+      document.addEventListener('click', function(e) {
+        const themeBtn = document.getElementById('themeButton');
+        const themeDropdown = document.getElementById('themeDropdown');
+        if (themeBtn && !themeBtn.contains(e.target)) {
+          themeDropdown.classList.add('hidden');
+        }
+      });
+
+      // Show theme trigger hook
+      const themeBtn = document.getElementById('themeButton');
+      if (themeBtn) {
+        themeBtn.onclick = function(e) {
+          e.stopPropagation();
+          const themeDropdown = document.getElementById('themeDropdown');
+          themeDropdown.classList.toggle('hidden');
+        };
+      }
+    };
+
+    // THEME HANDLING
+    function setTheme(themeKey) {
+      state.theme = themeKey;
+      applyThemeToHTML();
+      saveToLocalStorage();
+      showToast(`Cozy theme shifted to: ${THEME_NAMES[themeKey]}`);
+      document.getElementById('themeDropdown').classList.add('hidden');
+    }
+
+    function applyThemeToHTML() {
+      document.documentElement.setAttribute('data-theme', state.theme);
+      const activeSpan = document.getElementById('activeThemeName');
+      if (activeSpan) {
+        activeSpan.textContent = THEME_NAMES[state.theme] || 'Midnight Brew';
+      }
+    }
+
+    // TAB MANAGEMENT
+    function switchTab(tabName) {
+      state.activeTab = tabName;
+      const tabJ = document.getElementById('tabJournal');
+      const tabP = document.getElementById('tabProfile');
+      
+      const btnJ = document.getElementById('tabBtnJournal');
+      const btnP = document.getElementById('tabBtnProfile');
+
+      if (tabName === 'journal') {
+        tabJ.classList.remove('hidden');
+        tabP.classList.add('hidden');
+        
+        btnJ.className = "px-4 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 bg-amber-500 text-neutral-950 shadow-md";
+        btnP.className = "px-4 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 text-inherit hover:cozy-text-muted";
+      } else {
+        tabJ.classList.add('hidden');
+        tabP.classList.remove('hidden');
+        
+        btnP.className = "px-4 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 bg-amber-500 text-neutral-950 shadow-md";
+        btnJ.className = "px-4 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 text-inherit hover:cozy-text-muted";
+        
+        // Ensure profile renders perfectly upon viewing
+        renderProfileForm();
+        updateProfileRealtime();
+      }
+    }
+
+    // SIDEBAR SUBTAB MANAGEMENT
+    function switchSideTab(tab) {
+      state.activeSideTab = tab;
+      const btnPrompts = document.getElementById('sideTabBtnPrompts');
+      const btnHistory = document.getElementById('sideTabBtnHistory');
+      const contentPrompts = document.getElementById('sideContentPrompts');
+      const contentHistory = document.getElementById('sideContentHistory');
+
+      if (tab === 'prompts') {
+        btnPrompts.className = "flex-1 py-3 text-xs uppercase tracking-wider font-bold border-b-2 border-amber-500 cozy-accent text-center";
+        btnHistory.className = "flex-1 py-3 text-xs uppercase tracking-wider font-bold border-b-2 border-transparent text-center cozy-text-muted hover:text-inherit";
+        contentPrompts.classList.remove('hidden');
+        contentHistory.classList.add('hidden');
+      } else {
+        btnHistory.className = "flex-1 py-3 text-xs uppercase tracking-wider font-bold border-b-2 border-amber-500 cozy-accent text-center";
+        btnPrompts.className = "flex-1 py-3 text-xs uppercase tracking-wider font-bold border-b-2 border-transparent text-center cozy-text-muted hover:text-inherit";
+        contentHistory.classList.remove('hidden');
+        contentPrompts.classList.add('hidden');
+      }
+    }
+
+    // MOBILE DRAWER DRAWER SIDE TABS
+    function switchSideTabMobile(tab) {
+      const btnP = document.getElementById('mobileSideBtnPrompts');
+      const btnH = document.getElementById('mobileSideBtnHistory');
+      const contP = document.getElementById('mobileSideContentPrompts');
+      const contH = document.getElementById('mobileSideContentHistory');
+
+      if (tab === 'prompts') {
+        btnP.className = "flex-1 py-2 text-center border-b-2 border-amber-500 cozy-accent font-semibold";
+        btnH.className = "flex-1 py-2 text-center border-b-2 border-transparent cozy-text-muted";
+        contP.classList.remove('hidden');
+        contH.classList.add('hidden');
+      } else {
+        btnH.className = "flex-1 py-2 text-center border-b-2 border-amber-500 cozy-accent font-semibold";
+        btnP.className = "flex-1 py-2 text-center border-b-2 border-transparent cozy-text-muted";
+        contH.classList.remove('hidden');
+        contP.classList.add('hidden');
+      }
+    }
+
+    function toggleMobileSidebar() {
+      const drawer = document.getElementById('mobileSidebarDrawer');
+      drawer.classList.toggle('hidden');
+      if (!drawer.classList.contains('hidden')) {
+        renderPromptsMobile();
+        renderHistoryMobile();
+      }
+    }
+
+    // PROMPTS RENDERING & INTERACTION
+    function filterPrompts(category) {
+      state.activePromptCategory = category;
+      // Style changes
+      const buttons = document.querySelectorAll('.category-btn');
+      buttons.forEach(btn => {
+        if (btn.textContent.trim().toLowerCase().includes(category.toLowerCase()) || 
+           (category === 'All' && btn.textContent.trim() === 'All Prompts') ||
+           (category === 'Values' && btn.textContent.trim() === 'Core Values')) {
+          btn.className = "category-btn px-2.5 py-1.5 rounded-lg text-xs text-center border cozy-border transition-colors bg-amber-500/20 text-inherit font-semibold";
+        } else {
+          btn.className = "category-btn px-2.5 py-1.5 rounded-lg text-xs text-center border cozy-border transition-colors text-inherit";
+        }
+      });
+      renderPrompts();
+    }
+
+    function searchPrompts() {
+      state.searchPromptTerm = document.getElementById('promptSearchInput').value.toLowerCase();
+      renderPrompts();
+    }
+
+    function searchPromptsMobile() {
+      state.searchPromptTerm = document.getElementById('mobilePromptSearch').value.toLowerCase();
+      renderPromptsMobile();
+    }
+
+    function renderPrompts() {
+      const listEl = document.getElementById('promptsList');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      const filtered = PROMPTS_BANK.filter(item => {
+        const matchesCat = state.activePromptCategory === 'All' || item.category === state.activePromptCategory;
+        const matchesSearch = item.text.toLowerCase().includes(state.searchPromptTerm);
+        return matchesCat && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `<div class="text-xs cozy-text-muted text-center py-6">No prompts found matching filter.</div>`;
+        return;
+      }
+
+      filtered.forEach(prompt => {
+        const card = document.createElement('div');
+        card.className = "p-3.5 rounded-xl cozy-panel border cozy-border space-y-2.5 transition-all text-xs hover:cozy-panel-interactive relative group";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-neutral-950/40 cozy-text-muted font-bold">${prompt.category}</span>
+            <button onclick="injectPrompt('${prompt.text.replace(/'/g, "\\'")}')" class="text-amber-500 hover:text-amber-400 font-bold flex items-center gap-1 opacity-100 lg:opacity-60 lg:group-hover:opacity-100 transition-all" title="Inject into active entry">
+              Inject <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            </button>
+          </div>
+          <p class="leading-relaxed font-serif italic text-neutral-200">"${prompt.text}"</p>
+        `;
+        listEl.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function renderPromptsMobile() {
+      const listEl = document.getElementById('mobilePromptsList');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      const filtered = PROMPTS_BANK.filter(item => item.text.toLowerCase().includes(state.searchPromptTerm));
+
+      filtered.forEach(prompt => {
+        const card = document.createElement('div');
+        card.className = "p-3 rounded-xl cozy-panel border cozy-border space-y-2 text-xs";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-neutral-950/40 cozy-text-muted font-bold">${prompt.category}</span>
+            <button onclick="injectPrompt('${prompt.text.replace(/'/g, "\\'")}')" class="text-amber-500 font-bold flex items-center gap-1">
+              Inject <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            </button>
+          </div>
+          <p class="leading-relaxed font-serif italic text-neutral-200">"${prompt.text}"</p>
+        `;
+        listEl.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function injectPrompt(text) {
+      const editor = document.getElementById('journalContent');
+      if (!editor) return;
+
+      const currentContent = editor.value;
+      const injection = `\n\n💡 Reflection Prompt:\n"${text}"\n\n`;
+      
+      editor.value = currentContent + injection;
+      editor.focus();
+      updateWordCount();
+      
+      // Auto-update internal state
+      state.currentEntryContent = editor.value;
+      
+      showToast("Prompt injected directly into entry!");
+      
+      // Close mobile drawer if open
+      const drawer = document.getElementById('mobileSidebarDrawer');
+      if (!drawer.classList.contains('hidden')) {
+        toggleMobileSidebar();
+      }
+    }
+
+    // JOURNALING LOGIC
+    function createNewEntry() {
+      // Prompt user to save active changes if there's any content
+      if (state.currentEntryContent.trim() !== '') {
+        saveCurrentEntry(true); // silent save
+      }
+
+      state.currentEntryId = null;
+      state.currentEntryTitle = '';
+      state.currentEntryContent = '';
+      state.currentEntryMood = '☕';
+      state.currentEntryEnergy = 3;
+      state.currentEntryDate = new Date().toLocaleString();
+
+      syncActiveEntryToUI();
+      showToast("Started fresh blank journal entry!");
+    }
+
+    function setMood(emoji) {
+      state.currentEntryMood = emoji;
+      
+      // Update buttons highlights
+      const buttons = document.querySelectorAll('.mood-btn');
+      buttons.forEach(btn => {
+        if (btn.textContent.trim() === emoji) {
+          btn.className = "mood-btn w-7 h-7 flex items-center justify-center rounded transition-colors bg-amber-500 text-neutral-950";
+        } else {
+          btn.className = "mood-btn w-7 h-7 flex items-center justify-center rounded transition-colors hover:bg-neutral-800/60";
+        }
+      });
+
+      const label = document.getElementById('activeMoodLabel');
+      if (label) {
+        label.textContent = `${emoji} ${MOOD_DESCRIPTIONS[emoji] || ''}`;
+      }
+    }
+
+    function setEnergy(value) {
+      state.currentEntryEnergy = value;
+      
+      const buttons = document.querySelectorAll('.energy-btn');
+      buttons.forEach(btn => {
+        if (parseInt(btn.textContent.trim()) === value) {
+          btn.className = "energy-btn w-7 h-7 text-xs font-bold flex items-center justify-center rounded transition-colors bg-amber-500 text-neutral-950";
+        } else {
+          btn.className = "energy-btn w-7 h-7 text-xs font-bold flex items-center justify-center rounded transition-colors hover:bg-neutral-800/60";
+        }
+      });
+    }
+
+    function syncActiveEntryToUI() {
+      document.getElementById('entryTitleInput').value = state.currentEntryTitle;
+      document.getElementById('journalContent').value = state.currentEntryContent;
+      document.getElementById('entryDateString').textContent = state.currentEntryId 
+        ? `Last saved: ${state.currentEntryDate}` 
+        : `Unsaved Draft - Created ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+      
+      setMood(state.currentEntryMood);
+      setEnergy(state.currentEntryEnergy);
+      updateWordCount();
+    }
+
+    function updateWordCount() {
+      const text = document.getElementById('journalContent').value;
+      state.currentEntryContent = text; // sync state
+      state.currentEntryTitle = document.getElementById('entryTitleInput').value;
+
+      // Handle word extraction
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      document.getElementById('wordCounter').textContent = `${words} word${words !== 1 ? 's' : ''}`;
+
+      // Toggle background helper watermark guide
+      const guide = document.getElementById('writingPlaceholderGuide');
+      if (text.trim() === '') {
+        guide.classList.remove('hidden');
+      } else {
+        guide.classList.add('hidden');
+      }
+    }
+
+    function saveCurrentEntry(silent = false) {
+      const titleInput = document.getElementById('entryTitleInput').value.trim();
+      const content = document.getElementById('journalContent').value;
+      
+      if (!content.trim() && !titleInput) {
+        if (!silent) showToast("Write something cozy before saving!");
+        return;
+      }
+
+      const finalTitle = titleInput || `Reflective Moments (${new Date().toLocaleDateString()})`;
+      const timestamp = new Date().toLocaleString();
+
+      if (state.currentEntryId === null) {
+        // Create new
+        const newEntry = {
+          id: 'entry_' + Date.now(),
+          title: finalTitle,
+          content: content,
+          mood: state.currentEntryMood,
+          energy: state.currentEntryEnergy,
+          date: timestamp
+        };
+        state.entries.unshift(newEntry);
+        state.currentEntryId = newEntry.id;
+        state.currentEntryDate = timestamp;
+      } else {
+        // Update existing in array
+        const index = state.entries.findIndex(item => item.id === state.currentEntryId);
+        if (index !== -1) {
+          state.entries[index].title = finalTitle;
+          state.entries[index].content = content;
+          state.entries[index].mood = state.currentEntryMood;
+          state.entries[index].energy = state.currentEntryEnergy;
+          state.entries[index].date = timestamp;
+          state.currentEntryDate = timestamp;
+        }
+      }
+
+      saveToLocalStorage();
+      renderHistory();
+      syncActiveEntryToUI();
+      
+      if (!silent) {
+        showToast("Self-discovery entry archived locally!");
+      }
+    }
+
+    function selectEntry(id) {
+      const entry = state.entries.find(item => item.id === id);
+      if (!entry) return;
+
+      // Switch screen state
+      state.currentEntryId = entry.id;
+      state.currentEntryTitle = entry.title;
+      state.currentEntryContent = entry.content;
+      state.currentEntryMood = entry.mood;
+      state.currentEntryEnergy = entry.energy;
+      state.currentEntryDate = entry.date;
+
+      syncActiveEntryToUI();
+      showToast("Loaded entry into active writer!");
+      
+      // Close mobile drawer if open
+      const drawer = document.getElementById('mobileSidebarDrawer');
+      if (!drawer.classList.contains('hidden')) {
+        toggleMobileSidebar();
+      }
+    }
+
+    function deleteEntry(id, event) {
+      if (event) event.stopPropagation();
+      
+      state.entries = state.entries.filter(item => item.id !== id);
+      
+      if (state.currentEntryId === id) {
+        state.currentEntryId = null;
+        state.currentEntryTitle = '';
+        state.currentEntryContent = '';
+        state.currentEntryMood = '☕';
+        state.currentEntryEnergy = 3;
+        state.currentEntryDate = '';
+      }
+
+      saveToLocalStorage();
+      renderHistory();
+      syncActiveEntryToUI();
+      showToast("Reflection entry permanently cleared!");
+    }
+
+    function searchHistory() {
+      state.searchHistoryTerm = document.getElementById('historySearchInput').value.toLowerCase();
+      renderHistory();
+    }
+
+    function searchHistoryMobile() {
+      state.searchHistoryTerm = document.getElementById('mobileHistorySearch').value.toLowerCase();
+      renderHistoryMobile();
+    }
+
+    function renderHistory() {
+      const listEl = document.getElementById('historyList');
+      const countEl = document.getElementById('historyCount');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      if (countEl) countEl.textContent = state.entries.length;
+
+      const filtered = state.entries.filter(entry => 
+        entry.title.toLowerCase().includes(state.searchHistoryTerm) || 
+        entry.content.toLowerCase().includes(state.searchHistoryTerm)
+      );
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `<div class="text-xs cozy-text-muted text-center py-6">Your reflection cabinet is empty. Write and save entries!</div>`;
+        return;
+      }
+
+      filtered.forEach(entry => {
+        const isActive = state.currentEntryId === entry.id;
+        const div = document.createElement('div');
+        div.onclick = () => selectEntry(entry.id);
+        div.className = `p-3 rounded-xl cozy-panel border transition-all text-xs cursor-pointer relative group flex justify-between items-start ${isActive ? 'border-amber-500/80 bg-amber-500/5' : 'cozy-border hover:cozy-panel-interactive'}`;
+        
+        // Extract plain words preview
+        const wordPreview = entry.content.replace(/💡 Reflection Prompt:|"/g, '').substring(0, 50) + (entry.content.length > 50 ? '...' : '');
+
+        div.innerHTML = `
+          <div class="space-y-1 pr-6 flex-1">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-base">${entry.mood || '☕'}</span>
+              <h4 class="font-semibold text-neutral-100 truncate max-w-[140px]">${entry.title}</h4>
+            </div>
+            <p class="cozy-text-muted text-[10px] leading-relaxed italic truncate max-w-[190px]">${wordPreview || 'Empty text flow'}</p>
+            <span class="text-[9px] block cozy-text-muted">${entry.date}</span>
+          </div>
+          <button onclick="deleteEntry('${entry.id}', event)" class="absolute right-2 top-2 text-rose-500 hover:text-rose-400 p-1 rounded-lg hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all" title="Delete entry">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        `;
+        listEl.appendChild(div);
+      });
+      lucide.createIcons();
+    }
+
+    function renderHistoryMobile() {
+      const listEl = document.getElementById('mobileHistoryList');
+      const countEl = document.getElementById('mobileHistoryCount');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      if (countEl) countEl.textContent = state.entries.length;
+
+      const filtered = state.entries.filter(entry => 
+        entry.title.toLowerCase().includes(state.searchHistoryTerm) || 
+        entry.content.toLowerCase().includes(state.searchHistoryTerm)
+      );
+
+      filtered.forEach(entry => {
+        const div = document.createElement('div');
+        div.onclick = () => selectEntry(entry.id);
+        div.className = "p-3 rounded-xl cozy-panel border cozy-border text-xs flex justify-between items-center";
+        div.innerHTML = `
+          <div class="space-y-0.5">
+            <div class="flex items-center gap-1">
+              <span>${entry.mood || '☕'}</span>
+              <h4 class="font-semibold text-neutral-100 truncate max-w-[160px]">${entry.title}</h4>
+            </div>
+            <p class="text-[9px] cozy-text-muted">${entry.date}</p>
+          </div>
+          <button onclick="deleteEntry('${entry.id}', event)" class="text-rose-500 p-1">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        `;
+        listEl.appendChild(div);
+      });
+      lucide.createIcons();
+    }
+
+
+    // PERSONAL CODEX / CHARACTER SHEET MANAGEMENT
+    function renderProfileForm() {
+      const p = state.profile;
+      document.getElementById('profName').value = p.name || '';
+      document.getElementById('profAge').value = p.age || '';
+      document.getElementById('profPronouns').value = p.pronouns || '';
+      document.getElementById('profSexuality').value = p.sexuality || '';
+      document.getElementById('profZodiac').value = p.zodiac || '';
+      document.getElementById('profDoctrine').value = p.doctrine || '';
+      document.getElementById('profFavFood').value = p.favFood || '';
+      document.getElementById('profFavDrink').value = p.favDrink || '';
+      document.getElementById('profEnvironment').value = p.environment || '';
+      document.getElementById('profMedia').value = p.media || '';
+      document.getElementById('profSuperpower').value = p.superpower || '';
+      document.getElementById('profMystery').value = p.mystery || '';
+      document.getElementById('profPerfectDay').value = p.perfectDay || '';
+      document.getElementById('profCoreValue').value = p.coreValue || '';
+    }
+
+    function updateProfileRealtime() {
+      // Pull and update raw inputs to state
+      state.profile.name = document.getElementById('profName').value;
+      state.profile.age = document.getElementById('profAge').value;
+      state.profile.pronouns = document.getElementById('profPronouns').value;
+      state.profile.sexuality = document.getElementById('profSexuality').value;
+      state.profile.zodiac = document.getElementById('profZodiac').value;
+      state.profile.doctrine = document.getElementById('profDoctrine').value;
+      state.profile.favFood = document.getElementById('profFavFood').value;
+      state.profile.favDrink = document.getElementById('profFavDrink').value;
+      state.profile.environment = document.getElementById('profEnvironment').value;
+      state.profile.media = document.getElementById('profMedia').value;
+      state.profile.superpower = document.getElementById('profSuperpower').value;
+      state.profile.mystery = document.getElementById('profMystery').value;
+      state.profile.perfectDay = document.getElementById('profPerfectDay').value;
+      state.profile.coreValue = document.getElementById('profCoreValue').value;
+
+      // Update Card Visuals Instantly
+      const cardN = document.getElementById('cardName');
+      const cardP = document.getElementById('cardPronouns');
+      const cardD = document.getElementById('cardDoctrine');
+      const cardA = document.getElementById('cardAge');
+      const cardZ = document.getElementById('cardZodiac');
+      const cardS = document.getElementById('cardSexuality');
+      const cardSup = document.getElementById('cardSuperpower');
+      
+      const cardFood = document.getElementById('cardFavFood');
+      const cardDrink = document.getElementById('cardFavDrink');
+      const cardEnv = document.getElementById('cardEnvironment');
+      const cardMed = document.getElementById('cardMedia');
+      
+      const cardVal = document.getElementById('cardCoreValue');
+      const cardMyst = document.getElementById('cardMystery');
+      const cardRest = document.getElementById('cardPerfectDay');
+      const cardEm = document.getElementById('cardEmoji');
+      const topName = document.getElementById('profileDisplayName');
+      const initialsCircle = document.getElementById('profileInitials');
+
+      // Sync texts
+      cardN.textContent = state.profile.name || 'Anonymous Seeker';
+      topName.textContent = state.profile.name ? `${state.profile.name}'s Codex` : 'Your Self-Discovery Codex';
+      
+      // Initials mapping
+      if (state.profile.name) {
+        const parts = state.profile.name.trim().split(' ');
+        const initials = parts.map(p => p[0]).join('').substring(0, 2).toUpperCase();
+        initialsCircle.textContent = initials;
+      } else {
+        initialsCircle.textContent = 'ME';
+      }
+
+      cardP.textContent = state.profile.pronouns || 'Not declared / Fluid';
+      cardD.textContent = state.profile.doctrine || 'A work in progress, documenting the mysteries of self.';
+      cardA.textContent = state.profile.age || '-';
+      cardZ.textContent = state.profile.zodiac || '-';
+      cardS.textContent = state.profile.sexuality || '-';
+      cardSup.textContent = state.profile.superpower || '-';
+      
+      cardFood.textContent = state.profile.favFood || '-';
+      cardDrink.textContent = state.profile.favDrink || '-';
+      cardEnv.textContent = state.profile.environment || '-';
+      cardMed.textContent = state.profile.media || '-';
+      
+      cardVal.textContent = state.profile.coreValue || '-';
+      cardMyst.textContent = state.profile.mystery || '-';
+      cardRest.textContent = state.profile.perfectDay || 'No description written yet. Describe how you recover energy...';
+
+      // Pick logical character avatar based on name or element
+      if (state.profile.zodiac.toLowerCase().includes('water') || state.profile.zodiac.toLowerCase().includes('pisces') || state.profile.zodiac.toLowerCase().includes('scorpio') || state.profile.zodiac.toLowerCase().includes('cancer')) {
+        cardEm.textContent = '🌊';
+      } else if (state.profile.zodiac.toLowerCase().includes('fire') || state.profile.zodiac.toLowerCase().includes('leo') || state.profile.zodiac.toLowerCase().includes('aries') || state.profile.zodiac.toLowerCase().includes('sagittarius')) {
+        cardEm.textContent = '🔥';
+      } else if (state.profile.zodiac.toLowerCase().includes('earth') || state.profile.zodiac.toLowerCase().includes('taurus') || state.profile.zodiac.toLowerCase().includes('virgo') || state.profile.zodiac.toLowerCase().includes('capricorn')) {
+        cardEm.textContent = '🌱';
+      } else if (state.profile.zodiac.toLowerCase().includes('air') || state.profile.zodiac.toLowerCase().includes('gemini') || state.profile.zodiac.toLowerCase().includes('libra') || state.profile.zodiac.toLowerCase().includes('aquarius')) {
+        cardEm.textContent = '💨';
+      } else {
+        cardEm.textContent = '👤';
+      }
+    }
+
+    function saveProfileData() {
+      saveToLocalStorage();
+      showToast("Personal Codex Card updated successfully!");
+    }
+
+    function resetProfileForm() {
+      if (confirm("Are you sure you want to clear your current Codex values? This cannot be undone.")) {
+        state.profile = {
+          name: '', age: '', pronouns: '', sexuality: '', zodiac: '', doctrine: '',
+          favFood: '', favDrink: '', environment: '', media: '', superpower: '',
+          mystery: '', perfectDay: '', coreValue: ''
+        };
+        saveToLocalStorage();
+        renderProfileForm();
+        updateProfileRealtime();
+        showToast("Codex reset successfully!");
+      }
+    }
+
+    function copyProfileToClipboard() {
+      const p = state.profile;
+      const formatted = `=== SELF DISCOVERY PERSONAL CODEX ===
+Name: ${p.name || 'Anonymous Seeker'}
+Age: ${p.age || 'Not declared'}
+Pronouns: ${p.pronouns || 'Not declared'}
+Sexuality/Spectrum: ${p.sexuality || 'Not declared'}
+Zodiac & Element: ${p.zodiac || 'Not declared'}
+
+Doctrine: "${p.doctrine || 'No doctrine declared.'}"
+
+=== COMFORT METRICS ===
+Favorite Food: ${p.favFood || 'Not declared'}
+Favorite Drink: ${p.favDrink || 'Not declared'}
+Cozy Environment: ${p.environment || 'Not declared'}
+Comfort Media: ${p.media || 'Not declared'}
+
+=== MIND PROFILE ===
+Greatest Gift: ${p.superpower || 'Not declared'}
+Core Mystery: ${p.mystery || 'Not declared'}
+Integrity Anchor: ${p.coreValue || 'Not declared'}
+
+Perfect Rest Day: 
+${p.perfectDay || 'No description recorded.'}
+=====================================`;
+
+      // Copy using legacy protocol for broad sandbox compliance
+      const textEl = document.createElement('textarea');
+      textEl.value = formatted;
+      document.body.appendChild(textEl);
+      textEl.select();
+      document.execCommand('copy');
+      document.body.removeChild(textEl);
+      
+      showToast("Profile details copied raw to clipboard!");
+    }
+
+
+    // STATE PERSISTENCE ENGINE (LOCAL STORAGE)
+    function saveToLocalStorage() {
+      try {
+        localStorage.setItem('cozy_query_state', JSON.stringify(state));
+      } catch (err) {
+        console.error("Local storage writing error: ", err);
+      }
+    }
+
+    function loadFromLocalStorage() {
+      try {
+        const raw = localStorage.getItem('cozy_query_state');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          // Safely map values into state
+          if (parsed.theme) state.theme = parsed.theme;
+          if (parsed.entries) state.entries = parsed.entries;
+          if (parsed.profile) state.profile = { ...state.profile, ...parsed.profile };
+        }
+      } catch (err) {
+        console.warn("Could not read local storage values. Defaulting state.");
+      }
+    }
+
+    // UTILITIES
+    function showToast(message) {
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMessage');
+      if (toast && toastMsg) {
+        toastMsg.textContent = message;
+        toast.classList.remove('hidden');
+        
+        // Disappear animation timeout
+        setTimeout(() => {
+          toast.classList.add('hidden');
+        }, 3000);
+      }
+    }
+  </script>
+</body>
+</html>
