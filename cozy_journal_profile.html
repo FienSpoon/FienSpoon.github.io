@@ -1721,17 +1721,71 @@ ${answersText || 'No answers recorded yet.'}
     // STATE PERSISTENCE ENGINE
     function saveToLocalStorage() {
       try {
-        localStorage.setItem('cozy_space_state_v3', JSON.stringify(state));
+        // Serialize state to string
+        const stateStr = JSON.stringify(state);
+        // URI encode to make safe for cookie headers
+        const safeStr = encodeURIComponent(stateStr);
+        const chunkSize = 3800; // Leave buffer for metadata under standard 4096-byte cookie limits
+        const totalChunks = Math.ceil(safeStr.length / chunkSize);
+
+        // Store how many segments we are saving
+        setCookie('cozy_chunks_count', totalChunks.toString(), 365);
+
+        // Write each chunk individually
+        for (let i = 0; i < totalChunks; i++) {
+          const chunk = safeStr.substring(i * chunkSize, (i + 1) * chunkSize);
+          setCookie('cozy_chunk_' + i, chunk, 365);
+        }
+
+        // Clean up any left-over cookie segments from previous larger states
+        let oldIndex = totalChunks;
+        while (getCookie('cozy_chunk_' + oldIndex) !== null) {
+          eraseCookie('cozy_chunk_' + oldIndex);
+          oldIndex++;
+        }
+
+        // Fallback backup locally in case cookies are completely wiped or disabled
+        localStorage.setItem('cozy_space_state_v3', stateStr);
       } catch (err) {
-        console.error("Local storage error:", err);
+        console.error("Storage engine save error:", err);
       }
     }
 
     function loadFromLocalStorage() {
       try {
-        const raw = localStorage.getItem('cozy_space_state_v3');
-        if (raw) {
-          const parsed = JSON.parse(raw);
+        let parsed = null;
+        const chunksCountStr = getCookie('cozy_chunks_count');
+
+        if (chunksCountStr) {
+          const totalChunks = parseInt(chunksCountStr, 10);
+          let safeStr = '';
+          let cookiesValid = true;
+
+          for (let i = 0; i < totalChunks; i++) {
+            const chunk = getCookie('cozy_chunk_' + i);
+            if (chunk) {
+              safeStr += chunk;
+            } else {
+              cookiesValid = false;
+              break;
+            }
+          }
+
+          if (cookiesValid && safeStr) {
+            const stateStr = decodeURIComponent(safeStr);
+            parsed = JSON.parse(stateStr);
+          }
+        }
+
+        // Fallback read from localStorage if cookie state was blank/cleared
+        if (!parsed) {
+          const raw = localStorage.getItem('cozy_space_state_v3');
+          if (raw) {
+            parsed = JSON.parse(raw);
+          }
+        }
+
+        if (parsed) {
           if (parsed.theme) state.theme = parsed.theme;
           if (parsed.entries) state.entries = parsed.entries;
           if (parsed.profile) {
@@ -1740,8 +1794,34 @@ ${answersText || 'No answers recorded yet.'}
           }
         }
       } catch (err) {
-        console.warn("Could not read local storage values. Defaulting state.");
+        console.warn("Could not read cookies or local storage values. Defaulting state.", err);
       }
+    }
+
+    // Standard cookie access wrappers
+    function setCookie(name, value, days) {
+      let expires = "";
+      if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+      }
+      document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Strict";
+    }
+
+    function getCookie(name) {
+      const nameEQ = name + "=";
+      const ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+    }
+
+    function eraseCookie(name) {
+      document.cookie = name + '=; Max-Age=-99999999; path=/; SameSite=Strict';
     }
 
     function showToast(message) {
