@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cozy Space - A place for raw thoughts</title>
+  <title>Cozy Space - Private Self-Discovery Journal</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -146,7 +146,7 @@
       --paper-text: #ecf3f8;
     }
 
-    /* Peppermint Tea (Cool light botanical) */
+    /* Peppermint Tea */
     [data-theme="peppermint-tea"] {
       --bg-main: #f2f7f5;
       --bg-panel: #e3ede9;
@@ -426,21 +426,21 @@
       </aside>
 
       <!-- CENTER PORTION: THE MAIN WRITING CANVAS -->
-    <section class="flex-1 flex flex-col h-full">
-      
-      <!-- Document Action Panel -->
-      <div class="p-4 md:p-6 cozy-border border-b flex flex-wrap justify-between items-center gap-4">
-        <div class="flex items-center gap-3">
-          <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-xl cozy-panel cozy-border hover:cozy-panel-interactive transition-all">
-            <i data-lucide="align-left" class="w-4 h-4"></i>
-          </button>
-          <div>
-            <input type="text" id="entryTitleInput" oninput="updateWordCount()" placeholder="A quiet moment..." class="font-serif text-lg md:text-xl font-bold bg-transparent border-b border-transparent hover:border-dashed hover:border-neutral-500 focus:border-solid focus:border-amber-500 focus:outline-none py-1 transition-all max-w-sm md:w-80">
-            <p class="text-xs cozy-text-muted" id="entryDateString">Auto-saved to your browser</p>
+      <section class="flex-1 flex flex-col h-full relative">
+        
+        <!-- Document Action Panel -->
+        <div class="p-4 md:p-6 cozy-border border-b flex flex-wrap justify-between items-center gap-4">
+          <div class="flex items-center gap-3">
+            <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-xl cozy-panel cozy-border hover:cozy-panel-interactive transition-all">
+              <i data-lucide="align-left" class="w-4 h-4"></i>
+            </button>
+            <div>
+              <input type="text" id="entryTitleInput" oninput="updateWordCount()" placeholder="A quiet moment..." class="font-serif text-lg md:text-xl font-bold bg-transparent border-b border-transparent hover:border-dashed hover:border-neutral-500 focus:border-solid focus:border-amber-500 focus:outline-none py-1 transition-all max-w-sm md:w-80">
+              <p class="text-xs cozy-text-muted" id="entryDateString">Auto-saved to your browser</p>
+            </div>
           </div>
-        </div>
 
-        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2">
             <button onclick="createNewEntry()" class="px-3.5 py-1.5 rounded-xl border cozy-border text-xs font-semibold flex items-center gap-1.5 hover:cozy-panel-interactive transition-colors">
               <i data-lucide="file-plus" class="w-3.5 h-3.5"></i> Clear Sheet
             </button>
@@ -478,33 +478,22 @@
         </div>
 
         <!-- Text area layout with tactile design guides -->
-      <div class="flex-1 p-4 md:p-8 overflow-hidden flex flex-col relative">
-        
-        <div id="writingPlaceholderGuide" class="absolute pointer-events-none inset-0 flex flex-col items-center justify-center opacity-15 p-6 text-center select-none z-0">
-          <i data-lucide="feather" class="w-12 h-12 mb-3 text-amber-500"></i>
-          <h3 class="font-serif text-lg font-bold">No rules. Just dump your brain here.</h3>
-          <p class="text-xs max-w-sm mt-1">Write about your morning, a weird dream, or click a prompt on the left side to get going.</p>
-        </div>
-
-        <textarea id="journalContent" oninput="updateWordCount()" placeholder="Click here and spill whatever is on your mind..." class="flex-1 w-full bg-transparent resize-none focus:outline-none text-base md:text-lg leading-relaxed z-10 placeholder-neutral-500 font-sans"></textarea>
-
-        <div class="z-10 flex justify-between items-center cozy-text-muted text-xs border-t cozy-border pt-4 mt-2">
-          <span id="wordCounter">0 words</span>
-          <span class="flex items-center gap-1" id="autosaveStatus">
-            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-500"></i>
-            <span>All changes saved</span>
-          </span>
-        </div>
-      </div>
-
-    </section>
-  </div>
+        <div class="flex-1 p-4 md:p-8 overflow-hidden flex flex-col relative">
+          
+          <div id="writingPlaceholderGuide" class="absolute pointer-events-none inset-0 flex flex-col items-center justify-center opacity-15 p-6 text-center select-none z-0">
+            <i data-lucide="feather" class="w-12 h-12 mb-3 text-amber-500"></i>
+            <h3 class="font-serif text-lg font-bold">No rules. Just dump your brain here.</h3>
+            <p class="text-xs max-w-sm mt-1">Write about your morning, a weird dream, or click a prompt on the left side to get going.</p>
+          </div>
 
           <textarea id="journalContent" oninput="updateWordCount()" placeholder="Click here and spill whatever is on your mind..." class="flex-1 w-full bg-transparent resize-none focus:outline-none text-base md:text-lg leading-relaxed z-10 placeholder-neutral-500 font-sans"></textarea>
 
           <div class="z-10 flex justify-between items-center cozy-text-muted text-xs border-t cozy-border pt-4 mt-2">
             <span id="wordCounter">0 words</span>
-            <span class="flex items-center gap-1"><i data-lucide="shield" class="w-3.5 h-3.5 text-amber-500"></i> Auto-saved locally</span>
+            <span class="flex items-center gap-1" id="autosaveStatus">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-500"></i>
+              <span>All changes saved</span>
+            </span>
           </div>
         </div>
 
@@ -751,6 +740,7 @@
   </div>
 
   <script>
+    // COMPLETE 144 SELF-DISCOVERY DATABASE CORRESPONDING TO USER'S DETAILED REQUESTS
     const SCRAPBOOK_QUESTIONS = [
       // CATEGORY: Favorites & Senses
       { id: "fav_food", category: "favorites", label: "What is your favorite food?", placeholder: "What meal completely warms your soul?" },
@@ -793,6 +783,7 @@
       { id: "fav_word", category: "favorites", label: "What is your favorite word?", placeholder: "A word that feels lovely to say or read" },
       { id: "fav_rainy_day", category: "favorites", label: "What is your favorite way to spend a rainy day?", placeholder: "Cozying up indoors or walking with an umbrella?" },
       { id: "fav_music_genre", category: "favorites", label: "What is your favorite genre of music?", placeholder: "Lofi, indie folk, classical, ambient?" },
+      { id: "fav_saturday_spend", category: "favorites", label: "What is your favorite way to spend a Saturday?", placeholder: "Snoozing in, exploring cafes, nesting at home?" },
 
       // CATEGORY: Memories & Life Stories
       { id: "mem_childhood", category: "memories", label: "What is your favorite childhood memory?", placeholder: "A warm afternoon, climbing trees, baking..." },
@@ -810,7 +801,7 @@
       { id: "mem_beautiful_seen", category: "memories", label: "What is the most beautiful thing you have ever seen?", placeholder: "A landscape, a sunset, a moment of pure kindness" },
       { id: "mem_cry_song", category: "memories", label: "What is a song that always makes you cry?", placeholder: "A track that hits right in the feels" },
       { id: "mem_compliment", category: "memories", label: "What is a compliment you will never forget?", placeholder: "Something lovely someone said about your soul" },
-      { id: "mem_advice", category: "memories", label: "What is the most important lesson/advice you've ever received?", placeholder: "Words you live by when things get heavy" },
+      { id: "mem_advice", category: "memories", label: "What is the best piece of advice you have ever received?", placeholder: "Words you live by when things get heavy" },
       { id: "mem_laugh", category: "memories", label: "What is the last thing that made you laugh uncontrollably?", placeholder: "A silly joke, a friend's laugh, a weird video" },
       { id: "mem_story", category: "memories", label: "What is a story from your life that you love telling?", placeholder: "A funny mishap or a magical coincidence" },
       { id: "mem_conquered_fear", category: "memories", label: "What is a fear you have conquered?", placeholder: "Something that used to terrify you but no longer does" },
@@ -824,6 +815,9 @@
       { id: "mem_scent_memory", category: "memories", label: "What is a smell that brings back a specific memory?", placeholder: "Fresh laundry, rain, a certain kitchen scent?" },
       { id: "mem_cringe", category: "memories", label: "What is a memory that makes you cringe?", placeholder: "A silly mistake that still wakes you up at 3 AM" },
       { id: "mem_first_time_again", category: "memories", label: "What is a book or game you wish you could experience for the first time again?", placeholder: "To feel that initial spark of discovery" },
+      { id: "mem_gift_given", category: "memories", label: "What is the best gift you have ever given someone?", placeholder: "The reaction that made you feel so warm inside" },
+      { id: "mem_memorable_dream", category: "memories", label: "What is the most memorable dream you have ever had?", placeholder: "Vivid dreams that lingered for days" },
+      { id: "mem_reminds_person", category: "memories", label: "What is a song that reminds you of a specific person?", placeholder: "Whose face flashes in your head when the intro plays?" },
 
       // CATEGORY: Mind, Quirks & Reflections
       { id: "mind_fear", category: "mind", label: "What is your biggest fear?", placeholder: "Grounded fears or abstract ones?" },
@@ -900,7 +894,9 @@
       { id: "mind_ask_future", category: "mind", label: "What is a question you want to ask your future self?", placeholder: "Are we peaceful yet? Did we build the garden?" },
       { id: "mind_relax_now", category: "mind", label: "What is the most relaxing thing you can imagine doing right now?", placeholder: "A cup of cocoa next to a fire, soft music playing..." },
       { id: "mind_not_ready_responsibility", category: "mind", label: "What is a responsibility you are not ready for?", placeholder: "Big adult tasks you are secretly putting off" },
-      { id: "mind_routine_important", category: "mind", label: "What is the most important part of your daily routine?", placeholder: "The anchor of your day" }
+      { id: "mind_routine_important", category: "mind", label: "What is the most important part of your daily routine?", placeholder: "The anchor of your day" },
+      { id: "mind_secret_goal", category: "mind", label: "What is a goal you have that you have never told anyone?", placeholder: "Your secret, silent compass point..." },
+      { id: "mind_favorite_word_sound", category: "mind", label: "What is a word you love the sound of?", placeholder: "Susurrus, mellifluous, petrichor?" }
     ];
 
     const PROMPTS_BANK = [
