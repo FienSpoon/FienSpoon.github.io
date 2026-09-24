@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Binary & Computer Science Revision Paper</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; background: #f4f6f9; color: #333; }
+    .container { max-width: 800px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h1 { text-align: center; color: #2c3e50; margin-bottom: 5px; }
+    p.subtitle { text-align: center; color: #666; margin-bottom: 25px; }
+    .section { margin-bottom: 25px; padding: 15px; border-left: 5px solid #3498db; background: #fafafa; border-radius: 4px; }
+    .section.medium { border-left-color: #f39c12; }
+    .section.extension { border-left-color: #e74c3c; }
+    .question { margin-bottom: 15px; font-size: 15px; }
+    label { display: block; margin-top: 5px; font-weight: bold; }
+    input[type="text"] { width: 220px; padding: 6px; margin-top: 3px; border: 1px solid #ccc; border-radius: 4px; }
+    button { padding: 10px 18px; margin-right: 10px; border: none; background: #27ae60; color: white; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; }
+    button:hover { background: #219150; }
+    button.secondary { background: #2980b9; }
+    button.secondary:hover { background: #1f6391; }
+    .feedback { margin-top: 4px; font-weight: bold; font-size: 14px; }
+    .correct { color: #27ae60; }
+    .incorrect { color: #c0392b; }
+    #score-box { text-align: center; font-size: 20px; font-weight: bold; margin-top: 20px; color: #2c3e50; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Binary & Number Representation Test</h1>
+  <p class="subtitle">Dynamic practice paper — Click "Generate New Test" for fresh questions anytime!</p>
+
+  <div id="quiz"></div>
+
+  <div style="text-align: center; margin-top: 20px;">
+    <button onclick="checkAnswers()">Submit & Check Answers</button>
+    <button class="secondary" onclick="generateTest()">Generate New Test</button>
+  </div>
+
+  <div id="score-box"></div>
+</div>
+
+<script>
+let questionsData = [];
+
+function toBin(num, bits = 8) {
+  return (num >>> 0).toString(2).padStart(bits, '0').slice(-bits);
+}
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function generateTest() {
+  questionsData = [];
+  document.getElementById('score-box').innerHTML = '';
+
+  // --- EASY QUESTIONS ---
+  // Q1: Denary to Binary
+  let d1 = randInt(10, 200);
+  questionsData.push({
+    level: 'Easy',
+    text: `Convert Denary <strong>${d1}</strong> to 8-bit Binary:`,
+    answer: toBin(d1, 8)
+  });
+
+  // Q2: Binary to Denary
+  let d2 = randInt(1, 255);
+  questionsData.push({
+    level: 'Easy',
+    text: `Convert 8-bit Binary <strong>${toBin(d2, 8)}</strong> to Denary:`,
+    answer: d2.toString()
+  });
+
+  // Q3: Hex to Binary
+  let d3 = randInt(16, 255);
+  let hex3 = d3.toString(16).toUpperCase().padStart(2, '0');
+  questionsData.push({
+    level: 'Easy',
+    text: `Convert Hexadecimal <strong>${hex3}</strong> to 8-bit Binary:`,
+    answer: toBin(d3, 8)
+  });
+
+  // --- MEDIUM QUESTIONS ---
+  // Q4: Binary Addition
+  let a4 = randInt(5, 100);
+  let b4 = randInt(5, 100);
+  questionsData.push({
+    level: 'Medium',
+    text: `Add binaries: <strong>${toBin(a4, 8)}</strong> + <strong>${toBin(b4, 8)}</strong> (Give 8-bit binary answer):`,
+    answer: toBin(a4 + b4, 8)
+  });
+
+  // Q5: Binary Shift
+  let d5 = randInt(4, 30);
+  let shift = randInt(1, 2);
+  let dir = Math.random() < 0.5 ? 'left' : 'right';
+  let ans5 = dir === 'left' ? (d5 << shift) : (d5 >> shift);
+  questionsData.push({
+    level: 'Medium',
+    text: `Perform a logical <strong>${dir} shift by ${shift}</strong> place(s) on <strong>${toBin(d5, 8)}</strong> (Give 8-bit binary answer):`,
+    answer: toBin(ans5, 8)
+  });
+
+  // Q6: Positive Denary to 8-bit Two's Complement Negative
+  let d6 = randInt(1, 100);
+  let negBin6 = toBin((256 - d6) & 0xFF, 8);
+  questionsData.push({
+    level: 'Medium',
+    text: `Convert Denary <strong>-${d6}</strong> into 8-bit Two's Complement Binary:`,
+    answer: negBin6
+  });
+
+  // --- EXTENSION QUESTIONS ---
+  // Q7: Negative Two's Complement to Denary
+  let d7 = randInt(1, 120);
+  let bin7 = toBin((256 - d7) & 0xFF, 8);
+  questionsData.push({
+    level: 'Extension',
+    text: `Convert 8-bit Two's Complement Binary <strong>${bin7}</strong> to Denary:`,
+    answer: (-d7).toString()
+  });
+
+  // Q8: Binary Shift + Hex Conversion
+  let d8 = randInt(4, 30);
+  let shifted8 = d8 << 2;
+  let hex8 = shifted8.toString(16).toUpperCase().padStart(2, '0');
+  questionsData.push({
+    level: 'Extension',
+    text: `Logical left shift <strong>${toBin(d8, 8)}</strong> by 2 places, then convert the result to <strong>Hexadecimal</strong>:`,
+    answer: hex8
+  });
+
+  renderQuiz();
+}
+
+function renderQuiz() {
+  const quizDiv = document.getElementById('quiz');
+  quizDiv.innerHTML = '';
+
+  const levels = ['Easy', 'Medium', 'Extension'];
+  levels.forEach(lvl => {
+    let sec = document.createElement('div');
+    sec.className = `section ${lvl.toLowerCase()}`;
+    sec.innerHTML = `<h3>${lvl} Section</h3>`;
+
+    questionsData.forEach((q, idx) => {
+      if (q.level === lvl) {
+        sec.innerHTML += `
+          <div class="question">
+            <p><strong>Q${idx + 1}:</strong> ${q.text}</p>
+            <input type="text" id="q${idx}" placeholder="Enter answer here">
+            <div id="fb${idx}" class="feedback"></div>
+          </div>
+        `;
+      }
+    });
+    quizDiv.appendChild(sec);
+  });
+}
+
+function checkAnswers() {
+  let score = 0;
+  questionsData.forEach((q, idx) => {
+    let userAns = document.getElementById(`q${idx}`).value.trim().toUpperCase();
+    let fb = document.getElementById(`fb${idx}`);
+    
+    // Normalize leading zeros for binary/hex
+    if (userAns === q.answer) {
+      score++;
+      fb.className = 'feedback correct';
+      fb.innerHTML = '✔ Correct!';
+    } else {
+      fb.className = 'feedback incorrect';
+      fb.innerHTML = `✘ Incorrect. Expected: ${q.answer}`;
+    }
+  });
+
+  document.getElementById('score-box').innerHTML = `Score: ${score} / ${questionsData.length}`;
+}
+
+// Initial render
+generateTest();
+</script>
+
+</body>
+</html>
