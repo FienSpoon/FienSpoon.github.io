@@ -2,10 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Binary & Computer Science Revision Paper</title>
+  <title>Binary & Computer Science Revision Portal</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 30px; background: #f4f6f9; color: #333; }
-    .container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f4f6f9; color: #333; }
+    .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    
+    /* Navigation Tabs */
+    .nav-tabs { display: flex; border-bottom: 2px solid #e2e8f0; margin-bottom: 25px; }
+    .tab-btn { padding: 12px 24px; font-size: 16px; font-weight: bold; border: none; background: none; cursor: pointer; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; }
+    .tab-btn:hover { color: #2c3e50; }
+    .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; background: #f8fafc; }
+
+    /* Tab Content Views */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Test Styles */
     h1 { text-align: center; color: #2c3e50; margin-bottom: 5px; }
     p.subtitle { text-align: center; color: #666; margin-bottom: 25px; }
     .section { margin-bottom: 30px; padding: 20px; border-left: 6px solid #3498db; background: #fafafa; border-radius: 6px; }
@@ -16,35 +28,126 @@
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     @media (max-width: 650px) { .grid { grid-template-columns: 1fr; } }
     .question { background: #fff; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; }
-    label { display: block; margin-top: 6px; font-weight: bold; }
     input[type="text"] { width: 90%; padding: 6px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 14px; }
-    button { padding: 12px 20px; margin-right: 10px; border: none; background: #27ae60; color: white; border-radius: 5px; cursor: pointer; font-size: 15px; font-weight: bold; }
-    button:hover { background: #219150; }
-    button.secondary { background: #2980b9; }
-    button.secondary:hover { background: #1f6391; }
+    button.btn { padding: 12px 20px; margin-right: 10px; border: none; background: #27ae60; color: white; border-radius: 5px; cursor: pointer; font-size: 15px; font-weight: bold; }
+    button.btn:hover { background: #219150; }
+    button.btn-sec { background: #2980b9; }
+    button.btn-sec:hover { background: #1f6391; }
     .feedback { margin-top: 5px; font-weight: bold; font-size: 13px; }
     .correct { color: #27ae60; }
     .incorrect { color: #c0392b; }
     #score-box { text-align: center; font-size: 22px; font-weight: bold; margin-top: 25px; color: #2c3e50; }
+
+    /* Cheat Sheet Styles */
+    .cs-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .cs-card h3 { margin-top: 0; color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 6px; }
+    .cs-grid { display: grid; grid-template-columns: repeat(8, 1fr); text-align: center; background: #334155; color: white; font-weight: bold; padding: 8px; border-radius: 4px; margin: 10px 0; }
+    .cs-grid div { border-right: 1px solid #475569; }
+    .cs-grid div:last-child { border-right: none; }
+    code { background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: bold; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>Binary & CS Revision Paper</h1>
-  <p class="subtitle">30 Randomised Questions — Practice & Test Your Skills</p>
-
-  <div id="quiz"></div>
-
-  <div style="text-align: center; margin-top: 25px;">
-    <button onclick="checkAnswers()">Submit & Grade Test</button>
-    <button class="secondary" onclick="generateTest()">Generate New Test</button>
+  <!-- Navigation Header -->
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('test-tab')">📝 Test Paper</button>
+    <button class="tab-btn" onclick="switchTab('cheatsheet-tab')">📌 Revision Cheat Sheet</button>
   </div>
 
-  <div id="score-box"></div>
+  <!-- TAB 1: TEST PAPER -->
+  <div id="test-tab" class="tab-content active">
+    <h1>Binary & CS Revision Paper</h1>
+    <p class="subtitle">30 Randomised Questions (12 Easy, 12 Medium, 6 Optional Extension)</p>
+
+    <div id="quiz"></div>
+
+    <div style="text-align: center; margin-top: 25px;">
+      <button class="btn" onclick="checkAnswers()">Submit & Grade Test</button>
+      <button class="btn btn-sec" onclick="generateTest()">Generate New Questions</button>
+    </div>
+
+    <div id="score-box"></div>
+  </div>
+
+  <!-- TAB 2: CHEAT SHEET -->
+  <div id="cheatsheet-tab" class="tab-content">
+    <h1>Revision Cheat Sheet</h1>
+    <p class="subtitle">Notes & Reference Material</p>
+
+    <div class="cs-card">
+      <h3>1. Denary ↔ Binary</h3>
+      <p><strong>8-bit Place Values:</strong></p>
+      <div class="cs-grid">
+        <div>128</div><div>64</div><div>32</div><div>16</div><div>8</div><div>4</div><div>2</div><div>1</div>
+      </div>
+      <ul>
+        <li><strong>Denary → Binary:</strong> Subtract the largest fitting place value working left to right.</li>
+        <li><strong>Binary → Denary:</strong> Add together place values wherever a <code>1</code> appears.</li>
+      </ul>
+    </div>
+
+    <div class="cs-card">
+      <h3>2. Binary ↔ Hexadecimal</h3>
+      <p><strong>Hex Map:</strong> <code>0–9</code> remain standard numbers. <code>10=A</code>, <code>11=B</code>, <code>12=C</code>, <code>13=D</code>, <code>14=E</code>, <code>15=F</code>.</p>
+      <ul>
+        <li><strong>Binary → Hex:</strong> Split 8 bits into two 4-bit nibbles (<code>8 4 2 1</code> each). Convert each nibble to Hex.</li>
+        <li><strong>Hex → Binary:</strong> Convert each Hex digit into its 4-bit binary nibble equivalent.</li>
+      </ul>
+    </div>
+
+    <div class="cs-card">
+      <h3>3. Binary Addition</h3>
+      <p><strong>Rules:</strong></p>
+      <ul>
+        <li><code>0 + 0 = 0</code></li>
+        <li><code>0 + 1 = 1</code></li>
+        <li><code>1 + 1 = 0</code> (carry 1)</li>
+        <li><code>1 + 1 + 1 = 1</code> (carry 1)</li>
+      </ul>
+      <p><strong>Overflow:</strong> Occurs when the sum exceeds the available bit capacity (e.g. sum &gt; 255 in 8-bit).</p>
+    </div>
+
+    <div class="cs-card">
+      <h3>4. Binary Shifting</h3>
+      <ul>
+        <li><strong>Left Shift (<code>&lt;&lt; n</code>):</strong> Shifts bits left by <em>n</em> places; pad <code>0</code>s on the right. <strong>Multiplies by 2<sup>n</sup></strong>.</li>
+        <li><strong>Right Shift (<code>&gt;&gt; n</code>):</strong> Shifts bits right by <em>n</em> places; pad <code>0</code>s on the left. <strong>Divides by 2<sup>n</sup></strong> (integer division).</li>
+      </ul>
+    </div>
+
+    <div class="cs-card">
+      <h3>5. Two's Complement (Signed 8-Bit)</h3>
+      <p><strong>Place Values:</strong></p>
+      <div class="cs-grid">
+        <div>-128</div><div>64</div><div>32</div><div>16</div><div>8</div><div>4</div><div>2</div><div>1</div>
+      </div>
+      <ul>
+        <li><strong>Range:</strong> -128 to +127. The MSB (leftmost bit) has a value of <strong>-128</strong>.</li>
+        <li><strong>Positive Denary → Negative Binary:</strong>
+          <ol>
+            <li>Write positive number in 8-bit binary.</li>
+            <li>Invert all bits (flip 0s to 1s and 1s to 0s).</li>
+            <li>Add 1 to the result.</li>
+          </ol>
+        </li>
+      </ul>
+    </div>
+  </div>
 </div>
 
 <script>
+// Tab Switching
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  
+  document.getElementById(tabId).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// Quiz Generation Logic
 let questionsData = [];
 
 function toBin(num, bits = 8) {
@@ -60,23 +163,19 @@ function generateTest() {
   document.getElementById('score-box').innerHTML = '';
 
   // --- EASY SECTION (12 Questions) ---
-  // 1-3: Denary to Binary
   for (let i = 0; i < 3; i++) {
     let d = randInt(1, 255);
     questionsData.push({ level: 'Easy', text: `Convert Denary <strong>${d}</strong> to 8-bit Binary:`, answer: toBin(d, 8) });
   }
-  // 4-6: Binary to Denary
   for (let i = 0; i < 3; i++) {
     let d = randInt(1, 255);
     questionsData.push({ level: 'Easy', text: `Convert 8-bit Binary <strong>${toBin(d, 8)}</strong> to Denary:`, answer: d.toString() });
   }
-  // 7-9: Binary to Hex
   for (let i = 0; i < 3; i++) {
     let d = randInt(10, 255);
     let hex = d.toString(16).toUpperCase().padStart(2, '0');
     questionsData.push({ level: 'Easy', text: `Convert Binary <strong>${toBin(d, 8)}</strong> to Hexadecimal:`, answer: hex });
   }
-  // 10-12: Hex to Binary
   for (let i = 0; i < 3; i++) {
     let d = randInt(10, 255);
     let hex = d.toString(16).toUpperCase().padStart(2, '0');
@@ -84,13 +183,11 @@ function generateTest() {
   }
 
   // --- MEDIUM SECTION (12 Questions) ---
-  // 1-4: Binary Addition
   for (let i = 0; i < 4; i++) {
     let a = randInt(5, 120);
     let b = randInt(5, 120);
     questionsData.push({ level: 'Medium', text: `Add binaries: <strong>${toBin(a, 8)}</strong> + <strong>${toBin(b, 8)}</strong> (8-bit binary):`, answer: toBin(a + b, 8) });
   }
-  // 5-8: Binary Shifting
   for (let i = 0; i < 4; i++) {
     let dir = i % 2 === 0 ? 'left' : 'right';
     let shift = randInt(1, 3);
@@ -102,7 +199,6 @@ function generateTest() {
       answer: toBin(ans, 8)
     });
   }
-  // 9-12: Positive Two's Complement Denary <-> Binary
   for (let i = 0; i < 2; i++) {
     let d = randInt(1, 127);
     questionsData.push({ level: 'Medium', text: `Convert +${d} to 8-bit Two's Complement Binary:`, answer: toBin(d, 8) });
@@ -112,20 +208,17 @@ function generateTest() {
     questionsData.push({ level: 'Medium', text: `Convert Two's Complement <strong>${toBin(d, 8)}</strong> to Denary:`, answer: d.toString() });
   }
 
-  // --- EXTENSION SECTION (6 Questions - Optional) ---
-  // 1-2: Negative Denary to Two's Complement Binary
+  // --- EXTENSION SECTION (6 Questions) ---
   for (let i = 0; i < 2; i++) {
     let d = randInt(1, 128);
     let negBin = toBin((256 - d) & 0xFF, 8);
     questionsData.push({ level: 'Extension', text: `Convert Denary <strong>-${d}</strong> to 8-bit Two's Complement Binary:`, answer: negBin });
   }
-  // 3-4: Negative Two's Complement Binary to Denary
   for (let i = 0; i < 2; i++) {
     let d = randInt(1, 128);
     let bin = toBin((256 - d) & 0xFF, 8);
     questionsData.push({ level: 'Extension', text: `Convert Two's Complement <strong>${bin}</strong> to Denary:`, answer: (-d).toString() });
   }
-  // 5: Multi-step (Shift + Hex)
   let d5 = randInt(4, 30);
   let shift5 = randInt(1, 2);
   let hex5 = ((d5 << shift5) & 0xFF).toString(16).toUpperCase().padStart(2, '0');
@@ -134,8 +227,6 @@ function generateTest() {
     text: `Logical left shift <strong>${toBin(d5, 8)}</strong> by ${shift5}, then convert the result to <strong>Hexadecimal</strong>:`,
     answer: hex5
   });
-
-  // 6: Multi-step (Addition + Hex)
   let a6 = randInt(10, 100);
   let b6 = randInt(10, 100);
   let hex6 = (a6 + b6).toString(16).toUpperCase().padStart(2, '0');
@@ -182,10 +273,7 @@ function renderQuiz() {
 }
 
 function checkAnswers() {
-  let mainScore = 0;
-  let mainTotal = 0;
-  let extScore = 0;
-  let extTotal = 0;
+  let mainScore = 0, mainTotal = 0, extScore = 0, extTotal = 0;
 
   questionsData.forEach((q, idx) => {
     let userAns = document.getElementById(`q${idx}`).value.trim().replaceAll(' ', '').toUpperCase();
@@ -215,7 +303,6 @@ function checkAnswers() {
   `;
 }
 
-// Initial test generation on load
 generateTest();
 </script>
 
