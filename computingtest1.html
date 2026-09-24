@@ -5,35 +5,39 @@
   <title>Binary & Computer Science Revision Paper</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 30px; background: #f4f6f9; color: #333; }
-    .container { max-width: 800px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     h1 { text-align: center; color: #2c3e50; margin-bottom: 5px; }
     p.subtitle { text-align: center; color: #666; margin-bottom: 25px; }
-    .section { margin-bottom: 25px; padding: 15px; border-left: 5px solid #3498db; background: #fafafa; border-radius: 4px; }
+    .section { margin-bottom: 30px; padding: 20px; border-left: 6px solid #3498db; background: #fafafa; border-radius: 6px; }
     .section.medium { border-left-color: #f39c12; }
-    .section.extension { border-left-color: #e74c3c; }
-    .question { margin-bottom: 15px; font-size: 15px; }
-    label { display: block; margin-top: 5px; font-weight: bold; }
-    input[type="text"] { width: 220px; padding: 6px; margin-top: 3px; border: 1px solid #ccc; border-radius: 4px; }
-    button { padding: 10px 18px; margin-right: 10px; border: none; background: #27ae60; color: white; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; }
+    .section.extension { border-left-color: #8e44ad; background: #fdfafc; }
+    .section h2 { margin-top: 0; color: #2c3e50; }
+    .badge { font-size: 12px; background: #8e44ad; color: white; padding: 3px 8px; border-radius: 12px; vertical-align: middle; margin-left: 8px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    @media (max-width: 650px) { .grid { grid-template-columns: 1fr; } }
+    .question { background: #fff; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; }
+    label { display: block; margin-top: 6px; font-weight: bold; }
+    input[type="text"] { width: 90%; padding: 6px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 14px; }
+    button { padding: 12px 20px; margin-right: 10px; border: none; background: #27ae60; color: white; border-radius: 5px; cursor: pointer; font-size: 15px; font-weight: bold; }
     button:hover { background: #219150; }
     button.secondary { background: #2980b9; }
     button.secondary:hover { background: #1f6391; }
-    .feedback { margin-top: 4px; font-weight: bold; font-size: 14px; }
+    .feedback { margin-top: 5px; font-weight: bold; font-size: 13px; }
     .correct { color: #27ae60; }
     .incorrect { color: #c0392b; }
-    #score-box { text-align: center; font-size: 20px; font-weight: bold; margin-top: 20px; color: #2c3e50; }
+    #score-box { text-align: center; font-size: 22px; font-weight: bold; margin-top: 25px; color: #2c3e50; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>Binary & Number Representation Test</h1>
-  <p class="subtitle">Dynamic practice paper — Click "Generate New Test" for fresh questions anytime!</p>
+  <h1>Binary & CS Revision Paper</h1>
+  <p class="subtitle">30 Randomised Questions — Practice & Test Your Skills</p>
 
   <div id="quiz"></div>
 
-  <div style="text-align: center; margin-top: 20px;">
-    <button onclick="checkAnswers()">Submit & Check Answers</button>
+  <div style="text-align: center; margin-top: 25px;">
+    <button onclick="checkAnswers()">Submit & Grade Test</button>
     <button class="secondary" onclick="generateTest()">Generate New Test</button>
   </div>
 
@@ -55,80 +59,90 @@ function generateTest() {
   questionsData = [];
   document.getElementById('score-box').innerHTML = '';
 
-  // --- EASY QUESTIONS ---
-  // Q1: Denary to Binary
-  let d1 = randInt(10, 200);
-  questionsData.push({
-    level: 'Easy',
-    text: `Convert Denary <strong>${d1}</strong> to 8-bit Binary:`,
-    answer: toBin(d1, 8)
-  });
+  // --- EASY SECTION (12 Questions) ---
+  // 1-3: Denary to Binary
+  for (let i = 0; i < 3; i++) {
+    let d = randInt(1, 255);
+    questionsData.push({ level: 'Easy', text: `Convert Denary <strong>${d}</strong> to 8-bit Binary:`, answer: toBin(d, 8) });
+  }
+  // 4-6: Binary to Denary
+  for (let i = 0; i < 3; i++) {
+    let d = randInt(1, 255);
+    questionsData.push({ level: 'Easy', text: `Convert 8-bit Binary <strong>${toBin(d, 8)}</strong> to Denary:`, answer: d.toString() });
+  }
+  // 7-9: Binary to Hex
+  for (let i = 0; i < 3; i++) {
+    let d = randInt(10, 255);
+    let hex = d.toString(16).toUpperCase().padStart(2, '0');
+    questionsData.push({ level: 'Easy', text: `Convert Binary <strong>${toBin(d, 8)}</strong> to Hexadecimal:`, answer: hex });
+  }
+  // 10-12: Hex to Binary
+  for (let i = 0; i < 3; i++) {
+    let d = randInt(10, 255);
+    let hex = d.toString(16).toUpperCase().padStart(2, '0');
+    questionsData.push({ level: 'Easy', text: `Convert Hexadecimal <strong>${hex}</strong> to 8-bit Binary:`, answer: toBin(d, 8) });
+  }
 
-  // Q2: Binary to Denary
-  let d2 = randInt(1, 255);
-  questionsData.push({
-    level: 'Easy',
-    text: `Convert 8-bit Binary <strong>${toBin(d2, 8)}</strong> to Denary:`,
-    answer: d2.toString()
-  });
+  // --- MEDIUM SECTION (12 Questions) ---
+  // 1-4: Binary Addition
+  for (let i = 0; i < 4; i++) {
+    let a = randInt(5, 120);
+    let b = randInt(5, 120);
+    questionsData.push({ level: 'Medium', text: `Add binaries: <strong>${toBin(a, 8)}</strong> + <strong>${toBin(b, 8)}</strong> (8-bit binary):`, answer: toBin(a + b, 8) });
+  }
+  // 5-8: Binary Shifting
+  for (let i = 0; i < 4; i++) {
+    let dir = i % 2 === 0 ? 'left' : 'right';
+    let shift = randInt(1, 3);
+    let d = dir === 'left' ? randInt(2, 30) : randInt(16, 240);
+    let ans = dir === 'left' ? (d << shift) & 0xFF : (d >> shift);
+    questionsData.push({
+      level: 'Medium',
+      text: `Logical <strong>${dir} shift by ${shift}</strong> on <strong>${toBin(d, 8)}</strong> (8-bit binary):`,
+      answer: toBin(ans, 8)
+    });
+  }
+  // 9-12: Positive Two's Complement Denary <-> Binary
+  for (let i = 0; i < 2; i++) {
+    let d = randInt(1, 127);
+    questionsData.push({ level: 'Medium', text: `Convert +${d} to 8-bit Two's Complement Binary:`, answer: toBin(d, 8) });
+  }
+  for (let i = 0; i < 2; i++) {
+    let d = randInt(1, 127);
+    questionsData.push({ level: 'Medium', text: `Convert Two's Complement <strong>${toBin(d, 8)}</strong> to Denary:`, answer: d.toString() });
+  }
 
-  // Q3: Hex to Binary
-  let d3 = randInt(16, 255);
-  let hex3 = d3.toString(16).toUpperCase().padStart(2, '0');
-  questionsData.push({
-    level: 'Easy',
-    text: `Convert Hexadecimal <strong>${hex3}</strong> to 8-bit Binary:`,
-    answer: toBin(d3, 8)
-  });
-
-  // --- MEDIUM QUESTIONS ---
-  // Q4: Binary Addition
-  let a4 = randInt(5, 100);
-  let b4 = randInt(5, 100);
-  questionsData.push({
-    level: 'Medium',
-    text: `Add binaries: <strong>${toBin(a4, 8)}</strong> + <strong>${toBin(b4, 8)}</strong> (Give 8-bit binary answer):`,
-    answer: toBin(a4 + b4, 8)
-  });
-
-  // Q5: Binary Shift
+  // --- EXTENSION SECTION (6 Questions - Optional) ---
+  // 1-2: Negative Denary to Two's Complement Binary
+  for (let i = 0; i < 2; i++) {
+    let d = randInt(1, 128);
+    let negBin = toBin((256 - d) & 0xFF, 8);
+    questionsData.push({ level: 'Extension', text: `Convert Denary <strong>-${d}</strong> to 8-bit Two's Complement Binary:`, answer: negBin });
+  }
+  // 3-4: Negative Two's Complement Binary to Denary
+  for (let i = 0; i < 2; i++) {
+    let d = randInt(1, 128);
+    let bin = toBin((256 - d) & 0xFF, 8);
+    questionsData.push({ level: 'Extension', text: `Convert Two's Complement <strong>${bin}</strong> to Denary:`, answer: (-d).toString() });
+  }
+  // 5: Multi-step (Shift + Hex)
   let d5 = randInt(4, 30);
-  let shift = randInt(1, 2);
-  let dir = Math.random() < 0.5 ? 'left' : 'right';
-  let ans5 = dir === 'left' ? (d5 << shift) : (d5 >> shift);
-  questionsData.push({
-    level: 'Medium',
-    text: `Perform a logical <strong>${dir} shift by ${shift}</strong> place(s) on <strong>${toBin(d5, 8)}</strong> (Give 8-bit binary answer):`,
-    answer: toBin(ans5, 8)
-  });
-
-  // Q6: Positive Denary to 8-bit Two's Complement Negative
-  let d6 = randInt(1, 100);
-  let negBin6 = toBin((256 - d6) & 0xFF, 8);
-  questionsData.push({
-    level: 'Medium',
-    text: `Convert Denary <strong>-${d6}</strong> into 8-bit Two's Complement Binary:`,
-    answer: negBin6
-  });
-
-  // --- EXTENSION QUESTIONS ---
-  // Q7: Negative Two's Complement to Denary
-  let d7 = randInt(1, 120);
-  let bin7 = toBin((256 - d7) & 0xFF, 8);
+  let shift5 = randInt(1, 2);
+  let hex5 = ((d5 << shift5) & 0xFF).toString(16).toUpperCase().padStart(2, '0');
   questionsData.push({
     level: 'Extension',
-    text: `Convert 8-bit Two's Complement Binary <strong>${bin7}</strong> to Denary:`,
-    answer: (-d7).toString()
+    text: `Logical left shift <strong>${toBin(d5, 8)}</strong> by ${shift5}, then convert the result to <strong>Hexadecimal</strong>:`,
+    answer: hex5
   });
 
-  // Q8: Binary Shift + Hex Conversion
-  let d8 = randInt(4, 30);
-  let shifted8 = d8 << 2;
-  let hex8 = shifted8.toString(16).toUpperCase().padStart(2, '0');
+  // 6: Multi-step (Addition + Hex)
+  let a6 = randInt(10, 100);
+  let b6 = randInt(10, 100);
+  let hex6 = (a6 + b6).toString(16).toUpperCase().padStart(2, '0');
   questionsData.push({
     level: 'Extension',
-    text: `Logical left shift <strong>${toBin(d8, 8)}</strong> by 2 places, then convert the result to <strong>Hexadecimal</strong>:`,
-    answer: hex8
+    text: `Add <strong>${toBin(a6, 8)}</strong> + <strong>${toBin(b6, 8)}</strong> and convert the total to <strong>Hexadecimal</strong>:`,
+    answer: hex6
   });
 
   renderQuiz();
@@ -138,48 +152,70 @@ function renderQuiz() {
   const quizDiv = document.getElementById('quiz');
   quizDiv.innerHTML = '';
 
-  const levels = ['Easy', 'Medium', 'Extension'];
-  levels.forEach(lvl => {
-    let sec = document.createElement('div');
-    sec.className = `section ${lvl.toLowerCase()}`;
-    sec.innerHTML = `<h3>${lvl} Section</h3>`;
+  const sections = [
+    { name: 'Easy', badge: '' },
+    { name: 'Medium', badge: '' },
+    { name: 'Extension', badge: '<span class="badge">OPTIONAL / EXTRA PRACTICE</span>' }
+  ];
+
+  sections.forEach(sec => {
+    let secDiv = document.createElement('div');
+    secDiv.className = `section ${sec.name.toLowerCase()}`;
+    secDiv.innerHTML = `<h2>${sec.name} Section ${sec.badge}</h2><div class="grid" id="grid-${sec.name}"></div>`;
+    quizDiv.appendChild(secDiv);
+
+    let gridDiv = secDiv.querySelector(`.grid`);
+    let qCount = 1;
 
     questionsData.forEach((q, idx) => {
-      if (q.level === lvl) {
-        sec.innerHTML += `
+      if (q.level === sec.name) {
+        gridDiv.innerHTML += `
           <div class="question">
-            <p><strong>Q${idx + 1}:</strong> ${q.text}</p>
-            <input type="text" id="q${idx}" placeholder="Enter answer here">
+            <p><strong>Q${qCount++}:</strong> ${q.text}</p>
+            <input type="text" id="q${idx}" placeholder="Your answer">
             <div id="fb${idx}" class="feedback"></div>
           </div>
         `;
       }
     });
-    quizDiv.appendChild(sec);
   });
 }
 
 function checkAnswers() {
-  let score = 0;
+  let mainScore = 0;
+  let mainTotal = 0;
+  let extScore = 0;
+  let extTotal = 0;
+
   questionsData.forEach((q, idx) => {
-    let userAns = document.getElementById(`q${idx}`).value.trim().toUpperCase();
+    let userAns = document.getElementById(`q${idx}`).value.trim().replaceAll(' ', '').toUpperCase();
     let fb = document.getElementById(`fb${idx}`);
-    
-    // Normalize leading zeros for binary/hex
-    if (userAns === q.answer) {
-      score++;
+    let isCorrect = userAns === q.answer.toUpperCase();
+
+    if (q.level === 'Extension') {
+      extTotal++;
+      if (isCorrect) extScore++;
+    } else {
+      mainTotal++;
+      if (isCorrect) mainScore++;
+    }
+
+    if (isCorrect) {
       fb.className = 'feedback correct';
-      fb.innerHTML = '✔ Correct!';
+      fb.innerHTML = '✔ Correct';
     } else {
       fb.className = 'feedback incorrect';
-      fb.innerHTML = `✘ Incorrect. Expected: ${q.answer}`;
+      fb.innerHTML = `✘ Incorrect (Ans: ${q.answer})`;
     }
   });
 
-  document.getElementById('score-box').innerHTML = `Score: ${score} / ${questionsData.length}`;
+  document.getElementById('score-box').innerHTML = `
+    Main Test Score: ${mainScore} / ${mainTotal} <br>
+    <span style="font-size: 16px; color: #8e44ad;">Extension Score: ${extScore} / ${extTotal} (Optional)</span>
+  `;
 }
 
-// Initial render
+// Initial test generation on load
 generateTest();
 </script>
 
